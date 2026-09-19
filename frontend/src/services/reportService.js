@@ -9,8 +9,20 @@ export const reportService = {
     });
   },
 
+  confirmReport: async (id, confirmedData) => {
+    return await api.put(`/reports/${id}/confirm`, { confirmedData });
+  },
+
+  updateExtractedData: async (id, corrections) => {
+    return await api.patch(`/reports/${id}/extracted-data`, { corrections });
+  },
+
   getReports: async (patientId) => {
     return await api.get('/reports', { params: { patientId } });
+  },
+
+  getReportById: async (id) => {
+    return await api.get(`/reports/${id}`);
   },
 
   deleteReport: async (id) => {

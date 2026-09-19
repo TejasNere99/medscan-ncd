@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 
-export const RiskGaugeChart = ({ riskPercent = 68, riskLevel = 'High', diseaseBreakdown = {} }) => {
+export const RiskGaugeChart = ({ riskPercent = 0, riskLevel = 'Low', diseaseBreakdown = {} }) => {
   const radius = 70;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (riskPercent / 100) * circumference;

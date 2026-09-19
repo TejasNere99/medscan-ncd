@@ -1,0 +1,23 @@
+{
+  "patient_id": "HD-SYN-016",
+  "report_date": "2026-04-05",
+  "printed_values": {
+    "age": 56,
+    "sex": "Female",
+    "totChol": {
+      "value": 225,
+      "unit": "mg/dL"
+    },
+    "sysBP": null,
+    "diaBP": null,
+    "BMI": {
+      "value": 26.8,
+      "unit": "kg/m2"
+    },
+    "glucose": {
+      "value": 99,
+      "unit": "mg/dL"
+    },
+    "currentSmoker": false
+  }
+}

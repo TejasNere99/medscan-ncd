@@ -1,0 +1,31 @@
+========================================================================
+MEDTEST DIAGNOSTIC LABORATORIES
+SYNTHETIC TEST DOCUMENT — NOT A REAL MEDICAL RECORD — FOR TESTING ONLY
+========================================================================
+Report ID: SYN-B001-R01
+Report Date: 2025-06-18
+Patient Name: Test Patient B001
+Patient ID: SYN-B001
+Age: 51 Years
+Gender: Male
+DOB: 1974-01-19
+Referring Clinician: Dr. Marcus Thorne, MD
+------------------------------------------------------------------------
+
+[VITAL SIGNS]
+Resting Blood Pressure: 128/82 mmHg
+Body Mass Index (BMI): 27.2 kg/m²
+Heart Rate: 74 BPM
+
+[CARDIOMETABOLIC MARKERS]
+Investigation                  | Result     | Unit       | Ref Interval         | Flag
+------------------------------------------------------------------------
+Total Cholesterol              | 208.0      | mg/dL      | 125.0 - 200.0        | HIGH
+HDL Cholesterol                | 46.0       | mg/dL      | > 40.0               | NORMAL
+Serum Creatinine               | 1.02       | mg/dL      | 0.70 - 1.20          | NORMAL
+Fasting Blood Sugar            | 106.0      | mg/dL      | 70.0 - 99.0          | HIGH
+HbA1c                          | 5.8        | %          | 4.0 - 5.6            | HIGH
+
+========================================================================
+END OF SYNTHETIC REPORT — NOT A REAL MEDICAL RECORD
+========================================================================

@@ -72,7 +72,7 @@ export const routeMissedMedicineAlert = async ({ patientId, medicineName, schedu
 /**
  * Route High Disease Risk Alerts to Patient and Assigned Doctor
  */
-export const routeHighRiskAlert = async ({ patientId, riskPercent, riskLevel, diseaseBreakdown }) => {
+export const routeHighRiskAlert = async ({ patientId, riskPercent, riskLevel, disease = 'diabetes' }) => {
   try {
     const patientDoc = await Patient.findById(patientId).populate('user assignedDoctor');
     if (!patientDoc) return;

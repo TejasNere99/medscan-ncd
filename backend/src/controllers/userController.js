@@ -11,7 +11,8 @@ export const updateProfile = asyncHandler(async (req, res) => {
 
   if (name) user.name = name;
   if (phone) user.phone = phone;
-  if (village) user.village = village;
+  // Make village immutable to ordinary staff users — only Admin can assign or alter administrative catchment
+  if (village && req.user.role === 'Admin') user.village = village;
   if (avatar) user.avatar = avatar;
 
   await user.save();

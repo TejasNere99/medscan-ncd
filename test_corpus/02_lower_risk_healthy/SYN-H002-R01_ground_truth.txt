@@ -1,0 +1,31 @@
+========================================================================
+MEDTEST DIAGNOSTIC LABORATORIES
+SYNTHETIC TEST DOCUMENT — NOT A REAL MEDICAL RECORD — FOR TESTING ONLY
+========================================================================
+Report ID: SYN-H002-R01
+Report Date: 2025-06-02
+Patient Name: Test Patient H002
+Patient ID: SYN-H002
+Age: 31 Years
+Gender: Male
+DOB: 1994-08-11
+Referring Clinician: Dr. Ryan Cooper, MD (Sports Medicine)
+------------------------------------------------------------------------
+
+[CLINICAL EXAMINATION & VITALS]
+Resting Blood Pressure: 118/76 mmHg
+Body Mass Index (BMI): 22.8 kg/m²
+Heart Rate: 64 BPM
+
+[LIPID PROFILE & RENAL SCREEN]
+Investigation                  | Result     | Unit       | Ref Interval         | Flag
+------------------------------------------------------------------------
+Total Cholesterol              | 174.0      | mg/dL      | 125.0 - 200.0        | NORMAL
+HDL Cholesterol                | 56.0       | mg/dL      | > 40.0               | NORMAL
+Serum Creatinine               | 0.92       | mg/dL      | 0.70 - 1.20          | NORMAL
+Fasting Blood Sugar            | 89.0       | mg/dL      | 70.0 - 99.0          | NORMAL
+HbA1c                          | 5.2        | %          | 4.0 - 5.6            | NORMAL
+
+========================================================================
+END OF SYNTHETIC REPORT — NOT A REAL MEDICAL RECORD
+========================================================================

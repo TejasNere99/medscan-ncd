@@ -2,12 +2,18 @@ import { v2 as cloudinary } from 'cloudinary';
 import fs from 'fs';
 import path from 'path';
 
-const isCloudinaryConfigured = () => {
-  return (
-    process.env.CLOUDINARY_CLOUD_NAME &&
-    process.env.CLOUDINARY_CLOUD_NAME !== 'demo_cloud' &&
-    process.env.CLOUDINARY_API_KEY &&
-    process.env.CLOUDINARY_API_KEY !== '1234567890'
+export const isCloudinaryConfigured = () => {
+  const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
+  const apiKey = process.env.CLOUDINARY_API_KEY;
+  const apiSecret = process.env.CLOUDINARY_API_SECRET;
+
+  return Boolean(
+    cloudName &&
+    cloudName !== 'demo_cloud' &&
+    apiKey &&
+    apiKey !== '1234567890' &&
+    apiSecret &&
+    apiSecret !== 'demo_secret'
   );
 };
 
@@ -19,39 +25,77 @@ if (isCloudinaryConfigured()) {
   });
 }
 
+/**
+ * Uploads a file to Cloudinary if configured;
+ * falls back to local storage only if LOCAL_STORAGE_FALLBACK=true.
+ * Never fabricates Cloudinary URLs or leaks API secrets.
+ */
 export const uploadOnCloudinary = async (localFilePath) => {
-  try {
-    if (!localFilePath) return null;
+  if (!localFilePath) {
+    throw new Error('Local file path is required for upload.');
+  }
 
-    if (isCloudinaryConfigured()) {
+  const isConfigured = isCloudinaryConfigured();
+  const allowLocalStorage = process.env.LOCAL_STORAGE_FALLBACK === 'true';
+
+  if (isConfigured) {
+    try {
       const response = await cloudinary.uploader.upload(localFilePath, {
         resource_type: 'auto',
-        folder: 'smart_healthcare_reports',
+        folder: 'medscan_reports',
       });
-      // Remove file from local uploads after Cloudinary sync
+
+      // Remove local copy after successful Cloudinary upload
       if (fs.existsSync(localFilePath)) {
         fs.unlinkSync(localFilePath);
       }
+
       return {
         url: response.secure_url,
         publicId: response.public_id,
+        storageProvider: 'cloudinary',
       };
-    } else {
-      // Local storage fallback for development
-      const fileName = path.basename(localFilePath);
-      const publicUrl = `http://localhost:${process.env.PORT || 5000}/uploads/${fileName}`;
-      return {
-        url: publicUrl,
-        publicId: fileName,
-      };
+    } catch (cloudErr) {
+      console.warn(`[Cloudinary Warning] Cloudinary upload failed: ${cloudErr.message}`);
+
+      if (allowLocalStorage) {
+        console.info('[Storage Fallback] Utilizing local disk storage because LOCAL_STORAGE_FALLBACK=true');
+        const fileName = path.basename(localFilePath);
+        const baseUrl = process.env.BACKEND_URL || `http://localhost:${process.env.PORT || 5000}`;
+        return {
+          url: `${baseUrl}/uploads/${fileName}`,
+          publicId: fileName,
+          storageProvider: 'local',
+        };
+      } else {
+        // Clean up temporary local file
+        if (fs.existsSync(localFilePath)) {
+          fs.unlinkSync(localFilePath);
+        }
+        throw new Error(`Cloudinary upload failed: ${cloudErr.message}. Ensure Cloudinary credentials are valid or enable LOCAL_STORAGE_FALLBACK=true.`);
+      }
     }
-  } catch (error) {
-    console.error('Error uploading file:', error);
-    if (fs.existsSync(localFilePath)) {
-      fs.unlinkSync(localFilePath);
-    }
-    return null;
   }
+
+  // Not configured with valid Cloudinary credentials
+  if (allowLocalStorage) {
+    console.info('[Storage Fallback] Cloudinary is unconfigured or placeholder. Using local storage (LOCAL_STORAGE_FALLBACK=true)');
+    const fileName = path.basename(localFilePath);
+    const baseUrl = process.env.BACKEND_URL || `http://localhost:${process.env.PORT || 5000}`;
+    return {
+      url: `${baseUrl}/uploads/${fileName}`,
+      publicId: fileName,
+      storageProvider: 'local',
+    };
+  }
+
+  // Unconfigured and local fallback not enabled
+  if (fs.existsSync(localFilePath)) {
+    fs.unlinkSync(localFilePath);
+  }
+  throw new Error(
+    'Cloudinary configuration is missing or invalid. Set valid CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET, or set LOCAL_STORAGE_FALLBACK=true for local development.'
+  );
 };
 
 export default cloudinary;

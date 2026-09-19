@@ -44,9 +44,9 @@ export const Navbar = ({ onToggleMobileSidebar }) => {
             </div>
             <div>
               <span className="text-base font-extrabold text-white tracking-tight block leading-none">
-                Smart<span className="text-brand-400">Health</span>
+                MedScan<span className="text-brand-400">-NCD</span>
               </span>
-              <span className="text-[10px] text-slate-400 font-medium tracking-wide uppercase">AI & IoT Platform</span>
+              <span className="text-[10px] text-slate-400 font-medium tracking-wide uppercase">AI Health Intelligence</span>
             </div>
           </Link>
         </div>
@@ -58,7 +58,7 @@ export const Navbar = ({ onToggleMobileSidebar }) => {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search patients, medicines, reports or predictions..."
+            placeholder="Search reports, vitals, health insights..."
             className="w-full bg-slate-900/90 border border-slate-800 rounded-xl pl-10 pr-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all"
           />
         </div>

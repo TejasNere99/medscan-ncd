@@ -1,0 +1,27 @@
+========================================================================
+MEDTEST DIAGNOSTIC LABORATORIES
+SYNTHETIC TEST DOCUMENT — NOT A REAL MEDICAL RECORD — FOR TESTING ONLY
+========================================================================
+Report ID: SYN-L003-R01
+Report Date: 2025-04-12
+Patient Name: Test Patient L003
+Patient ID: SYN-L003
+Age: 63 Years
+Gender: Male
+DOB: 1962-12-05
+Referring Clinician: Dr. Alan Price, MD
+------------------------------------------------------------------------
+
+[CLINICAL EXAMINATION & VITALS]
+Resting Blood Pressure: 138/88 mmHg
+Body Mass Index (BMI): 27.5 kg/m²
+Heart Rate: 76 BPM
+
+[COMPLETE BLOOD COUNT]
+Investigation                  | Result     | Unit       | Ref Interval         | Flag
+------------------------------------------------------------------------
+Hemoglobin (Hb)                | 15.1       | g/dL       | 13.0 - 17.0          | NORMAL
+
+========================================================================
+END OF SYNTHETIC REPORT — NOT A REAL MEDICAL RECORD
+========================================================================

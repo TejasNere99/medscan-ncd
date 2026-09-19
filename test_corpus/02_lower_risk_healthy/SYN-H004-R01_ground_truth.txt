@@ -1,0 +1,31 @@
+========================================================================
+MEDTEST DIAGNOSTIC LABORATORIES
+SYNTHETIC TEST DOCUMENT — NOT A REAL MEDICAL RECORD — FOR TESTING ONLY
+========================================================================
+Report ID: SYN-H004-R01
+Report Date: 2025-07-18
+Patient Name: Test Patient H004
+Patient ID: SYN-H004
+Age: 38 Years
+Gender: Male
+DOB: 1987-10-15
+Referring Clinician: Dr. Julian Ross, MD
+------------------------------------------------------------------------
+
+[CLINIC EXAMINATION]
+Resting Blood Pressure: 124/80 mmHg
+Body Mass Index (BMI): 24.6 kg/m²
+Pulse Rate: 72 BPM
+
+[LIPIDS & BASIC CHEMISTRIES]
+Investigation                  | Result     | Unit       | Ref Interval         | Flag
+------------------------------------------------------------------------
+Total Cholesterol              | 198.0      | mg/dL      | 125.0 - 200.0        | NORMAL
+HDL Cholesterol                | 51.0       | mg/dL      | > 40.0               | NORMAL
+Serum Creatinine               | 0.98       | mg/dL      | 0.70 - 1.20          | NORMAL
+Fasting Blood Sugar            | 94.0       | mg/dL      | 70.0 - 99.0          | NORMAL
+HbA1c                          | 5.3        | %          | 4.0 - 5.6            | NORMAL
+
+========================================================================
+END OF SYNTHETIC REPORT — NOT A REAL MEDICAL RECORD
+========================================================================

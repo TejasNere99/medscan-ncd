@@ -1,0 +1,27 @@
+========================================================================
+MEDTEST DIAGNOSTIC LABORATORIES
+SYNTHETIC TEST DOCUMENT — NOT A REAL MEDICAL RECORD — FOR TESTING ONLY
+========================================================================
+Report ID: SYN-M002-R01
+Report Date: 2025-06-12
+Patient Name: Test Patient MIS2
+Patient ID: SYN-MIS2
+Age: 50 Years
+Gender: Female
+DOB: 1975-02-18
+Referring Clinician: Dr. Eleanor Wright, MD
+------------------------------------------------------------------------
+
+[RENAL PROFILE & HEMOGLOBIN]
+Investigation                  | Result     | Unit       | Ref Interval         | Flag
+------------------------------------------------------------------------
+Serum Creatinine               | 0.88       | mg/dL      | 0.50 - 1.10          | NORMAL
+Blood Urea Nitrogen (BUN)      | 14.0       | mg/dL      | 7.0 - 20.0           | NORMAL
+Hemoglobin (Hb)                | 12.5       | g/dL       | 12.0 - 15.0          | NORMAL
+
+[LABORATORY NOTES]
+Kidney function within normal limits. Note: Patient vitals (Blood Pressure, BMI) and lipid panel were not ordered on this accession.
+
+========================================================================
+END OF SYNTHETIC REPORT — NOT A REAL MEDICAL RECORD
+========================================================================

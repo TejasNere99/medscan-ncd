@@ -1,0 +1,31 @@
+========================================================================
+MEDTEST DIAGNOSTIC LABORATORIES
+SYNTHETIC TEST DOCUMENT — NOT A REAL MEDICAL RECORD — FOR TESTING ONLY
+========================================================================
+Report ID: SYN-H001-R01
+Report Date: 2025-05-14
+Patient Name: Test Patient H001
+Patient ID: SYN-H001
+Age: 24 Years
+Gender: Female
+DOB: 2001-03-18
+Referring Clinician: Dr. Karen Evans, MD (Occupational Medicine)
+------------------------------------------------------------------------
+
+[BASELINE PHYSICAL & VITALS EXAMINATION]
+Resting Blood Pressure: 112/72 mmHg
+Body Mass Index (BMI): 21.2 kg/m²
+Heart Rate: 68 BPM
+
+[ROUTINE SCREENING CHEMISTRIES & LIPIDS]
+Investigation                  | Result     | Unit       | Ref Interval         | Flag
+------------------------------------------------------------------------
+Total Cholesterol              | 162.0      | mg/dL      | 125.0 - 200.0        | NORMAL
+HDL Cholesterol                | 64.0       | mg/dL      | > 50.0               | NORMAL
+Serum Creatinine               | 0.76       | mg/dL      | 0.50 - 1.10          | NORMAL
+Fasting Blood Glucose          | 84.0       | mg/dL      | 70.0 - 99.0          | NORMAL
+HbA1c                          | 5.1        | %          | 4.0 - 5.6            | NORMAL
+
+========================================================================
+END OF SYNTHETIC REPORT — NOT A REAL MEDICAL RECORD
+========================================================================

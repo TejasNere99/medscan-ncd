@@ -1,0 +1,412 @@
+{
+  "model_name": "heart_disease_framingham_10yr",
+  "version": "1.0.0",
+  "disease": "heart_disease",
+  "task": "10_year_CHD_risk_estimation",
+  "dataset": "Framingham Heart Study 10-Year CHD Teaching Cohort",
+  "dataset_hash": "2c0e57dc0361b420becf1facec0a054af06c420eae0ae2faf0fdc8591fadb018",
+  "n_samples": 4240,
+  "positive_samples": 644,
+  "negative_samples": 3596,
+  "imbalance_ratio": 5.584,
+  "features": [
+    "age",
+    "sex",
+    "totChol",
+    "sysBP",
+    "diaBP",
+    "BMI",
+    "glucose",
+    "currentSmoker"
+  ],
+  "target": "TenYearCHD",
+  "champion_algorithm": "Logistic_Regression",
+  "split": {
+    "method": "stratified_train_test_split",
+    "test_size": 0.2,
+    "random_state": 42,
+    "n_train": 3392,
+    "n_test": 848
+  },
+  "cross_validation": {
+    "method": "StratifiedKFold",
+    "folds": 5,
+    "random_state": 42,
+    "models_benchmarked": [
+      "Logistic_Regression",
+      "Decision_Tree",
+      "Random_Forest",
+      "HistGradientBoosting",
+      "LightGBM",
+      "XGBoost"
+    ],
+    "cv_metrics": {
+      "Logistic_Regression": {
+        "roc_auc": {
+          "mean": 0.7307357476197176,
+          "std": 0.02864714478095678
+        },
+        "pr_auc": {
+          "mean": 0.35689131403031465,
+          "std": 0.043889329885033114
+        },
+        "accuracy": {
+          "mean": 0.6748350211355412,
+          "std": 0.021514643194479818
+        },
+        "precision": {
+          "mean": 0.2745433913030174,
+          "std": 0.019945506458654047
+        },
+        "recall": {
+          "mean": 0.6912621359223301,
+          "std": 0.02970302629277349
+        },
+        "specificity": {
+          "mean": 0.6718943236714976,
+          "std": 0.02158574744081358
+        },
+        "f1": {
+          "mean": 0.3928673274743771,
+          "std": 0.02476220531465944
+        },
+        "brier": {
+          "mean": 0.20984075102799657,
+          "std": 0.009740454529389746
+        }
+      },
+      "Decision_Tree": {
+        "roc_auc": {
+          "mean": 0.6689952775432673,
+          "std": 0.0241506707355059
+        },
+        "pr_auc": {
+          "mean": 0.2565966958399942,
+          "std": 0.02747341240190625
+        },
+        "accuracy": {
+          "mean": 0.6191101785116929,
+          "std": 0.04561835452288453
+        },
+        "precision": {
+          "mean": 0.22528727238885055,
+          "std": 0.01991631738308583
+        },
+        "recall": {
+          "mean": 0.6097087378640776,
+          "std": 0.06363483342980172
+        },
+        "specificity": {
+          "mean": 0.6207892512077294,
+          "std": 0.060309977139857196
+        },
+        "f1": {
+          "mean": 0.32777422911714793,
+          "std": 0.02444862598940113
+        },
+        "brier": {
+          "mean": 0.2232544357147502,
+          "std": 0.00630476750283722
+        }
+      },
+      "Random_Forest": {
+        "roc_auc": {
+          "mean": 0.7197942873223582,
+          "std": 0.033335262225395956
+        },
+        "pr_auc": {
+          "mean": 0.3409279547303295,
+          "std": 0.043448602227932016
+        },
+        "accuracy": {
+          "mean": 0.6692329080158658,
+          "std": 0.019054393172228512
+        },
+        "precision": {
+          "mean": 0.26105984311235375,
+          "std": 0.01981496585531165
+        },
+        "recall": {
+          "mean": 0.6427184466019418,
+          "std": 0.05078328866260982
+        },
+        "specificity": {
+          "mean": 0.6739770531400966,
+          "std": 0.019970610597525185
+        },
+        "f1": {
+          "mean": 0.3711379603179989,
+          "std": 0.027573746149869457
+        },
+        "brier": {
+          "mean": 0.20222896759959091,
+          "std": 0.006686516535161688
+        }
+      },
+      "HistGradientBoosting": {
+        "roc_auc": {
+          "mean": 0.6961981086722011,
+          "std": 0.028534094238562117
+        },
+        "pr_auc": {
+          "mean": 0.31560059305888943,
+          "std": 0.03566990761536482
+        },
+        "accuracy": {
+          "mean": 0.698711883257089,
+          "std": 0.01665818697156164
+        },
+        "precision": {
+          "mean": 0.26135481670654265,
+          "std": 0.023090294948819194
+        },
+        "recall": {
+          "mean": 0.537864077669903,
+          "std": 0.04367853156971646
+        },
+        "specificity": {
+          "mean": 0.7275018115942029,
+          "std": 0.014404289385747124
+        },
+        "f1": {
+          "mean": 0.35169250939902097,
+          "std": 0.029796207355172192
+        },
+        "brier": {
+          "mean": 0.18933085599908867,
+          "std": 0.008049132431897433
+        }
+      },
+      "LightGBM": {
+        "roc_auc": {
+          "mean": 0.7106782690774354,
+          "std": 0.029216174859511345
+        },
+        "pr_auc": {
+          "mean": 0.33308665087386086,
+          "std": 0.04805735638521908
+        },
+        "accuracy": {
+          "mean": 0.6827978851425618,
+          "std": 0.023916685622542563
+        },
+        "precision": {
+          "mean": 0.26343913854859685,
+          "std": 0.022884007552813616
+        },
+        "recall": {
+          "mean": 0.6019417475728156,
+          "std": 0.03527359635841741
+        },
+        "specificity": {
+          "mean": 0.6972717391304348,
+          "std": 0.02516041620344885
+        },
+        "f1": {
+          "mean": 0.3662579946981757,
+          "std": 0.027753448754365542
+        },
+        "brier": {
+          "mean": 0.19598681771801527,
+          "std": 0.008998525022982
+        }
+      },
+      "XGBoost": {
+        "roc_auc": {
+          "mean": 0.7146319972093241,
+          "std": 0.03515597558806345
+        },
+        "pr_auc": {
+          "mean": 0.33918594824022535,
+          "std": 0.049836811154739286
+        },
+        "accuracy": {
+          "mean": 0.6624556327411906,
+          "std": 0.022419940213265998
+        },
+        "precision": {
+          "mean": 0.25601483649620593,
+          "std": 0.020673150052041678
+        },
+        "recall": {
+          "mean": 0.6388349514563106,
+          "std": 0.043592124894453715
+        },
+        "specificity": {
+          "mean": 0.666683574879227,
+          "std": 0.02364444297130267
+        },
+        "f1": {
+          "mean": 0.3653416539394827,
+          "std": 0.027071369346350963
+        },
+        "brier": {
+          "mean": 0.20473653078079224,
+          "std": 0.008318988444267964
+        }
+      }
+    }
+  },
+  "calibration": {
+    "method": "sigmoid_platt_scaling",
+    "cv_folds": 5,
+    "uncalibrated_brier": 0.2098467811396684,
+    "calibrated_brier": 0.1162535525513563,
+    "brier_improvement_pct": 44.6,
+    "is_calibrated": true
+  },
+  "development_threshold": {
+    "selected_development_threshold": 0.11,
+    "target_sensitivity": 0.8,
+    "cv_sensitivity": 0.8175,
+    "cv_specificity": 0.5012,
+    "cv_precision": 0.2268,
+    "cv_f1": 0.3551,
+    "clinical_disclaimer": "Development threshold \u2014 research/engineering decision-support cutoff, not a clinical diagnostic threshold."
+  },
+  "held_out_test_metrics": {
+    "roc_auc": 0.696315942685254,
+    "pr_auc": 0.29174940455250725,
+    "accuracy": 0.5566037735849056,
+    "precision": 0.2199546485260771,
+    "recall": 0.751937984496124,
+    "specificity": 0.521557719054242,
+    "f1": 0.34035087719298246,
+    "brier": 0.12129159652644572,
+    "cm": {
+      "tn": 375,
+      "fp": 344,
+      "fn": 32,
+      "tp": 97
+    }
+  },
+  "explainability": {
+    "explainer_type": "LinearExplainer",
+    "global_importance_ranking": {
+      "age": 0.4713,
+      "totChol": 0.2704,
+      "glucose": 0.2284,
+      "currentSmoker": 0.1828,
+      "sex": 0.0889,
+      "BMI": 0.0595,
+      "sysBP": 0.0341,
+      "diaBP": 0.0111
+    },
+    "sample_local_explanation": [
+      {
+        "feature": "age",
+        "actual_value": 46.0,
+        "shap_contribution": -0.2284,
+        "directional_impact": "contributed toward lower model-estimated risk"
+      },
+      {
+        "feature": "sex",
+        "actual_value": 0.0,
+        "shap_contribution": 0.2303,
+        "directional_impact": "contributed toward higher model-estimated risk"
+      },
+      {
+        "feature": "totChol",
+        "actual_value": 325.0,
+        "shap_contribution": -0.2119,
+        "directional_impact": "contributed toward lower model-estimated risk"
+      },
+      {
+        "feature": "sysBP",
+        "actual_value": 119.0,
+        "shap_contribution": 0.0076,
+        "directional_impact": "contributed toward higher model-estimated risk"
+      },
+      {
+        "feature": "diaBP",
+        "actual_value": 86.0,
+        "shap_contribution": 0.0336,
+        "directional_impact": "contributed toward higher model-estimated risk"
+      },
+      {
+        "feature": "BMI",
+        "actual_value": 35.13,
+        "shap_contribution": -0.093,
+        "directional_impact": "contributed toward lower model-estimated risk"
+      },
+      {
+        "feature": "glucose",
+        "actual_value": 64.0,
+        "shap_contribution": -0.1581,
+        "directional_impact": "contributed toward lower model-estimated risk"
+      },
+      {
+        "feature": "currentSmoker",
+        "actual_value": 0.0,
+        "shap_contribution": -0.1535,
+        "directional_impact": "contributed toward lower model-estimated risk"
+      }
+    ]
+  },
+  "exploratory_subgroups": {
+    "Sex_Female": {
+      "n_samples": 482,
+      "positive_prevalence_pct": 10.79,
+      "roc_auc": 0.6818,
+      "sensitivity": 0.6923,
+      "specificity": 0.6023,
+      "f1": 0.278
+    },
+    "Sex_Male": {
+      "n_samples": 366,
+      "positive_prevalence_pct": 21.04,
+      "roc_auc": 0.6739,
+      "sensitivity": 0.7922,
+      "specificity": 0.4014,
+      "f1": 0.3923
+    },
+    "Age_32-44": {
+      "n_samples": 299,
+      "positive_prevalence_pct": 9.03,
+      "roc_auc": 0.6609,
+      "sensitivity": 0.1852,
+      "specificity": 0.9265,
+      "f1": 0.1923
+    },
+    "Age_45-54": {
+      "n_samples": 291,
+      "positive_prevalence_pct": 14.09,
+      "roc_auc": 0.6861,
+      "sensitivity": 0.7805,
+      "specificity": 0.468,
+      "f1": 0.3107
+    },
+    "Age_55-64": {
+      "n_samples": 221,
+      "positive_prevalence_pct": 23.53,
+      "roc_auc": 0.6433,
+      "sensitivity": 0.9808,
+      "specificity": 0.0355,
+      "f1": 0.3835
+    },
+    "Age_65-70": {
+      "n_samples": 37,
+      "positive_prevalence_pct": 24.32,
+      "roc_auc": 0.5913,
+      "sensitivity": 1.0,
+      "specificity": 0.0,
+      "f1": 0.3913
+    }
+  },
+  "environment": {
+    "python": "3.14.4",
+    "sklearn": "1.9.0",
+    "lightgbm": "4.7.0",
+    "xgboost": "3.4.1",
+    "shap": "0.52.0",
+    "joblib": "1.6.0",
+    "pandas": "3.0.3",
+    "numpy": "2.5.1"
+  },
+  "limitations": [
+    "Derived from historical Caucasian community cohort in Framingham, MA; requires local validation before clinical use in diverse populations.",
+    "Estimates statistical probability of 10-year incident coronary heart disease event; does not constitute a diagnostic confirmation.",
+    "Development threshold selected for non-diagnostic screening decision support (sensitivity >= 80%); not an established diagnostic cutoff.",
+    "Does not replace comprehensive clinical evaluation or formal cardiology referral."
+  ]
+}

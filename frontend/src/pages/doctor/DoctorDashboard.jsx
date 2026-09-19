@@ -1,9 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, Link } from 'react-router-dom';
-import { Users, AlertTriangle, CheckCircle2, Pill, Search, Plus, Eye, Calendar, FileText } from 'lucide-react';
+import {
+  Users,
+  AlertTriangle,
+  CheckCircle2,
+  Pill,
+  Search,
+  Plus,
+  Eye,
+  Calendar,
+  FileText,
+  QrCode,
+  Clock,
+  XCircle,
+  Check,
+  X,
+  ShieldCheck,
+} from 'lucide-react';
 import { StatCard } from '../../components/common/StatCard';
 import { PrescribeModal } from '../../components/medicine/PrescribeModal';
 import { patientService } from '../../services/patientService';
+import { relationshipService } from '../../services/relationshipService';
 import { useDebounce } from '../../hooks/useDebounce';
 import { useToast } from '../../hooks/useToast';
 
@@ -17,6 +34,12 @@ export const DoctorDashboard = () => {
   const debouncedSearch = useDebounce(search, 300);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+
+  // Relationship & Pending Requests state
+  const [pendingRequests, setPendingRequests] = useState([]);
+  const [claimModalOpen, setClaimModalOpen] = useState(false);
+  const [claimCode, setClaimCode] = useState('');
+  const [claiming, setClaiming] = useState(false);
 
   // Prescribe Modal state
   const [prescribeModalOpen, setPrescribeModalOpen] = useState(false);
@@ -37,9 +60,65 @@ export const DoctorDashboard = () => {
     }
   };
 
+  const fetchPendingRequests = async () => {
+    try {
+      const res = await relationshipService.getPendingRequests();
+      const data = res?.data || res;
+      setPendingRequests(data.requests || []);
+    } catch (e) {
+      console.warn('Failed to load pending requests:', e);
+    }
+  };
+
   useEffect(() => {
     fetchPatients();
+    fetchPendingRequests();
   }, [debouncedSearch, page]);
+
+  const handleAcceptRequest = async (id) => {
+    try {
+      await relationshipService.acceptRelationship(id);
+      addToast('Consultation request accepted. Patient added to your directory!', 'success');
+      fetchPendingRequests();
+      fetchPatients();
+    } catch (err) {
+      addToast(err?.message || 'Failed to accept request.', 'error');
+    }
+  };
+
+  const handleRejectRequest = async (id) => {
+    try {
+      await relationshipService.rejectRelationship(id);
+      addToast('Consultation request declined.', 'info');
+      fetchPendingRequests();
+    } catch (err) {
+      addToast(err?.message || 'Failed to decline request.', 'error');
+    }
+  };
+
+  const handleClaimCode = async (e) => {
+    e.preventDefault();
+    if (!claimCode || claimCode.trim().length < 6) {
+      addToast('Please enter the 6-character patient consultation code.', 'warning');
+      return;
+    }
+
+    setClaiming(true);
+    try {
+      await relationshipService.claimDoctorCode({
+        code: claimCode.trim().toUpperCase(),
+      });
+      addToast('Consultation code verified! Awaiting patient confirmation in clinic.', 'success');
+      setClaimCode('');
+      setClaimModalOpen(false);
+      fetchPendingRequests();
+      fetchPatients();
+    } catch (err) {
+      addToast(err?.message || 'Invalid or expired consultation code.', 'error');
+    } finally {
+      setClaiming(false);
+    }
+  };
 
   useEffect(() => {
     const path = location.pathname;
@@ -65,6 +144,62 @@ export const DoctorDashboard = () => {
         <StatCard title="Consultations" value="8" icon={Users} color="amber" description="Scheduled today" />
       </div>
 
+      {/* Pending Consultation Requests */}
+      {pendingRequests.length > 0 && (
+        <div className="glass-card rounded-3xl border border-amber-500/30 bg-amber-500/5 p-6 space-y-4">
+          <div className="flex items-center space-x-2.5 text-amber-400">
+            <Clock className="w-5 h-5" />
+            <h3 className="text-sm font-black uppercase tracking-wider">
+              Pending Consultation Requests ({pendingRequests.length})
+            </h3>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {pendingRequests.map((req) => {
+              const p = req.patient || {};
+              const user = p.user || {};
+              return (
+                <div
+                  key={req._id}
+                  className="p-4 rounded-2xl bg-slate-950/80 border border-slate-800 flex items-center justify-between"
+                >
+                  <div className="space-y-1">
+                    <div className="flex items-center space-x-2">
+                      <span className="font-bold text-white text-xs">{user.name || 'Patient'}</span>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-900 text-slate-400 border border-slate-800">
+                        {user.village || 'Green Valley'}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-400">
+                      Requested as:{' '}
+                      <span className="text-brand-300 font-semibold">{req.relationshipLabel || 'Consulting Doctor'}</span>
+                      {req.isPrimaryDoctor ? ' (Primary)' : ''}
+                    </p>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <button
+                      type="button"
+                      onClick={() => handleAcceptRequest(req._id)}
+                      className="px-3 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold transition-all shadow-sm flex items-center space-x-1"
+                    >
+                      <Check className="w-3.5 h-3.5" />
+                      <span>Accept</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleRejectRequest(req._id)}
+                      className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white text-xs font-bold transition-all"
+                    >
+                      Decline
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Patient Directory Table */}
       <div id="doctor-patient-directory" className="glass-card rounded-3xl border border-slate-800 p-6 space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -73,7 +208,14 @@ export const DoctorDashboard = () => {
             <p className="text-xs text-slate-400">Search and manage authorized clinical patient records</p>
           </div>
 
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-2.5">
+            <button
+              onClick={() => setClaimModalOpen(true)}
+              className="px-3.5 py-2 rounded-xl text-xs font-bold text-white bg-slate-800 hover:bg-slate-700 border border-slate-700 flex items-center space-x-1.5 transition-colors"
+            >
+              <QrCode className="w-4 h-4 text-cyan-400" />
+              <span>Enter Patient Code</span>
+            </button>
             <button
               onClick={() => setPrescribeModalOpen(true)}
               className="px-3.5 py-2 rounded-xl text-xs font-bold text-white bg-brand-500 hover:bg-brand-600 shadow-lg shadow-brand-500/20 flex items-center space-x-1.5"
@@ -216,6 +358,72 @@ export const DoctorDashboard = () => {
         patientId={selectedPatientId}
         onMedicineAdded={fetchPatients}
       />
+
+      {/* Claim Consultation Code Modal */}
+      {claimModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+          <div className="glass-card w-full max-w-md rounded-3xl border border-slate-800 p-6 space-y-5 relative shadow-2xl animate-in fade-in zoom-in duration-200">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+              <div className="flex items-center space-x-2.5">
+                <div className="w-10 h-10 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400">
+                  <QrCode className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-black text-white">Enter Consultation Code</h3>
+                  <p className="text-xs text-slate-400">Connect with an in-clinic patient</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setClaimModalOpen(false)}
+                className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleClaimCode} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-300 mb-1">
+                  6-Digit Consultation Code *
+                </label>
+                <input
+                  type="text"
+                  maxLength={6}
+                  required
+                  placeholder="e.g. 7A9B3F"
+                  value={claimCode}
+                  onChange={(e) => setClaimCode(e.target.value.toUpperCase())}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-center text-2xl font-mono tracking-widest text-brand-400 placeholder-slate-600 focus:border-brand-500 focus:outline-none"
+                />
+              </div>
+
+              <div className="p-3 rounded-xl bg-slate-900/60 border border-slate-800 flex items-start space-x-2 text-[11px] text-slate-400">
+                <ShieldCheck className="w-4 h-4 text-cyan-400 shrink-0 mt-0.5" />
+                <span>
+                  The patient generates this temporary code from their dashboard. Claiming the code registers a consultation request awaiting confirmation.
+                </span>
+              </div>
+
+              <div className="pt-2 flex justify-end space-x-2.5">
+                <button
+                  type="button"
+                  onClick={() => setClaimModalOpen(false)}
+                  className="px-4 py-2 rounded-xl text-xs font-bold text-slate-400 hover:text-white bg-slate-900 border border-slate-800"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={claiming || claimCode.trim().length < 6}
+                  className="px-5 py-2 rounded-xl text-xs font-bold text-white bg-brand-500 hover:bg-brand-600 disabled:opacity-50 transition-all flex items-center space-x-1.5 shadow-lg shadow-brand-500/20"
+                >
+                  {claiming ? 'Verifying...' : 'Verify & Connect'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

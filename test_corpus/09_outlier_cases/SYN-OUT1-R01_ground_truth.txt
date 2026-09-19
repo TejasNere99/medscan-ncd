@@ -1,0 +1,36 @@
+========================================================================
+MEDTEST DIAGNOSTIC LABORATORIES
+SYNTHETIC TEST DOCUMENT — NOT A REAL MEDICAL RECORD — FOR TESTING ONLY
+========================================================================
+Report ID: SYN-OUT1-R01
+Report Date: 2025-08-25
+Patient Name: Test Patient OUT1
+Patient ID: SYN-OUT1
+Age: 58 Years
+Gender: Male
+DOB: 1967-08-20
+Referring Clinician: Dr. Marcus Thorne, MD (Critical Care)
+------------------------------------------------------------------------
+
+[EMERGENCY DEPARTMENT CRITICAL VITALS]
+Resting Blood Pressure: 215/125 mmHg
+Body Mass Index (BMI): 52.4 kg/m²
+Heart Rate: 104 BPM
+Height: 172 cm
+Weight: 155.0 kg
+
+[STAT EMERGENCY CHEMISTRIES & LIPIDS]
+Investigation                  | Result     | Unit       | Ref Interval         | Flag
+------------------------------------------------------------------------
+Total Cholesterol              | 410.0      | mg/dL      | 125.0 - 200.0        | CRITICAL HIGH
+HDL Cholesterol                | 22.0       | mg/dL      | > 40.0               | CRITICAL LOW
+Serum Creatinine               | 4.8        | mg/dL      | 0.70 - 1.20          | CRITICAL HIGH
+Fasting Blood Glucose          | 340.0      | mg/dL      | 70.0 - 99.0          | CRITICAL HIGH
+HbA1c                          | 12.8       | %          | 4.0 - 5.6            | CRITICAL HIGH
+
+[CRITICAL VALUE ALERT & MEDICAL ATTESTATION]
+CRITICAL ACTION VALUE: Panic values telephoned to and acknowledged by Dr. M. Thorne at 10:15 AM. Laboratory values verified via secondary dilution assay. Tests system range-checking and outlier boundary safety without crash.
+
+========================================================================
+END OF SYNTHETIC REPORT — NOT A REAL MEDICAL RECORD
+========================================================================

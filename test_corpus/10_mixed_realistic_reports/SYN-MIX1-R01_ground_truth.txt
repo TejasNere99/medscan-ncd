@@ -1,0 +1,48 @@
+========================================================================
+MEDTEST DIAGNOSTIC LABORATORIES
+SYNTHETIC TEST DOCUMENT — NOT A REAL MEDICAL RECORD — FOR TESTING ONLY
+========================================================================
+Report ID: SYN-MIX1-R01
+Report Date: 2025-07-05
+Patient Name: Test Patient MIX1
+Patient ID: SYN-MIX1
+Age: 53 Years
+Gender: Female
+DOB: 1972-03-24
+Referring Clinician: Dr. Karen Evans, MD
+------------------------------------------------------------------------
+
+[PAGE 1: PHYSICAL EXAMINATION & VITALS]
+Resting Blood Pressure: 134/86 mmHg
+Body Mass Index (BMI): 26.8 kg/m²
+Heart Rate: 74 BPM
+Height: 165 cm
+Weight: 73.0 kg
+Temperature: 98.4 °F
+
+[PAGE 1: COMPLETE BLOOD COUNT (CBC)]
+Investigation                  | Result     | Unit       | Ref Interval         | Flag
+------------------------------------------------------------------------
+Hemoglobin (Hb)                | 13.4       | g/dL       | 12.0 - 15.5          | NORMAL
+Total WBC count                | 6200.0     | cumm       | 4000 - 11000         | NORMAL
+Platelet Count                 | 265000.0   | cumm       | 150000 - 450000      | NORMAL
+
+--- PAGE BREAK ---
+
+
+[PAGE 2: COMPREHENSIVE LIPID PROFILE & RENAL FUNCTION]
+Investigation                  | Result     | Unit       | Ref Interval         | Flag
+------------------------------------------------------------------------
+Total Cholesterol              | 210.0      | mg/dL      | 125.0 - 200.0        | HIGH
+HDL Cholesterol                | 48.0       | mg/dL      | > 50.0               | LOW
+Triglycerides                  | 165.0      | mg/dL      | < 150.0              | HIGH
+LDL Cholesterol                | 129.0      | mg/dL      | < 100.0              | HIGH
+Serum Creatinine               | 0.92       | mg/dL      | 0.50 - 1.10          | NORMAL
+Blood Urea Nitrogen (BUN)      | 15.0       | mg/dL      | 7.0 - 20.0           | NORMAL
+
+[PAGE 2: CLINICAL IMPRESSION & SUMMARY]
+Overall metabolic evaluation demonstrates mild dyslipidemia with marginal overweight and Stage 1 systolic BP elevation. Renal parameters and complete blood count are unremarkable. Recommended for dietary modification and 6-month cardiovascular risk reassessment.
+
+========================================================================
+END OF SYNTHETIC REPORT — NOT A REAL MEDICAL RECORD
+========================================================================

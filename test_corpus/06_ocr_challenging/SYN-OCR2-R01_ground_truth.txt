@@ -1,0 +1,29 @@
+========================================================================
+MEDTEST DIAGNOSTIC LABORATORIES
+SYNTHETIC TEST DOCUMENT — NOT A REAL MEDICAL RECORD — FOR TESTING ONLY
+========================================================================
+Report ID: SYN-OCR2-R01
+Report Date: 2025-07-14
+Patient Name: Test Patient OCR2
+Patient ID: SYN-OCR2
+Age: 47 Years
+Gender: Female
+DOB: 1978-01-25
+Referring Clinician: Dr. Brenda Vance, MD
+------------------------------------------------------------------------
+
+[PHYSICAL ASSESSMENT]
+Blood Pressure: 138/86 mmHg
+Body Mass Index: 28.4 kg/m2
+Heart Rate: 78 BPM
+
+[COMPREHENSIVE BIOCHEMISTRY PANEL]
+Investigation                  | Result     | Unit       | Ref Interval         | Flag
+------------------------------------------------------------------------
+Cholesterol, Total             | 214.0      | mg/dL      | 125.0 - 200.0        | HIGH
+HDL Cholesterol                | 43.0       | mg/dL      | > 50.0               | LOW
+Serum Creatinine               | 1.04       | mg/dL      | 0.50 - 1.10          | NORMAL
+
+========================================================================
+END OF SYNTHETIC REPORT — NOT A REAL MEDICAL RECORD
+========================================================================

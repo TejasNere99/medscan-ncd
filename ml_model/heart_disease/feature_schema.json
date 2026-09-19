@@ -1,0 +1,138 @@
+{
+  "model": "heart_disease_framingham_10yr",
+  "version": "1.0.0",
+  "task": "non_diagnostic_10yr_chd_risk_assessment",
+  "target": {
+    "name": "TenYearCHD",
+    "dtype": "int",
+    "type": "binary",
+    "meaning": "10-year incident coronary heart disease event (angina pectoris, recognized or unrecognized myocardial infarction, coronary insufficiency, or coronary death)",
+    "positive_class": 1,
+    "negative_class": 0,
+    "prevalence_in_training_cohort": 0.1519
+  },
+  "input_feature_count": 8,
+  "required_features": [
+    "age",
+    "sex",
+    "totChol",
+    "sysBP",
+    "diaBP"
+  ],
+  "optional_features": [
+    "BMI",
+    "glucose",
+    "currentSmoker",
+    "BPMeds",
+    "diabetes"
+  ],
+  "excluded_features": [
+    "TenYearCHD",
+    "education",
+    "cigsPerDay",
+    "prevalentStroke",
+    "prevalentHyp",
+    "heartRate"
+  ],
+  "features": [
+    {
+      "name": "age",
+      "dtype": "int",
+      "unit": "years",
+      "domain": "demographic",
+      "required": true,
+      "valid_range": [18, 100],
+      "source": "patient_profile / report_header",
+      "description": "Patient age in completed years at screening"
+    },
+    {
+      "name": "sex",
+      "dtype": "int",
+      "unit": "binary_code",
+      "domain": "demographic",
+      "required": true,
+      "valid_values": [0, 1],
+      "source": "patient_profile / report_header",
+      "description": "Biological sex: 0 = Female, 1 = Male"
+    },
+    {
+      "name": "totChol",
+      "dtype": "float",
+      "unit": "mg/dL",
+      "domain": "laboratory",
+      "required": true,
+      "valid_range": [50.0, 600.0],
+      "source": "lipid_profile_ocr",
+      "description": "Total serum cholesterol concentration"
+    },
+    {
+      "name": "sysBP",
+      "dtype": "float",
+      "unit": "mmHg",
+      "domain": "physical_vitals",
+      "required": true,
+      "valid_range": [60.0, 260.0],
+      "source": "vitals_ocr / abpm_report / profile",
+      "description": "Resting systolic blood pressure"
+    },
+    {
+      "name": "diaBP",
+      "dtype": "float",
+      "unit": "mmHg",
+      "domain": "physical_vitals",
+      "required": true,
+      "valid_range": [30.0, 150.0],
+      "source": "vitals_ocr / abpm_report / profile",
+      "description": "Resting diastolic blood pressure"
+    },
+    {
+      "name": "BMI",
+      "dtype": "float",
+      "unit": "kg/m^2",
+      "domain": "physical_vitals",
+      "required": false,
+      "valid_range": [10.0, 90.0],
+      "source": "vitals_ocr / profile",
+      "description": "Body Mass Index"
+    },
+    {
+      "name": "glucose",
+      "dtype": "float",
+      "unit": "mg/dL",
+      "domain": "laboratory",
+      "required": false,
+      "valid_range": [40.0, 500.0],
+      "source": "glucose_report_ocr / metabolic_panel",
+      "description": "Fasting plasma blood glucose concentration"
+    },
+    {
+      "name": "currentSmoker",
+      "dtype": "int",
+      "unit": "binary_code",
+      "domain": "behavioral",
+      "required": false,
+      "valid_values": [0, 1],
+      "default_if_unspecified": 0,
+      "source": "patient_profile_toggle",
+      "description": "Current cigarette smoking status (0 = Non-smoker, 1 = Smoker)"
+    }
+  ],
+  "feature_sources": {
+    "age": "Patient.age or Report.confirmedData.patientContext.age",
+    "sex": "Patient.gender or Report.confirmedData.patientContext.gender",
+    "totChol": "Report.confirmedData.measurements.totalCholesterol or Patient.totalCholesterol",
+    "sysBP": "Report.confirmedData.measurements.systolicBP or Patient.systolicBP",
+    "diaBP": "Report.confirmedData.measurements.diastolicBP or Patient.diastolicBP",
+    "BMI": "Report.confirmedData.measurements.bmi or Patient.bmi",
+    "glucose": "Report.confirmedData.measurements.fastingGlucose or Patient.fastingSugar",
+    "currentSmoker": "Patient.isCurrentSmoker (defaults to 0 if unstated)"
+  },
+  "minimum_input_policy": {
+    "demographic_rule": "Both age and sex are strictly mandatory.",
+    "physical_rule": "Systolic and diastolic blood pressure are strictly mandatory.",
+    "laboratory_rule": "Total cholesterol from a confirmed report is strictly mandatory.",
+    "behavioral_rule": "Smoking status is optional; defaults to 0 (non-smoker) if unstated.",
+    "failure_action": "Return status 'INSUFFICIENT_DATA' with canCalculate=false. Zero value fabrication."
+  },
+  "prediction_time_available": true
+}

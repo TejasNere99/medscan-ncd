@@ -1,0 +1,44 @@
+========================================================================
+MEDTEST DIAGNOSTIC LABORATORIES
+SYNTHETIC TEST DOCUMENT — NOT A REAL MEDICAL RECORD — FOR TESTING ONLY
+========================================================================
+Report ID: SYN-D001-R01
+Report Date: 2025-06-15
+Patient Name: Test Patient D001
+Patient ID: SYN-D001
+Age: 62 Years
+Gender: Male
+DOB: 1963-05-12
+Referring Clinician: Dr. Marcus Thorne, MD (Internal Medicine)
+------------------------------------------------------------------------
+
+[CLINICAL EXAMINATION & RESTING VITAL SIGNS]
+Resting Blood Pressure: 146/92 mmHg
+Body Mass Index (BMI): 32.4 kg/m²
+Pulse Rate: 78 BPM
+Height: 175 cm
+Weight: 99.2 kg
+Respiratory Rate: 16 breaths/min
+
+[COMPREHENSIVE LIPID PANEL & RENAL FUNCTION TESTS]
+Investigation                  | Result     | Unit       | Ref Interval         | Flag
+------------------------------------------------------------------------
+Total Cholesterol              | 242.0      | mg/dL      | 125.0 - 200.0        | HIGH
+HDL Cholesterol                | 36.0       | mg/dL      | > 40.0 (Male)        | LOW
+Triglycerides                  | 235.0      | mg/dL      | < 150.0              | HIGH
+LDL Cholesterol (Calculated)   | 159.0      | mg/dL      | < 100.0              | HIGH
+Serum Creatinine               | 1.15       | mg/dL      | 0.70 - 1.20          | NORMAL
+Blood Urea Nitrogen (BUN)      | 19.0       | mg/dL      | 7.0 - 20.0           | NORMAL
+
+[GLYCEMIC MARKERS (CLINICAL CONTEXT ONLY — NON-PREDICTOR)]
+Investigation                  | Result     | Unit       | Ref Interval         | Flag
+------------------------------------------------------------------------
+Fasting Blood Glucose          | 154.0      | mg/dL      | 70.0 - 99.0          | HIGH
+Glycated Hemoglobin (HbA1c)    | 7.6        | %          | 4.0 - 5.6            | HIGH
+
+[PATHOLOGIST CLINICAL REMARKS]
+Patient presents with atherogenic dyslipidemia (elevated total cholesterol, elevated triglycerides, depressed HDL) accompanied by Class I obesity and Stage 2 hypertension. Fasting glucose and HbA1c are elevated. Clinical evaluation and cardiometabolic monitoring are recommended.
+
+========================================================================
+END OF SYNTHETIC REPORT — NOT A REAL MEDICAL RECORD
+========================================================================

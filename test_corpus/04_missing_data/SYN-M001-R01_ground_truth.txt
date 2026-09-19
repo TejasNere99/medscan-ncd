@@ -1,0 +1,33 @@
+========================================================================
+MEDTEST DIAGNOSTIC LABORATORIES
+SYNTHETIC TEST DOCUMENT — NOT A REAL MEDICAL RECORD — FOR TESTING ONLY
+========================================================================
+Report ID: SYN-M001-R01
+Report Date: 2025-05-20
+Patient Name: Test Patient MIS1
+Patient ID: SYN-MIS1
+Age: 42 Years
+Gender: Male
+DOB: 1983-04-10
+Referring Clinician: Dr. Marcus Thorne, MD
+------------------------------------------------------------------------
+
+[COMPLETE BLOOD COUNT (CBC / HEMOGRAM)]
+Investigation                  | Result     | Unit       | Ref Interval         | Flag
+------------------------------------------------------------------------
+Hemoglobin (Hb)                | 14.8       | g/dL       | 13.0 - 17.0          | NORMAL
+Total RBC count                | 4.9        | mill/cumm  | 4.5 - 5.5            | NORMAL
+Total WBC count                | 6800.0     | cumm       | 4000 - 11000         | NORMAL
+Platelet Count                 | 240000.0   | cumm       | 150000 - 450000      | NORMAL
+Packed Cell Volume (PCV)       | 44.0       | %          | 40.0 - 50.0          | NORMAL
+Mean Corpuscular Volume (MCV)  | 88.0       | fL         | 80.0 - 100.0         | NORMAL
+MCH                            | 29.5       | pg         | 27.0 - 32.0          | NORMAL
+MCHC                           | 33.5       | g/dL       | 32.0 - 36.0          | NORMAL
+RDW                            | 12.8       | %          | 11.5 - 14.5          | NORMAL
+
+[LABORATORY REMARKS]
+Normal Complete Blood Count. No hematological abnormalities detected. Note: This report contains hematology parameters exclusively; routine physical vitals and metabolic chemistries are not included.
+
+========================================================================
+END OF SYNTHETIC REPORT — NOT A REAL MEDICAL RECORD
+========================================================================

@@ -1,0 +1,31 @@
+========================================================================
+MEDTEST DIAGNOSTIC LABORATORIES
+SYNTHETIC TEST DOCUMENT — NOT A REAL MEDICAL RECORD — FOR TESTING ONLY
+========================================================================
+Report ID: SYN-D005-R01
+Report Date: 2025-09-05
+Patient Name: Test Patient D005
+Patient ID: SYN-D005
+Age: 49 Years
+Gender: Male
+DOB: 1976-07-28
+Referring Clinician: Dr. Alan Price, MD
+------------------------------------------------------------------------
+
+[RESTING VITALS]
+Resting Blood Pressure: 136/86 mmHg
+Body Mass Index (BMI): 28.6 kg/m²
+Pulse Rate: 76 BPM
+
+[LABORATORY INVESTIGATIONS]
+Investigation                  | Result     | Unit       | Ref Interval         | Flag
+------------------------------------------------------------------------
+Total Cholesterol              | 218.0      | mg/dL      | 125.0 - 200.0        | HIGH
+HDL Cholesterol                | 40.0       | mg/dL      | > 40.0               | NORMAL
+Serum Creatinine               | 1.08       | mg/dL      | 0.70 - 1.20          | NORMAL
+Fasting Blood Sugar            | 124.0      | mg/dL      | 70.0 - 99.0          | HIGH
+HbA1c                          | 6.4        | %          | 4.0 - 5.6            | HIGH
+
+========================================================================
+END OF SYNTHETIC REPORT — NOT A REAL MEDICAL RECORD
+========================================================================

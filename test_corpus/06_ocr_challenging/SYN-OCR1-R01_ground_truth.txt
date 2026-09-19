@@ -1,0 +1,29 @@
+========================================================================
+MEDTEST DIAGNOSTIC LABORATORIES
+SYNTHETIC TEST DOCUMENT — NOT A REAL MEDICAL RECORD — FOR TESTING ONLY
+========================================================================
+Report ID: SYN-OCR1-R01
+Report Date: 2025-06-18
+Patient Name: Test Patient OCR1
+Patient ID: SYN-OCR1
+Age: 52 Years
+Gender: Male
+DOB: 1973-04-12
+Referring Clinician: Dr. Marcus Thorne, MD
+------------------------------------------------------------------------
+
+[VITALS & ANTHROPOMETRY (ABBREVIATED FORM)]
+Systolic BP (SBP): 144 mmHg
+Diastolic BP (DBP): 88 mmHg
+BMI: 30.8 kg/m2
+
+[COMPACT DIAGNOSTIC GRID]
+Investigation                  | Result     | Unit       | Ref Interval         | Flag
+------------------------------------------------------------------------
+Cholesterol (Total)            | 232.0      | mg/dL      | 125 - 200            | HIGH
+HDL-Cholesterol                | 39.0       | mg/dL      | > 40                 | LOW
+Serum Creatinine (Creat.)      | 1.18       | mg/dL      | 0.7 - 1.2            | NORMAL
+
+========================================================================
+END OF SYNTHETIC REPORT — NOT A REAL MEDICAL RECORD
+========================================================================

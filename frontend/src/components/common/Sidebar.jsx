@@ -107,11 +107,11 @@ export const Sidebar = ({ mobileOpen, onCloseMobile }) => {
 
           {/* Footer Info Box */}
           <div className="p-3.5 rounded-xl bg-slate-900/90 border border-slate-800">
-            <div className="flex items-center space-x-2 text-xs font-bold text-emerald-400 mb-1">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span>IoT Telemetry Online</span>
+            <div className="flex items-center space-x-2 text-xs font-bold text-cyan-400 mb-1">
+              <Activity className="w-3.5 h-3.5 text-cyan-400" />
+              <span>Health Intelligence</span>
             </div>
-            <p className="text-[11px] text-slate-500">ESP32 Sync Engine v1.2.4</p>
+            <p className="text-[11px] text-slate-500">Preventive Decision Support</p>
           </div>
         </div>
       </aside>

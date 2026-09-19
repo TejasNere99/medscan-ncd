@@ -74,7 +74,7 @@ export const Login = () => {
         </h2>
 
         <p className="text-xs text-slate-400 mt-1">
-          Access your personalized role dashboard, IoT logs, and AI predictions.
+          Access your personalized role dashboard, medical reports, and AI risk predictions.
         </p>
       </div>
 

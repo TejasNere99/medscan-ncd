@@ -1,0 +1,31 @@
+========================================================================
+MEDTEST DIAGNOSTIC LABORATORIES
+SYNTHETIC TEST DOCUMENT — NOT A REAL MEDICAL RECORD — FOR TESTING ONLY
+========================================================================
+Report ID: SYN-M004-R01
+Report Date: 2025-08-19
+Patient Name: Test Patient MIS4
+Patient ID: SYN-MIS4
+Age: 55 Years
+Gender: Female
+DOB: 1970-03-12
+Referring Clinician: Dr. Brenda Vance, MD
+------------------------------------------------------------------------
+
+[ANTHROPOMETRIC MEASUREMENTS]
+Body Mass Index (BMI): 31.0 kg/m²
+Height: 162 cm
+Weight: 81.4 kg
+
+[LIPID CHEMISTRIES]
+Investigation                  | Result     | Unit       | Ref Interval         | Flag
+------------------------------------------------------------------------
+Total Cholesterol              | 220.0      | mg/dL      | 125.0 - 200.0        | HIGH
+HDL Cholesterol                | 38.0       | mg/dL      | > 50.0               | LOW
+
+[CLINICAL CONTEXT]
+Patient completed nutritional assessment. Blood pressure was deferred for clinic visit. Satisfies Demographic, Physical (BMI), and Laboratory (TC/HDL) minimum domains.
+
+========================================================================
+END OF SYNTHETIC REPORT — NOT A REAL MEDICAL RECORD
+========================================================================

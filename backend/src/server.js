@@ -7,9 +7,11 @@ import path from 'path';
 import swaggerUi from 'swagger-ui-express';
 
 import { connectDB } from './config/db.js';
+import mongoose from 'mongoose';
 import { swaggerDocument } from './config/swagger.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { apiLimiter } from './middleware/rateLimit.js';
+import { checkDiabetesServiceHealth } from './services/diabetesPredictionService.js';
 
 import authRoutes from './routes/authRoutes.js';
 import userRoutes from './routes/userRoutes.js';
@@ -22,6 +24,8 @@ import analyticsRoutes from './routes/analyticsRoutes.js';
 import appointmentRoutes from './routes/appointmentRoutes.js';
 import iotRoutes from './routes/iotRoutes.js';
 import settingRoutes from './routes/settingRoutes.js';
+import relationshipRoutes from './routes/relationshipRoutes.js';
+import invitationRoutes from './routes/invitationRoutes.js';
 
 dotenv.config();
 
@@ -53,12 +57,20 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use('/api/', apiLimiter);
 
 // Health Check Endpoint
-app.get('/api/health', (req, res) => {
+app.get('/api/health', async (req, res) => {
+  const diabetesService = await checkDiabetesServiceHealth();
   res.status(200).json({
     status: 'OK',
     uptime: process.uptime(),
     timestamp: new Date().toISOString(),
-    service: 'AI Smart Healthcare Backend API',
+    database: {
+      connected: mongoose.connection.readyState === 1,
+      readyState: mongoose.connection.readyState,
+      host: mongoose.connection.host || null,
+      name: mongoose.connection.name || null,
+    },
+    diabetesMLService: diabetesService,
+    service: 'MedScan-NCD Backend API',
   });
 });
 
@@ -74,12 +86,14 @@ app.use('/api/analytics', analyticsRoutes);
 app.use('/api/appointments', appointmentRoutes);
 app.use('/api/iot', iotRoutes);
 app.use('/api/settings', settingRoutes);
+app.use('/api/relationships', relationshipRoutes);
+app.use('/api/invitations', invitationRoutes);
 
 // Global Centralized Error Handler
 app.use(errorHandler);
 
 // Start Express Server only when executed directly (not when required in Jest tests)
-if (process.env.NODE_ENV !== 'test') {
+if (process.env.NODE_ENV !== 'test' && !process.env.JEST_WORKER_ID) {
   app.listen(PORT, () => {
     console.log(`\n======================================================`);
     console.log(`   AI SMART HEALTHCARE BACKEND SERVER RUNNING`);

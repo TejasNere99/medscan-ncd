@@ -1,0 +1,1317 @@
+{
+  "SYN-D001-R01": {
+    "reportId": "SYN-D001-R01",
+    "patientId": "SYN-D001",
+    "reportType": "metabolic_panel",
+    "clinicalScenario": "elevated_diabetes_risk",
+    "expectedExtraction": {
+      "age": 62,
+      "sex": 1,
+      "bmi": 32.4,
+      "systolicBP": 146.0,
+      "diastolicBP": 92.0,
+      "totalCholesterol": 242.0,
+      "hdl": 36.0,
+      "creatinine": 1.15,
+      "fastingGlucose": 154.0,
+      "hba1c": 7.6,
+      "triglycerides": 235.0
+    },
+    "modelRelevantFeatures": {
+      "age": 62,
+      "sex": 1,
+      "bmi": 32.4,
+      "systolic_bp": 146.0,
+      "diastolic_bp": 92.0,
+      "total_cholesterol": 242.0,
+      "hdl": 36.0,
+      "creatinine": 1.15
+    },
+    "missingFields": [],
+    "normalization": [],
+    "expectedValidation": "VALID",
+    "expectedConflict": false,
+    "conflictDetails": null,
+    "actualModelOutput": null
+  },
+  "SYN-D002-R01": {
+    "reportId": "SYN-D002-R01",
+    "patientId": "SYN-D002",
+    "reportType": "general_lab_report",
+    "clinicalScenario": "elevated_diabetes_risk",
+    "expectedExtraction": {
+      "age": 54,
+      "sex": 0,
+      "bmi": 29.8,
+      "systolicBP": 152.0,
+      "diastolicBP": 94.0,
+      "totalCholesterol": 228.0,
+      "hdl": 41.0,
+      "creatinine": 0.95,
+      "fastingGlucose": 138.0,
+      "hba1c": 6.8
+    },
+    "modelRelevantFeatures": {
+      "age": 54,
+      "sex": 0,
+      "bmi": 29.8,
+      "systolic_bp": 152.0,
+      "diastolic_bp": 94.0,
+      "total_cholesterol": 228.0,
+      "hdl": 41.0,
+      "creatinine": 0.95
+    },
+    "missingFields": [],
+    "normalization": [],
+    "expectedValidation": "VALID",
+    "expectedConflict": false,
+    "conflictDetails": null,
+    "actualModelOutput": null
+  },
+  "SYN-D003-R01": {
+    "reportId": "SYN-D003-R01",
+    "patientId": "SYN-D003",
+    "reportType": "metabolic_panel",
+    "clinicalScenario": "elevated_diabetes_risk",
+    "expectedExtraction": {
+      "age": 43,
+      "sex": 1,
+      "bmi": 37.6,
+      "systolicBP": 142.0,
+      "diastolicBP": 88.0,
+      "totalCholesterol": 258.0,
+      "hdl": 32.0,
+      "creatinine": 1.28,
+      "fastingGlucose": 162.0,
+      "hba1c": 8.1
+    },
+    "modelRelevantFeatures": {
+      "age": 43,
+      "sex": 1,
+      "bmi": 37.6,
+      "systolic_bp": 142.0,
+      "diastolic_bp": 88.0,
+      "total_cholesterol": 258.0,
+      "hdl": 32.0,
+      "creatinine": 1.28
+    },
+    "missingFields": [],
+    "normalization": [],
+    "expectedValidation": "VALID",
+    "expectedConflict": false,
+    "conflictDetails": null,
+    "actualModelOutput": null
+  },
+  "SYN-D004-R01": {
+    "reportId": "SYN-D004-R01",
+    "patientId": "SYN-D004",
+    "reportType": "renal_function",
+    "clinicalScenario": "elevated_diabetes_risk",
+    "expectedExtraction": {
+      "age": 71,
+      "sex": 0,
+      "bmi": 30.5,
+      "systolicBP": 158.0,
+      "diastolicBP": 86.0,
+      "totalCholesterol": 215.0,
+      "hdl": 42.0,
+      "creatinine": 1.34,
+      "fastingGlucose": 144.0,
+      "hba1c": 7.2
+    },
+    "modelRelevantFeatures": {
+      "age": 71,
+      "sex": 0,
+      "bmi": 30.5,
+      "systolic_bp": 158.0,
+      "diastolic_bp": 86.0,
+      "total_cholesterol": 215.0,
+      "hdl": 42.0,
+      "creatinine": 1.34
+    },
+    "missingFields": [],
+    "normalization": [],
+    "expectedValidation": "VALID",
+    "expectedConflict": false,
+    "conflictDetails": null,
+    "actualModelOutput": null
+  },
+  "SYN-D005-R01": {
+    "reportId": "SYN-D005-R01",
+    "patientId": "SYN-D005",
+    "reportType": "general_lab_report",
+    "clinicalScenario": "elevated_diabetes_risk",
+    "expectedExtraction": {
+      "age": 49,
+      "sex": 1,
+      "bmi": 28.6,
+      "systolicBP": 136.0,
+      "diastolicBP": 86.0,
+      "totalCholesterol": 218.0,
+      "hdl": 40.0,
+      "creatinine": 1.08,
+      "fastingGlucose": 124.0,
+      "hba1c": 6.4
+    },
+    "modelRelevantFeatures": {
+      "age": 49,
+      "sex": 1,
+      "bmi": 28.6,
+      "systolic_bp": 136.0,
+      "diastolic_bp": 86.0,
+      "total_cholesterol": 218.0,
+      "hdl": 40.0,
+      "creatinine": 1.08
+    },
+    "missingFields": [],
+    "normalization": [],
+    "expectedValidation": "VALID",
+    "expectedConflict": false,
+    "conflictDetails": null,
+    "actualModelOutput": null
+  },
+  "SYN-H001-R01": {
+    "reportId": "SYN-H001-R01",
+    "patientId": "SYN-H001",
+    "reportType": "general_lab_report",
+    "clinicalScenario": "lower_risk_healthy",
+    "expectedExtraction": {
+      "age": 24,
+      "sex": 0,
+      "bmi": 21.2,
+      "systolicBP": 112.0,
+      "diastolicBP": 72.0,
+      "totalCholesterol": 162.0,
+      "hdl": 64.0,
+      "creatinine": 0.76,
+      "fastingGlucose": 84.0,
+      "hba1c": 5.1
+    },
+    "modelRelevantFeatures": {
+      "age": 24,
+      "sex": 0,
+      "bmi": 21.2,
+      "systolic_bp": 112.0,
+      "diastolic_bp": 72.0,
+      "total_cholesterol": 162.0,
+      "hdl": 64.0,
+      "creatinine": 0.76
+    },
+    "missingFields": [],
+    "normalization": [],
+    "expectedValidation": "VALID",
+    "expectedConflict": false,
+    "conflictDetails": null,
+    "actualModelOutput": null
+  },
+  "SYN-H002-R01": {
+    "reportId": "SYN-H002-R01",
+    "patientId": "SYN-H002",
+    "reportType": "general_lab_report",
+    "clinicalScenario": "lower_risk_healthy",
+    "expectedExtraction": {
+      "age": 31,
+      "sex": 1,
+      "bmi": 22.8,
+      "systolicBP": 118.0,
+      "diastolicBP": 76.0,
+      "totalCholesterol": 174.0,
+      "hdl": 56.0,
+      "creatinine": 0.92,
+      "fastingGlucose": 89.0,
+      "hba1c": 5.2
+    },
+    "modelRelevantFeatures": {
+      "age": 31,
+      "sex": 1,
+      "bmi": 22.8,
+      "systolic_bp": 118.0,
+      "diastolic_bp": 76.0,
+      "total_cholesterol": 174.0,
+      "hdl": 56.0,
+      "creatinine": 0.92
+    },
+    "missingFields": [],
+    "normalization": [],
+    "expectedValidation": "VALID",
+    "expectedConflict": false,
+    "conflictDetails": null,
+    "actualModelOutput": null
+  },
+  "SYN-H003-R01": {
+    "reportId": "SYN-H003-R01",
+    "patientId": "SYN-H003",
+    "reportType": "general_lab_report",
+    "clinicalScenario": "lower_risk_healthy",
+    "expectedExtraction": {
+      "age": 66,
+      "sex": 0,
+      "bmi": 23.4,
+      "systolicBP": 122.0,
+      "diastolicBP": 78.0,
+      "totalCholesterol": 186.0,
+      "hdl": 68.0,
+      "creatinine": 0.84,
+      "fastingGlucose": 91.0,
+      "hba1c": 5.4
+    },
+    "modelRelevantFeatures": {
+      "age": 66,
+      "sex": 0,
+      "bmi": 23.4,
+      "systolic_bp": 122.0,
+      "diastolic_bp": 78.0,
+      "total_cholesterol": 186.0,
+      "hdl": 68.0,
+      "creatinine": 0.84
+    },
+    "missingFields": [],
+    "normalization": [],
+    "expectedValidation": "VALID",
+    "expectedConflict": false,
+    "conflictDetails": null,
+    "actualModelOutput": null
+  },
+  "SYN-H004-R01": {
+    "reportId": "SYN-H004-R01",
+    "patientId": "SYN-H004",
+    "reportType": "general_lab_report",
+    "clinicalScenario": "lower_risk_healthy",
+    "expectedExtraction": {
+      "age": 38,
+      "sex": 1,
+      "bmi": 24.6,
+      "systolicBP": 124.0,
+      "diastolicBP": 80.0,
+      "totalCholesterol": 198.0,
+      "hdl": 51.0,
+      "creatinine": 0.98,
+      "fastingGlucose": 94.0,
+      "hba1c": 5.3
+    },
+    "modelRelevantFeatures": {
+      "age": 38,
+      "sex": 1,
+      "bmi": 24.6,
+      "systolic_bp": 124.0,
+      "diastolic_bp": 80.0,
+      "total_cholesterol": 198.0,
+      "hdl": 51.0,
+      "creatinine": 0.98
+    },
+    "missingFields": [],
+    "normalization": [],
+    "expectedValidation": "VALID",
+    "expectedConflict": false,
+    "conflictDetails": null,
+    "actualModelOutput": null
+  },
+  "SYN-H005-R01": {
+    "reportId": "SYN-H005-R01",
+    "patientId": "SYN-H005",
+    "reportType": "general_lab_report",
+    "clinicalScenario": "lower_risk_healthy",
+    "expectedExtraction": {
+      "age": 45,
+      "sex": 0,
+      "bmi": 22.0,
+      "systolicBP": 115.0,
+      "diastolicBP": 74.0,
+      "totalCholesterol": 170.0,
+      "hdl": 62.0,
+      "creatinine": 0.8,
+      "fastingGlucose": 87.0,
+      "hba1c": 5.1
+    },
+    "modelRelevantFeatures": {
+      "age": 45,
+      "sex": 0,
+      "bmi": 22.0,
+      "systolic_bp": 115.0,
+      "diastolic_bp": 74.0,
+      "total_cholesterol": 170.0,
+      "hdl": 62.0,
+      "creatinine": 0.8
+    },
+    "missingFields": [],
+    "normalization": [],
+    "expectedValidation": "VALID",
+    "expectedConflict": false,
+    "conflictDetails": null,
+    "actualModelOutput": null
+  },
+  "SYN-B001-R01": {
+    "reportId": "SYN-B001-R01",
+    "patientId": "SYN-B001",
+    "reportType": "general_lab_report",
+    "clinicalScenario": "borderline",
+    "expectedExtraction": {
+      "age": 51,
+      "sex": 1,
+      "bmi": 27.2,
+      "systolicBP": 128.0,
+      "diastolicBP": 82.0,
+      "totalCholesterol": 208.0,
+      "hdl": 46.0,
+      "creatinine": 1.02,
+      "fastingGlucose": 106.0,
+      "hba1c": 5.8
+    },
+    "modelRelevantFeatures": {
+      "age": 51,
+      "sex": 1,
+      "bmi": 27.2,
+      "systolic_bp": 128.0,
+      "diastolic_bp": 82.0,
+      "total_cholesterol": 208.0,
+      "hdl": 46.0,
+      "creatinine": 1.02
+    },
+    "missingFields": [],
+    "normalization": [],
+    "expectedValidation": "VALID",
+    "expectedConflict": false,
+    "conflictDetails": null,
+    "actualModelOutput": null
+  },
+  "SYN-B002-R01": {
+    "reportId": "SYN-B002-R01",
+    "patientId": "SYN-B002",
+    "reportType": "general_lab_report",
+    "clinicalScenario": "borderline",
+    "expectedExtraction": {
+      "age": 46,
+      "sex": 0,
+      "bmi": 28.1,
+      "systolicBP": 132.0,
+      "diastolicBP": 84.0,
+      "totalCholesterol": 202.0,
+      "hdl": 48.0,
+      "creatinine": 0.88,
+      "fastingGlucose": 102.0,
+      "hba1c": 5.7
+    },
+    "modelRelevantFeatures": {
+      "age": 46,
+      "sex": 0,
+      "bmi": 28.1,
+      "systolic_bp": 132.0,
+      "diastolic_bp": 84.0,
+      "total_cholesterol": 202.0,
+      "hdl": 48.0,
+      "creatinine": 0.88
+    },
+    "missingFields": [],
+    "normalization": [],
+    "expectedValidation": "VALID",
+    "expectedConflict": false,
+    "conflictDetails": null,
+    "actualModelOutput": null
+  },
+  "SYN-B003-R01": {
+    "reportId": "SYN-B003-R01",
+    "patientId": "SYN-B003",
+    "reportType": "general_lab_report",
+    "clinicalScenario": "borderline",
+    "expectedExtraction": {
+      "age": 58,
+      "sex": 1,
+      "bmi": 25.8,
+      "systolicBP": 134.0,
+      "diastolicBP": 86.0,
+      "totalCholesterol": 212.0,
+      "hdl": 44.0,
+      "creatinine": 1.06,
+      "fastingGlucose": 110.0,
+      "hba1c": 5.9
+    },
+    "modelRelevantFeatures": {
+      "age": 58,
+      "sex": 1,
+      "bmi": 25.8,
+      "systolic_bp": 134.0,
+      "diastolic_bp": 86.0,
+      "total_cholesterol": 212.0,
+      "hdl": 44.0,
+      "creatinine": 1.06
+    },
+    "missingFields": [],
+    "normalization": [],
+    "expectedValidation": "VALID",
+    "expectedConflict": false,
+    "conflictDetails": null,
+    "actualModelOutput": null
+  },
+  "SYN-B004-R01": {
+    "reportId": "SYN-B004-R01",
+    "patientId": "SYN-B004",
+    "reportType": "general_lab_report",
+    "clinicalScenario": "borderline",
+    "expectedExtraction": {
+      "age": 39,
+      "sex": 0,
+      "bmi": 29.4,
+      "systolicBP": 126.0,
+      "diastolicBP": 82.0,
+      "totalCholesterol": 194.0,
+      "hdl": 45.0,
+      "creatinine": 0.82,
+      "fastingGlucose": 104.0,
+      "hba1c": 5.7
+    },
+    "modelRelevantFeatures": {
+      "age": 39,
+      "sex": 0,
+      "bmi": 29.4,
+      "systolic_bp": 126.0,
+      "diastolic_bp": 82.0,
+      "total_cholesterol": 194.0,
+      "hdl": 45.0,
+      "creatinine": 0.82
+    },
+    "missingFields": [],
+    "normalization": [],
+    "expectedValidation": "VALID",
+    "expectedConflict": false,
+    "conflictDetails": null,
+    "actualModelOutput": null
+  },
+  "SYN-M001-R01": {
+    "reportId": "SYN-M001-R01",
+    "patientId": "SYN-MIS1",
+    "reportType": "complete_blood_count",
+    "clinicalScenario": "insufficient_data_cbc_only",
+    "expectedExtraction": {
+      "age": 42,
+      "sex": 1,
+      "hemoglobin": 14.8,
+      "rbcCount": 4.9,
+      "wbcCount": 6800.0,
+      "plateletCount": 240000.0,
+      "pcv": 44.0,
+      "mcv": 88.0,
+      "mch": 29.5,
+      "mchc": 33.5,
+      "rdw": 12.8
+    },
+    "modelRelevantFeatures": {
+      "age": 42,
+      "sex": 1,
+      "bmi": null,
+      "systolic_bp": null,
+      "diastolic_bp": null,
+      "total_cholesterol": null,
+      "hdl": null,
+      "creatinine": null
+    },
+    "missingFields": [
+      "bmi",
+      "systolic_bp",
+      "diastolic_bp",
+      "total_cholesterol",
+      "hdl",
+      "creatinine"
+    ],
+    "normalization": [],
+    "expectedValidation": "VALID",
+    "expectedConflict": false,
+    "conflictDetails": null,
+    "actualModelOutput": null
+  },
+  "SYN-M002-R01": {
+    "reportId": "SYN-M002-R01",
+    "patientId": "SYN-MIS2",
+    "reportType": "renal_function",
+    "clinicalScenario": "insufficient_data_missing_physical",
+    "expectedExtraction": {
+      "age": 50,
+      "sex": 0,
+      "creatinine": 0.88,
+      "hemoglobin": 12.5
+    },
+    "modelRelevantFeatures": {
+      "age": 50,
+      "sex": 0,
+      "bmi": null,
+      "systolic_bp": null,
+      "diastolic_bp": null,
+      "total_cholesterol": null,
+      "hdl": null,
+      "creatinine": 0.88
+    },
+    "missingFields": [
+      "bmi",
+      "systolic_bp",
+      "diastolic_bp",
+      "total_cholesterol",
+      "hdl"
+    ],
+    "normalization": [],
+    "expectedValidation": "VALID",
+    "expectedConflict": false,
+    "conflictDetails": null,
+    "actualModelOutput": null
+  },
+  "SYN-M003-R01": {
+    "reportId": "SYN-M003-R01",
+    "patientId": "SYN-MIS3",
+    "reportType": "lipid_profile",
+    "clinicalScenario": "insufficient_data_lipid_only",
+    "expectedExtraction": {
+      "age": 36,
+      "sex": 1,
+      "totalCholesterol": 215.0,
+      "hdl": 42.0
+    },
+    "modelRelevantFeatures": {
+      "age": 36,
+      "sex": 1,
+      "bmi": null,
+      "systolic_bp": null,
+      "diastolic_bp": null,
+      "total_cholesterol": 215.0,
+      "hdl": 42.0,
+      "creatinine": null
+    },
+    "missingFields": [
+      "bmi",
+      "systolic_bp",
+      "diastolic_bp",
+      "creatinine"
+    ],
+    "normalization": [],
+    "expectedValidation": "VALID",
+    "expectedConflict": false,
+    "conflictDetails": null,
+    "actualModelOutput": null
+  },
+  "SYN-M004-R01": {
+    "reportId": "SYN-M004-R01",
+    "patientId": "SYN-MIS4",
+    "reportType": "general_lab_report",
+    "clinicalScenario": "partial_data_calculable",
+    "expectedExtraction": {
+      "age": 55,
+      "sex": 0,
+      "bmi": 31.0,
+      "totalCholesterol": 220.0,
+      "hdl": 38.0
+    },
+    "modelRelevantFeatures": {
+      "age": 55,
+      "sex": 0,
+      "bmi": 31.0,
+      "systolic_bp": null,
+      "diastolic_bp": null,
+      "total_cholesterol": 220.0,
+      "hdl": 38.0,
+      "creatinine": null
+    },
+    "missingFields": [
+      "systolic_bp",
+      "diastolic_bp",
+      "creatinine"
+    ],
+    "normalization": [],
+    "expectedValidation": "VALID",
+    "expectedConflict": false,
+    "conflictDetails": null,
+    "actualModelOutput": null
+  },
+  "SYN-L001-R01": {
+    "reportId": "SYN-L001-R01",
+    "patientId": "SYN-L001",
+    "reportType": "general_lab_report",
+    "clinicalScenario": "multi_report_baseline",
+    "expectedExtraction": {
+      "age": 48,
+      "sex": 1,
+      "bmi": 25.2,
+      "systolicBP": 124.0,
+      "diastolicBP": 80.0,
+      "totalCholesterol": 192.0,
+      "hdl": 50.0,
+      "creatinine": 0.95
+    },
+    "modelRelevantFeatures": {
+      "age": 48,
+      "sex": 1,
+      "bmi": 25.2,
+      "systolic_bp": 124.0,
+      "diastolic_bp": 80.0,
+      "total_cholesterol": 192.0,
+      "hdl": 50.0,
+      "creatinine": 0.95
+    },
+    "missingFields": [],
+    "normalization": [],
+    "expectedValidation": "VALID",
+    "expectedConflict": false,
+    "conflictDetails": null,
+    "actualModelOutput": null
+  },
+  "SYN-L001-R02": {
+    "reportId": "SYN-L001-R02",
+    "patientId": "SYN-L001",
+    "reportType": "general_lab_report",
+    "clinicalScenario": "multi_report_midterm",
+    "expectedExtraction": {
+      "age": 48,
+      "sex": 1,
+      "bmi": 26.5,
+      "systolicBP": 132.0,
+      "diastolicBP": 84.0,
+      "totalCholesterol": 208.0,
+      "hdl": 46.0,
+      "creatinine": 0.98
+    },
+    "modelRelevantFeatures": {
+      "age": 48,
+      "sex": 1,
+      "bmi": 26.5,
+      "systolic_bp": 132.0,
+      "diastolic_bp": 84.0,
+      "total_cholesterol": 208.0,
+      "hdl": 46.0,
+      "creatinine": 0.98
+    },
+    "missingFields": [],
+    "normalization": [],
+    "expectedValidation": "VALID",
+    "expectedConflict": false,
+    "conflictDetails": null,
+    "actualModelOutput": null
+  },
+  "SYN-L001-R03": {
+    "reportId": "SYN-L001-R03",
+    "patientId": "SYN-L001",
+    "reportType": "general_lab_report",
+    "clinicalScenario": "multi_report_progression",
+    "expectedExtraction": {
+      "age": 49,
+      "sex": 1,
+      "bmi": 28.2,
+      "systolicBP": 140.0,
+      "diastolicBP": 88.0,
+      "totalCholesterol": 226.0,
+      "hdl": 41.0,
+      "creatinine": 1.05
+    },
+    "modelRelevantFeatures": {
+      "age": 49,
+      "sex": 1,
+      "bmi": 28.2,
+      "systolic_bp": 140.0,
+      "diastolic_bp": 88.0,
+      "total_cholesterol": 226.0,
+      "hdl": 41.0,
+      "creatinine": 1.05
+    },
+    "missingFields": [],
+    "normalization": [],
+    "expectedValidation": "VALID",
+    "expectedConflict": false,
+    "conflictDetails": null,
+    "actualModelOutput": null
+  },
+  "SYN-L002-R01": {
+    "reportId": "SYN-L002-R01",
+    "patientId": "SYN-L002",
+    "reportType": "general_lab_report",
+    "clinicalScenario": "multi_report_intervention_baseline",
+    "expectedExtraction": {
+      "age": 56,
+      "sex": 0,
+      "bmi": 32.0,
+      "systolicBP": 148.0,
+      "diastolicBP": 92.0,
+      "totalCholesterol": 245.0,
+      "hdl": 38.0,
+      "creatinine": 1.1
+    },
+    "modelRelevantFeatures": {
+      "age": 56,
+      "sex": 0,
+      "bmi": 32.0,
+      "systolic_bp": 148.0,
+      "diastolic_bp": 92.0,
+      "total_cholesterol": 245.0,
+      "hdl": 38.0,
+      "creatinine": 1.1
+    },
+    "missingFields": [],
+    "normalization": [],
+    "expectedValidation": "VALID",
+    "expectedConflict": false,
+    "conflictDetails": null,
+    "actualModelOutput": null
+  },
+  "SYN-L002-R02": {
+    "reportId": "SYN-L002-R02",
+    "patientId": "SYN-L002",
+    "reportType": "general_lab_report",
+    "clinicalScenario": "multi_report_intervention_progress",
+    "expectedExtraction": {
+      "age": 56,
+      "sex": 0,
+      "bmi": 29.8,
+      "systolicBP": 136.0,
+      "diastolicBP": 86.0,
+      "totalCholesterol": 218.0,
+      "hdl": 44.0,
+      "creatinine": 1.02
+    },
+    "modelRelevantFeatures": {
+      "age": 56,
+      "sex": 0,
+      "bmi": 29.8,
+      "systolic_bp": 136.0,
+      "diastolic_bp": 86.0,
+      "total_cholesterol": 218.0,
+      "hdl": 44.0,
+      "creatinine": 1.02
+    },
+    "missingFields": [],
+    "normalization": [],
+    "expectedValidation": "VALID",
+    "expectedConflict": false,
+    "conflictDetails": null,
+    "actualModelOutput": null
+  },
+  "SYN-L002-R03": {
+    "reportId": "SYN-L002-R03",
+    "patientId": "SYN-L002",
+    "reportType": "general_lab_report",
+    "clinicalScenario": "multi_report_intervention_success",
+    "expectedExtraction": {
+      "age": 57,
+      "sex": 0,
+      "bmi": 27.9,
+      "systolicBP": 128.0,
+      "diastolicBP": 82.0,
+      "totalCholesterol": 198.0,
+      "hdl": 49.0,
+      "creatinine": 0.96
+    },
+    "modelRelevantFeatures": {
+      "age": 57,
+      "sex": 0,
+      "bmi": 27.9,
+      "systolic_bp": 128.0,
+      "diastolic_bp": 82.0,
+      "total_cholesterol": 198.0,
+      "hdl": 49.0,
+      "creatinine": 0.96
+    },
+    "missingFields": [],
+    "normalization": [],
+    "expectedValidation": "VALID",
+    "expectedConflict": false,
+    "conflictDetails": null,
+    "actualModelOutput": null
+  },
+  "SYN-L003-R01": {
+    "reportId": "SYN-L003-R01",
+    "patientId": "SYN-L003",
+    "reportType": "general_lab_report",
+    "clinicalScenario": "multi_report_split_vitals",
+    "expectedExtraction": {
+      "age": 63,
+      "sex": 1,
+      "bmi": 27.5,
+      "systolicBP": 138.0,
+      "diastolicBP": 88.0,
+      "hemoglobin": 15.1
+    },
+    "modelRelevantFeatures": {
+      "age": 63,
+      "sex": 1,
+      "bmi": 27.5,
+      "systolic_bp": 138.0,
+      "diastolic_bp": 88.0,
+      "total_cholesterol": null,
+      "hdl": null,
+      "creatinine": null
+    },
+    "missingFields": [
+      "total_cholesterol",
+      "hdl",
+      "creatinine"
+    ],
+    "normalization": [],
+    "expectedValidation": "VALID",
+    "expectedConflict": false,
+    "conflictDetails": null,
+    "actualModelOutput": null
+  },
+  "SYN-L003-R02": {
+    "reportId": "SYN-L003-R02",
+    "patientId": "SYN-L003",
+    "reportType": "lipid_profile",
+    "clinicalScenario": "multi_report_split_labs",
+    "expectedExtraction": {
+      "age": 63,
+      "sex": 1,
+      "totalCholesterol": 224.0,
+      "hdl": 43.0,
+      "creatinine": 1.12
+    },
+    "modelRelevantFeatures": {
+      "age": 63,
+      "sex": 1,
+      "bmi": null,
+      "systolic_bp": null,
+      "diastolic_bp": null,
+      "total_cholesterol": 224.0,
+      "hdl": 43.0,
+      "creatinine": 1.12
+    },
+    "missingFields": [
+      "bmi",
+      "systolic_bp",
+      "diastolic_bp"
+    ],
+    "normalization": [],
+    "expectedValidation": "VALID",
+    "expectedConflict": false,
+    "conflictDetails": null,
+    "actualModelOutput": null
+  },
+  "SYN-L004-R01": {
+    "reportId": "SYN-L004-R01",
+    "patientId": "SYN-L004",
+    "reportType": "general_lab_report",
+    "clinicalScenario": "multi_report_stable_1",
+    "expectedExtraction": {
+      "age": 34,
+      "sex": 0,
+      "bmi": 26.4,
+      "systolicBP": 120.0,
+      "diastolicBP": 78.0,
+      "totalCholesterol": 184.0,
+      "hdl": 54.0,
+      "creatinine": 0.78
+    },
+    "modelRelevantFeatures": {
+      "age": 34,
+      "sex": 0,
+      "bmi": 26.4,
+      "systolic_bp": 120.0,
+      "diastolic_bp": 78.0,
+      "total_cholesterol": 184.0,
+      "hdl": 54.0,
+      "creatinine": 0.78
+    },
+    "missingFields": [],
+    "normalization": [],
+    "expectedValidation": "VALID",
+    "expectedConflict": false,
+    "conflictDetails": null,
+    "actualModelOutput": null
+  },
+  "SYN-L004-R02": {
+    "reportId": "SYN-L004-R02",
+    "patientId": "SYN-L004",
+    "reportType": "general_lab_report",
+    "clinicalScenario": "multi_report_stable_2",
+    "expectedExtraction": {
+      "age": 35,
+      "sex": 0,
+      "bmi": 24.5,
+      "systolicBP": 116.0,
+      "diastolicBP": 74.0,
+      "totalCholesterol": 176.0,
+      "hdl": 58.0,
+      "creatinine": 0.75
+    },
+    "modelRelevantFeatures": {
+      "age": 35,
+      "sex": 0,
+      "bmi": 24.5,
+      "systolic_bp": 116.0,
+      "diastolic_bp": 74.0,
+      "total_cholesterol": 176.0,
+      "hdl": 58.0,
+      "creatinine": 0.75
+    },
+    "missingFields": [],
+    "normalization": [],
+    "expectedValidation": "VALID",
+    "expectedConflict": false,
+    "conflictDetails": null,
+    "actualModelOutput": null
+  },
+  "SYN-OCR1-R01": {
+    "reportId": "SYN-OCR1-R01",
+    "patientId": "SYN-OCR1",
+    "reportType": "general_lab_report",
+    "clinicalScenario": "ocr_dense_abbreviations",
+    "expectedExtraction": {
+      "age": 52,
+      "sex": 1,
+      "bmi": 30.8,
+      "systolicBP": 144.0,
+      "diastolicBP": 88.0,
+      "totalCholesterol": 232.0,
+      "hdl": 39.0,
+      "creatinine": 1.18
+    },
+    "modelRelevantFeatures": {
+      "age": 52,
+      "sex": 1,
+      "bmi": 30.8,
+      "systolic_bp": 144.0,
+      "diastolic_bp": 88.0,
+      "total_cholesterol": 232.0,
+      "hdl": 39.0,
+      "creatinine": 1.18
+    },
+    "missingFields": [],
+    "normalization": [],
+    "expectedValidation": "VALID",
+    "expectedConflict": false,
+    "conflictDetails": null,
+    "actualModelOutput": null
+  },
+  "SYN-OCR2-R01": {
+    "reportId": "SYN-OCR2-R01",
+    "patientId": "SYN-OCR2",
+    "reportType": "general_lab_report",
+    "clinicalScenario": "ocr_wrapped_labels_commas",
+    "expectedExtraction": {
+      "age": 47,
+      "sex": 0,
+      "bmi": 28.4,
+      "systolicBP": 138.0,
+      "diastolicBP": 86.0,
+      "totalCholesterol": 214.0,
+      "hdl": 43.0,
+      "creatinine": 1.04
+    },
+    "modelRelevantFeatures": {
+      "age": 47,
+      "sex": 0,
+      "bmi": 28.4,
+      "systolic_bp": 138.0,
+      "diastolic_bp": 86.0,
+      "total_cholesterol": 214.0,
+      "hdl": 43.0,
+      "creatinine": 1.04
+    },
+    "missingFields": [],
+    "normalization": [],
+    "expectedValidation": "VALID",
+    "expectedConflict": false,
+    "conflictDetails": null,
+    "actualModelOutput": null
+  },
+  "SYN-OCR3-R01": {
+    "reportId": "SYN-OCR3-R01",
+    "patientId": "SYN-OCR3",
+    "reportType": "general_lab_report",
+    "clinicalScenario": "ocr_digit_confusion_normalizer",
+    "expectedExtraction": {
+      "age": 50,
+      "sex": 1,
+      "bmi": 29.5,
+      "systolicBP": 130.0,
+      "diastolicBP": 85.0,
+      "totalCholesterol": 205.0,
+      "hdl": 42.0,
+      "creatinine": 1.02
+    },
+    "modelRelevantFeatures": {
+      "age": 50,
+      "sex": 1,
+      "bmi": 29.5,
+      "systolic_bp": 130.0,
+      "diastolic_bp": 85.0,
+      "total_cholesterol": 205.0,
+      "hdl": 42.0,
+      "creatinine": 1.02
+    },
+    "missingFields": [],
+    "normalization": [
+      {
+        "parameter": "totalCholesterol",
+        "rawText": "2O5",
+        "normalizedValue": 205.0,
+        "rule": "OCR digit substitution (letter O -> 0)"
+      },
+      {
+        "parameter": "systolicBP",
+        "rawText": "13O",
+        "normalizedValue": 130.0,
+        "rule": "OCR digit substitution (letter O -> 0)"
+      }
+    ],
+    "expectedValidation": "VALID",
+    "expectedConflict": false,
+    "conflictDetails": null,
+    "actualModelOutput": null
+  },
+  "SYN-UNT1-R01": {
+    "reportId": "SYN-UNT1-R01",
+    "patientId": "SYN-UNT1",
+    "reportType": "general_lab_report",
+    "clinicalScenario": "si_unit_conversions",
+    "expectedExtraction": {
+      "age": 46,
+      "sex": 1,
+      "bmi": 27.5,
+      "systolicBP": 130.0,
+      "diastolicBP": 84.0,
+      "totalCholesterol": 216.6,
+      "hdl": 42.5,
+      "creatinine": 1.07,
+      "fastingGlucose": 111.7
+    },
+    "modelRelevantFeatures": {
+      "age": 46,
+      "sex": 1,
+      "bmi": 27.5,
+      "systolic_bp": 130.0,
+      "diastolic_bp": 84.0,
+      "total_cholesterol": 216.6,
+      "hdl": 42.5,
+      "creatinine": 1.07
+    },
+    "missingFields": [],
+    "normalization": [
+      {
+        "parameter": "totalCholesterol",
+        "originalValue": 5.6,
+        "originalUnit": "mmol/L",
+        "normalizedValue": 216.6,
+        "normalizedUnit": "mg/dL",
+        "factor": 38.67
+      },
+      {
+        "parameter": "hdl",
+        "originalValue": 1.1,
+        "originalUnit": "mmol/L",
+        "normalizedValue": 42.5,
+        "normalizedUnit": "mg/dL",
+        "factor": 38.67
+      },
+      {
+        "parameter": "creatinine",
+        "originalValue": 95.0,
+        "originalUnit": "\u00b5mol/L",
+        "normalizedValue": 1.07,
+        "normalizedUnit": "mg/dL",
+        "factor": "1/88.4"
+      },
+      {
+        "parameter": "fastingGlucose",
+        "originalValue": 6.2,
+        "originalUnit": "mmol/L",
+        "normalizedValue": 111.7,
+        "normalizedUnit": "mg/dL",
+        "factor": 18.0182
+      }
+    ],
+    "expectedValidation": "VALID",
+    "expectedConflict": false,
+    "conflictDetails": null,
+    "actualModelOutput": null
+  },
+  "SYN-UNT2-R01": {
+    "reportId": "SYN-UNT2-R01",
+    "patientId": "SYN-UNT2",
+    "reportType": "general_lab_report",
+    "clinicalScenario": "alternate_unit_spellings",
+    "expectedExtraction": {
+      "age": 53,
+      "sex": 0,
+      "bmi": 28.8,
+      "systolicBP": 142.0,
+      "diastolicBP": 88.0,
+      "totalCholesterol": 225.0,
+      "hdl": 44.0,
+      "creatinine": 1.24
+    },
+    "modelRelevantFeatures": {
+      "age": 53,
+      "sex": 0,
+      "bmi": 28.8,
+      "systolic_bp": 142.0,
+      "diastolic_bp": 88.0,
+      "total_cholesterol": 225.0,
+      "hdl": 44.0,
+      "creatinine": 1.24
+    },
+    "missingFields": [],
+    "normalization": [
+      {
+        "parameter": "totalCholesterol",
+        "originalValue": 225.0,
+        "originalUnit": "mg%",
+        "normalizedValue": 225.0,
+        "normalizedUnit": "mg/dL",
+        "rule": "Archaic clinical mg% to mg/dL identity"
+      },
+      {
+        "parameter": "creatinine",
+        "originalValue": 110.0,
+        "originalUnit": "umol/L",
+        "normalizedValue": 1.24,
+        "normalizedUnit": "mg/dL",
+        "factor": "1/88.4"
+      }
+    ],
+    "expectedValidation": "VALID",
+    "expectedConflict": false,
+    "conflictDetails": null,
+    "actualModelOutput": null
+  },
+  "SYN-CNF1-R01": {
+    "reportId": "SYN-CNF1-R01",
+    "patientId": "SYN-CNF1",
+    "reportType": "general_lab_report",
+    "clinicalScenario": "conflicting_multisection_vitals",
+    "expectedExtraction": {
+      "age": 55,
+      "sex": 1,
+      "bmi": 29.5,
+      "totalCholesterol": 224.0,
+      "hdl": 40.0,
+      "creatinine": 1.1
+    },
+    "modelRelevantFeatures": {
+      "age": 55,
+      "sex": 1,
+      "bmi": 29.5,
+      "systolic_bp": 124.0,
+      "diastolic_bp": 80.0,
+      "total_cholesterol": 224.0,
+      "hdl": 40.0,
+      "creatinine": 1.1
+    },
+    "missingFields": [],
+    "normalization": [],
+    "expectedValidation": "WARNING",
+    "expectedConflict": true,
+    "conflictDetails": {
+      "field": "bloodPressure",
+      "candidateValues": [
+        "124/80",
+        "148/92"
+      ],
+      "distinctSystolic": [
+        124,
+        148
+      ],
+      "distinctDiastolic": [
+        80,
+        92
+      ],
+      "sections": [
+        "Triage Intake Vital Signs",
+        "Attending Physician Re-examination"
+      ]
+    },
+    "actualModelOutput": null
+  },
+  "SYN-OUT1-R01": {
+    "reportId": "SYN-OUT1-R01",
+    "patientId": "SYN-OUT1",
+    "reportType": "general_lab_report",
+    "clinicalScenario": "outlier_extreme_physiological",
+    "expectedExtraction": {
+      "age": 58,
+      "sex": 1,
+      "bmi": 52.4,
+      "systolicBP": 215.0,
+      "diastolicBP": 125.0,
+      "totalCholesterol": 410.0,
+      "hdl": 22.0,
+      "creatinine": 4.8,
+      "fastingGlucose": 340.0,
+      "hba1c": 12.8
+    },
+    "modelRelevantFeatures": {
+      "age": 58,
+      "sex": 1,
+      "bmi": 52.4,
+      "systolic_bp": 215.0,
+      "diastolic_bp": 125.0,
+      "total_cholesterol": 410.0,
+      "hdl": 22.0,
+      "creatinine": 4.8
+    },
+    "missingFields": [],
+    "normalization": [],
+    "expectedValidation": "WARNING",
+    "expectedConflict": false,
+    "conflictDetails": null,
+    "actualModelOutput": null
+  },
+  "SYN-MIX1-R01": {
+    "reportId": "SYN-MIX1-R01",
+    "patientId": "SYN-MIX1",
+    "reportType": "general_lab_report",
+    "clinicalScenario": "multipage_health_checkup",
+    "expectedExtraction": {
+      "age": 53,
+      "sex": 0,
+      "bmi": 26.8,
+      "systolicBP": 134.0,
+      "diastolicBP": 86.0,
+      "totalCholesterol": 210.0,
+      "hdl": 48.0,
+      "creatinine": 0.92,
+      "hemoglobin": 13.4,
+      "wbcCount": 6200.0,
+      "plateletCount": 265000.0
+    },
+    "modelRelevantFeatures": {
+      "age": 53,
+      "sex": 0,
+      "bmi": 26.8,
+      "systolic_bp": 134.0,
+      "diastolic_bp": 86.0,
+      "total_cholesterol": 210.0,
+      "hdl": 48.0,
+      "creatinine": 0.92
+    },
+    "missingFields": [],
+    "normalization": [],
+    "expectedValidation": "VALID",
+    "expectedConflict": false,
+    "conflictDetails": null,
+    "actualModelOutput": null
+  },
+  "SYN-MIX2-R01": {
+    "reportId": "SYN-MIX2-R01",
+    "patientId": "SYN-MIX2",
+    "reportType": "ambulatory_blood_pressure_monitoring",
+    "clinicalScenario": "abpm_with_concurrent_labs",
+    "expectedExtraction": {
+      "age": 51,
+      "sex": 1,
+      "bmi": 30.2,
+      "systolicBP": 139.0,
+      "diastolicBP": 87.0,
+      "totalCholesterol": 228.0,
+      "hdl": 39.0,
+      "creatinine": 1.1
+    },
+    "modelRelevantFeatures": {
+      "age": 51,
+      "sex": 1,
+      "bmi": 30.2,
+      "systolic_bp": 139.0,
+      "diastolic_bp": 87.0,
+      "total_cholesterol": 228.0,
+      "hdl": 39.0,
+      "creatinine": 1.1
+    },
+    "missingFields": [],
+    "normalization": [],
+    "expectedValidation": "VALID",
+    "expectedConflict": false,
+    "conflictDetails": null,
+    "actualModelOutput": null
+  }
+}

@@ -1,0 +1,24 @@
+========================================================================
+MEDTEST DIAGNOSTIC LABORATORIES
+SYNTHETIC TEST DOCUMENT — NOT A REAL MEDICAL RECORD — FOR TESTING ONLY
+========================================================================
+Report ID: SYN-L003-R02
+Report Date: 2025-04-14
+Patient Name: Test Patient L003
+Patient ID: SYN-L003
+Age: 63 Years
+Gender: Male
+DOB: 1962-12-05
+Referring Clinician: Dr. Alan Price, MD
+------------------------------------------------------------------------
+
+[LIPID & RENAL PROFILE PANEL]
+Investigation                  | Result     | Unit       | Ref Interval         | Flag
+------------------------------------------------------------------------
+Total Cholesterol              | 224.0      | mg/dL      | 125.0 - 200.0        | HIGH
+HDL Cholesterol                | 43.0       | mg/dL      | > 40.0               | NORMAL
+Serum Creatinine               | 1.12       | mg/dL      | 0.70 - 1.20          | NORMAL
+
+========================================================================
+END OF SYNTHETIC REPORT — NOT A REAL MEDICAL RECORD
+========================================================================

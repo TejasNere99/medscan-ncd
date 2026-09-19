@@ -8,7 +8,7 @@ import { ApiResponse } from '../utils/apiResponse.js';
 import { asyncHandler } from '../utils/asyncWrapper.js';
 import { sendEmail } from '../config/email.js';
 
-const generateAccessAndRefreshTokens = async (userId) => {
+export const generateAccessAndRefreshTokens = async (userId) => {
   const user = await User.findById(userId);
 
   const accessToken = jwt.sign(
@@ -31,6 +31,14 @@ export const register = asyncHandler(async (req, res) => {
 
   if (!name || !email || !password) {
     throw new ApiError(400, 'Name, email, and password are required fields.');
+  }
+
+  // Phase P0: Public self-registration is restricted strictly to Patient accounts
+  if (role && role !== 'Patient') {
+    throw new ApiError(
+      403,
+      'Public registration is restricted to Patient accounts. Privileged staff and caregiver accounts must be provisioned through authorized workflows.'
+    );
   }
 
   const existingUser = await User.findOne({ email });

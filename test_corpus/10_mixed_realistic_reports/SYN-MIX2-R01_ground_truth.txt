@@ -1,0 +1,37 @@
+========================================================================
+MEDTEST DIAGNOSTIC LABORATORIES
+SYNTHETIC TEST DOCUMENT — NOT A REAL MEDICAL RECORD — FOR TESTING ONLY
+========================================================================
+Report ID: SYN-MIX2-R01
+Report Date: 2025-07-20
+Patient Name: Test Patient MIX2
+Patient ID: SYN-MIX2
+Age: 51 Years
+Gender: Male
+DOB: 1974-09-16
+Referring Clinician: Dr. Brenda Vance, MD (Cardiology)
+------------------------------------------------------------------------
+
+[ANTHROPOMETRIC DATA]
+Body Mass Index (BMI): 30.2 kg/m²
+Height: 178 cm
+Weight: 95.6 kg
+
+[24-HOUR AMBULATORY BLOOD PRESSURE STATISTICS (SENTINEL ABP)]
+Investigation                  | Result     | Unit       | Ref Interval         | Flag
+------------------------------------------------------------------------
+Overall 24-Hour Mean BP        | 139/87     | mmHg       | < 130/80             | HIGH
+Awake (Daytime) Mean BP        | 144/91     | mmHg       | < 135/85             | HIGH
+Asleep (Nighttime) Mean BP     | 128/78     | mmHg       | < 120/70             | HIGH
+Nocturnal Dipping Percentage   | 11.1       | %          | 10.0 - 20.0          | NORMAL
+
+[CONCURRENT ROUTINE SERUM CHEMISTRIES]
+Investigation                  | Result     | Unit       | Ref Interval         | Flag
+------------------------------------------------------------------------
+Total Cholesterol              | 228.0      | mg/dL      | 125.0 - 200.0        | HIGH
+HDL Cholesterol                | 39.0       | mg/dL      | > 40.0               | LOW
+Serum Creatinine               | 1.1        | mg/dL      | 0.70 - 1.20          | NORMAL
+
+========================================================================
+END OF SYNTHETIC REPORT — NOT A REAL MEDICAL RECORD
+========================================================================

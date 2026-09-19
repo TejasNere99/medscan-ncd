@@ -1,0 +1,31 @@
+========================================================================
+MEDTEST DIAGNOSTIC LABORATORIES
+SYNTHETIC TEST DOCUMENT — NOT A REAL MEDICAL RECORD — FOR TESTING ONLY
+========================================================================
+Report ID: SYN-B004-R01
+Report Date: 2025-09-01
+Patient Name: Test Patient B004
+Patient ID: SYN-B004
+Age: 39 Years
+Gender: Female
+DOB: 1986-12-14
+Referring Clinician: Dr. Karen Evans, MD
+------------------------------------------------------------------------
+
+[CLINIC EXAMINATION]
+Resting Blood Pressure: 126/82 mmHg
+Body Mass Index (BMI): 29.4 kg/m²
+Heart Rate: 72 BPM
+
+[SERUM PROFILE]
+Investigation                  | Result     | Unit       | Ref Interval         | Flag
+------------------------------------------------------------------------
+Total Cholesterol              | 194.0      | mg/dL      | 125.0 - 200.0        | NORMAL
+HDL Cholesterol                | 45.0       | mg/dL      | > 50.0               | LOW
+Serum Creatinine               | 0.82       | mg/dL      | 0.50 - 1.10          | NORMAL
+Fasting Blood Glucose          | 104.0      | mg/dL      | 70.0 - 99.0          | HIGH
+HbA1c                          | 5.7        | %          | 4.0 - 5.6            | HIGH
+
+========================================================================
+END OF SYNTHETIC REPORT — NOT A REAL MEDICAL RECORD
+========================================================================

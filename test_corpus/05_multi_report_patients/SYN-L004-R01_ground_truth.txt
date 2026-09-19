@@ -1,0 +1,29 @@
+========================================================================
+MEDTEST DIAGNOSTIC LABORATORIES
+SYNTHETIC TEST DOCUMENT — NOT A REAL MEDICAL RECORD — FOR TESTING ONLY
+========================================================================
+Report ID: SYN-L004-R01
+Report Date: 2025-03-10
+Patient Name: Test Patient L004
+Patient ID: SYN-L004
+Age: 34 Years
+Gender: Female
+DOB: 1991-08-22
+Referring Clinician: Dr. Karen Evans, MD
+------------------------------------------------------------------------
+
+[POSTPARTUM CLINIC VITALS]
+Resting Blood Pressure: 120/78 mmHg
+Body Mass Index (BMI): 26.4 kg/m²
+Heart Rate: 72 BPM
+
+[ROUTINE CHEMISTRIES]
+Investigation                  | Result     | Unit       | Ref Interval         | Flag
+------------------------------------------------------------------------
+Total Cholesterol              | 184.0      | mg/dL      | 125.0 - 200.0        | NORMAL
+HDL Cholesterol                | 54.0       | mg/dL      | > 50.0               | NORMAL
+Serum Creatinine               | 0.78       | mg/dL      | 0.50 - 1.10          | NORMAL
+
+========================================================================
+END OF SYNTHETIC REPORT — NOT A REAL MEDICAL RECORD
+========================================================================

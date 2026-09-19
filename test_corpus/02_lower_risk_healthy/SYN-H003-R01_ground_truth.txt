@@ -1,0 +1,31 @@
+========================================================================
+MEDTEST DIAGNOSTIC LABORATORIES
+SYNTHETIC TEST DOCUMENT — NOT A REAL MEDICAL RECORD — FOR TESTING ONLY
+========================================================================
+Report ID: SYN-H003-R01
+Report Date: 2025-06-25
+Patient Name: Test Patient H003
+Patient ID: SYN-H003
+Age: 66 Years
+Gender: Female
+DOB: 1959-04-03
+Referring Clinician: Dr. Eleanor Wright, MD
+------------------------------------------------------------------------
+
+[SENIOR VITALS]
+Resting Blood Pressure: 122/78 mmHg
+Body Mass Index (BMI): 23.4 kg/m²
+Pulse Rate: 70 BPM
+
+[METABOLIC SCREENING PANEL]
+Investigation                  | Result     | Unit       | Ref Interval         | Flag
+------------------------------------------------------------------------
+Total Cholesterol              | 186.0      | mg/dL      | 125.0 - 200.0        | NORMAL
+HDL Cholesterol                | 68.0       | mg/dL      | > 50.0               | NORMAL
+Serum Creatinine               | 0.84       | mg/dL      | 0.50 - 1.10          | NORMAL
+Fasting Blood Glucose          | 91.0       | mg/dL      | 70.0 - 99.0          | NORMAL
+HbA1c                          | 5.4        | %          | 4.0 - 5.6            | NORMAL
+
+========================================================================
+END OF SYNTHETIC REPORT — NOT A REAL MEDICAL RECORD
+========================================================================

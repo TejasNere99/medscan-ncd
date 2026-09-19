@@ -1,9 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { User, Activity, Pill, FileText, Cpu, Brain, Award, Calendar, ArrowLeft } from 'lucide-react';
+import {
+  User,
+  Activity,
+  Pill,
+  FileText,
+  Cpu,
+  Brain,
+  Award,
+  Calendar,
+  ArrowLeft,
+  Info,
+  AlertTriangle,
+  Lock,
+  CheckCircle2,
+  XCircle,
+  HeartPulse,
+} from 'lucide-react';
 import { Tabs } from '../../components/common/Tabs';
 import { StatCard } from '../../components/common/StatCard';
-import { RiskGaugeChart } from '../../components/charts/RiskGaugeChart';
 import { AdherenceChart } from '../../components/charts/AdherenceChart';
 import { patientService } from '../../services/patientService';
 import { medicineService } from '../../services/medicineService';
@@ -20,6 +35,7 @@ export const DoctorPatientDetail = () => {
   const [medicines, setMedicines] = useState([]);
   const [reports, setReports] = useState([]);
   const [prediction, setPrediction] = useState(null);
+  const [heartDiseasePrediction, setHeartDiseasePrediction] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -35,8 +51,37 @@ export const DoctorPatientDetail = () => {
         const rRes = await reportService.getReports(id);
         if (rRes.data) setReports(rRes.data);
 
-        const predRes = await predictionService.getPredictionHistory(id);
-        if (predRes.data && predRes.data.length > 0) setPrediction(predRes.data[0]);
+        try {
+          const predRes = await predictionService.getLatestDiabetesPrediction(id);
+          if (predRes.data) {
+            setPrediction(predRes.data);
+          } else {
+            const histRes = await predictionService.getPredictionHistory(id);
+            if (histRes.data && histRes.data.length > 0) {
+              setPrediction(histRes.data[0]);
+            } else {
+              setPrediction(null);
+            }
+          }
+        } catch {
+          setPrediction(null);
+        }
+
+        try {
+          const hdRes = await predictionService.getLatestHeartDiseasePrediction(id);
+          if (hdRes.data) {
+            setHeartDiseasePrediction(hdRes.data);
+          } else {
+            const hdHistRes = await predictionService.getHeartDiseasePredictionHistory(id);
+            if (hdHistRes.data && hdHistRes.data.length > 0) {
+              setHeartDiseasePrediction(hdHistRes.data[0]);
+            } else {
+              setHeartDiseasePrediction(null);
+            }
+          }
+        } catch {
+          setHeartDiseasePrediction(null);
+        }
       } catch (e) {
         addToast('Failed to load patient detail profile.', 'error');
       } finally {
@@ -166,12 +211,358 @@ export const DoctorPatientDetail = () => {
         )}
 
         {activeTab === 'ai' && (
-          <div className="max-w-md mx-auto">
-            <RiskGaugeChart
-              riskPercent={prediction?.overallRiskPercent || 68}
-              riskLevel={prediction?.riskLevel || 'High'}
-              diseaseBreakdown={prediction?.diseaseBreakdown || { Diabetes: 72, Hypertension: 68, HeartDisease: 45, KidneyDisease: 28 }}
-            />
+          <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-3">
+              <div>
+                <h4 className="font-extrabold text-white text-sm flex items-center space-x-2">
+                  <Brain className="w-4 h-4 text-brand-400" />
+                  <span>Scenario A — Model-Estimated Diabetes Risk</span>
+                </h4>
+                <p className="text-[11px] text-slate-400">
+                  Algorithm: LightGBM + 5-Fold Platt Calibration • Decision Threshold: 0.210 • Version {prediction?.modelVersion || '1.0.0'}
+                </p>
+              </div>
+              <span className="text-[10px] px-2.5 py-1 rounded-full bg-brand-500/10 text-brand-400 border border-brand-500/30 font-bold self-start sm:self-auto">
+                Non-Diagnostic Clinical Decision Support
+              </span>
+            </div>
+
+            {prediction && prediction.canCalculate && prediction.status === 'SUCCESS' ? (
+              <div className="space-y-6">
+                {/* Metric Summary Cards */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+                  <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800">
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block">
+                      Estimated Probability
+                    </span>
+                    <span className="text-2xl font-black text-white mt-1 block">
+                      {prediction.probability !== undefined && prediction.probability !== null
+                        ? `${(prediction.probability * 100).toFixed(1)}%`
+                        : `${prediction.overallRiskPercent}%`}
+                    </span>
+                    <span className="text-[10px] text-amber-400 mt-1 block font-mono">
+                      Development threshold: 21.0%
+                    </span>
+                    <span className="text-[9px] text-slate-500 mt-0.5 block">
+                      Requires external clinical validation
+                    </span>
+                  </div>
+
+                  <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800">
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block">
+                      Risk Stratification
+                    </span>
+                    <div className="mt-1">
+                      <span
+                        className={`inline-block text-xs px-2.5 py-1 rounded-full font-bold border ${
+                          prediction.riskCategory === 'ELEVATED_MODEL_ESTIMATED_RISK'
+                            ? 'bg-rose-500/15 text-rose-400 border-rose-500/30'
+                            : 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
+                        }`}
+                      >
+                        {prediction.riskCategory === 'ELEVATED_MODEL_ESTIMATED_RISK'
+                          ? 'Elevated model-estimated risk'
+                          : 'Lower model-estimated risk'}
+                      </span>
+                    </div>
+                    <span className="text-[10px] text-slate-400 mt-1 block">
+                      Sensitivity: 81.8% • Specificity: 68.8%
+                    </span>
+                  </div>
+
+                  <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800">
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block">
+                      Data Completeness
+                    </span>
+                    <div className="mt-1">
+                      <span
+                        className={`inline-block text-xs px-2.5 py-1 rounded-full font-bold border ${
+                          prediction.dataCompleteness === 'PARTIAL'
+                            ? 'bg-cyan-500/15 text-cyan-400 border-cyan-500/30'
+                            : 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
+                        }`}
+                      >
+                        {prediction.dataCompleteness === 'PARTIAL' ? 'PARTIAL DATA' : 'FULL DATA (8/8)'}
+                      </span>
+                    </div>
+                    <span className="text-[10px] text-slate-400 mt-1 block">
+                      {prediction.dataCompleteness === 'PARTIAL'
+                        ? 'Estimated using available health information.'
+                        : 'Full cardiometabolic predictor panel observed.'}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Top Contributing Factors (TreeSHAP Directional Attribution) */}
+                {prediction.topContributingFactors && prediction.topContributingFactors.length > 0 && (
+                  <div className="space-y-3">
+                    <div>
+                      <h5 className="font-bold text-white text-xs">Top Contributing Factors</h5>
+                      <p className="text-[11px] text-slate-400">
+                        Directional feature impact computed via TreeSHAP. Indicates directional influence on model output without causal attribution.
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                      {prediction.topContributingFactors.map((f, i) => {
+                        const isIncrease = f.impact?.includes('higher') || f.impact?.includes('increase');
+                        return (
+                          <div
+                            key={i}
+                            className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-between"
+                          >
+                            <div>
+                              <span className="font-bold text-white capitalize block">
+                                {f.feature?.replace(/_/g, ' ')}
+                              </span>
+                              <span className="text-[11px] text-slate-400 block mt-0.5">
+                                Observed Value: {f.value ?? 'N/A'}
+                              </span>
+                            </div>
+                            <span
+                              className={`text-[10px] px-2.5 py-1 rounded-full font-bold border ${
+                                isIncrease
+                                  ? 'bg-rose-500/10 text-rose-400 border-rose-500/20'
+                                  : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                              }`}
+                            >
+                              {isIncrease ? 'higher estimated risk' : 'lower estimated risk'}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Input Features Observed */}
+                {prediction.inputFeatures && (
+                  <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-2 text-xs">
+                    <h5 className="font-bold text-slate-300">Observed Clinical Predictors</h5>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 text-[11px]">
+                      {Object.entries(prediction.inputFeatures).map(([k, v]) => {
+                        const prov = prediction.featureAvailability?.provenance?.[k];
+                        const isObserved = v !== null && v !== undefined && !Number.isNaN(v);
+                        return (
+                          <div key={k} className="p-2.5 rounded-lg bg-slate-900 border border-slate-800/80">
+                            <span className="text-slate-400 capitalize block text-[10px]">{k.replace(/_/g, ' ')}</span>
+                            <span className="font-bold text-white mt-0.5 block">
+                              {isObserved ? v : <em className="text-slate-500 font-normal">Unobserved</em>}
+                            </span>
+                            {isObserved && (
+                              <span className="text-[9px] text-slate-400 block mt-0.5">
+                                {prov === 'report' ? 'Found in report' : 'Available from health profile'}
+                              </span>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Clinical Disclaimer */}
+                <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800/80 text-[10px] text-slate-500 leading-relaxed italic">
+                  {prediction.clinicalDisclaimer ||
+                    'Model-estimated risk for clinical decision support. This tool provides non-diagnostic risk estimation derived from routine cardiometabolic parameters and does not substitute for clinical evaluation or diagnostic laboratory testing.'}
+                </div>
+
+                {/* Other Diseases Roadmap Section */}
+                <div className="pt-4 border-t border-slate-800 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h5 className="font-bold text-white text-xs">Other Disease Risk Models (Roadmap)</h5>
+                    <span className="text-[10px] font-mono text-slate-500">Under Development</span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800 flex items-center justify-between opacity-75">
+                      <div className="flex items-center space-x-2.5">
+                        <Activity className="w-4 h-4 text-amber-400" />
+                        <div>
+                          <p className="text-xs font-bold text-white flex items-center space-x-1">
+                            <span>Hypertension</span>
+                            <Lock className="w-3 h-3 text-slate-500" />
+                          </p>
+                          <p className="text-[10px] text-slate-500">Model under development</p>
+                        </div>
+                      </div>
+                      <span className="text-[9px] px-2 py-0.5 rounded bg-slate-900 text-slate-400 border border-slate-800 font-bold">
+                        Coming Soon
+                      </span>
+                    </div>
+
+                    <div className="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800 flex items-center justify-between opacity-75">
+                      <div className="flex items-center space-x-2.5">
+                        <FileText className="w-4 h-4 text-cyan-400" />
+                        <div>
+                          <p className="text-xs font-bold text-white flex items-center space-x-1">
+                            <span>Kidney Disease</span>
+                            <Lock className="w-3 h-3 text-slate-500" />
+                          </p>
+                          <p className="text-[10px] text-slate-500">Model under development</p>
+                        </div>
+                      </div>
+                      <span className="text-[9px] px-2 py-0.5 rounded bg-slate-900 text-slate-400 border border-slate-800 font-bold">
+                        Coming Soon
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : prediction && prediction.status === 'INSUFFICIENT_DATA' ? (
+              <div className="p-8 text-center space-y-3">
+                <div className="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-400 flex items-center justify-center mx-auto border border-amber-500/20">
+                  <AlertTriangle className="w-6 h-6" />
+                </div>
+                <h5 className="text-sm font-bold text-white">Insufficient Data for Diabetes Risk Assessment</h5>
+                <p className="text-xs text-slate-400 max-w-md mx-auto">
+                  {prediction.missingDomain
+                    ? `Missing domain: ${prediction.missingDomain.toUpperCase()}. The model enforces minimum demographic (age >= 18 & sex), physical (BMI or BP), and routine laboratory parameters (Lipid panel or Creatinine).`
+                    : 'The available confirmed report does not contain sufficient clinical data across required domains.'}
+                </p>
+              </div>
+            ) : (
+              <div className="p-8 text-center space-y-3">
+                <div className="w-12 h-12 rounded-2xl bg-slate-900 text-slate-500 flex items-center justify-center mx-auto border border-slate-800">
+                  <Brain className="w-6 h-6" />
+                </div>
+                <h5 className="text-sm font-bold text-white">No Diabetes Prediction Available</h5>
+                <p className="text-xs text-slate-400 max-w-md mx-auto">
+                  No confirmed medical report has been processed for diabetes risk estimation. Once a report is confirmed by the patient or clinician, the Scenario A LightGBM model will automatically evaluate calibrated risk.
+                </p>
+              </div>
+            )}
+
+            {/* Heart Disease Prediction Card in Doctor View */}
+            <div className="pt-6 border-t border-slate-800">
+              <div className="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
+                <div className="flex items-center space-x-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400">
+                    <HeartPulse className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-white">Framingham 10-Year CHD Risk Model</h4>
+                    <p className="text-[10px] text-slate-400">Model Version: v{heartDiseasePrediction?.modelVersion || '1.0.0'} • Platt Calibrated Logistic Regression</p>
+                  </div>
+                </div>
+                <span className="text-[10px] px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold">
+                  Active Clinical AI
+                </span>
+              </div>
+
+              {heartDiseasePrediction && heartDiseasePrediction.canCalculate && heartDiseasePrediction.status === 'SUCCESS' ? (
+                <div className="space-y-4">
+                  <div className="p-5 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-between">
+                    <div>
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Estimated 10-Year CHD Probability</span>
+                      <span className="text-3xl font-black text-white mt-1 block">
+                        {(heartDiseasePrediction.probability * 100).toFixed(1)}%
+                      </span>
+                      <span className="text-[11px] text-slate-400 block mt-0.5">
+                        Framingham 10-Year Coronary Heart Disease Risk
+                      </span>
+                    </div>
+
+                    <div className="text-right space-y-1">
+                      <span
+                        className={`inline-block text-xs px-3 py-1 rounded-full border font-bold ${
+                          heartDiseasePrediction.riskCategory === 'ELEVATED_MODEL_ESTIMATED_RISK'
+                            ? 'bg-rose-500/15 text-rose-400 border-rose-500/30'
+                            : 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
+                        }`}
+                      >
+                        {heartDiseasePrediction.riskCategory === 'ELEVATED_MODEL_ESTIMATED_RISK'
+                          ? 'Elevated model-estimated risk'
+                          : 'Lower model-estimated risk'}
+                      </span>
+                      <div className="text-[10px] text-slate-400">
+                        Threshold: <span className="font-mono text-amber-400 font-bold">11.0%</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Contributing Factors */}
+                  {heartDiseasePrediction.topContributingFactors && heartDiseasePrediction.topContributingFactors.length > 0 && (
+                    <div className="space-y-2">
+                      <h5 className="font-bold text-white text-xs">Contributing Factors</h5>
+                      <p className="text-[11px] text-slate-400">
+                        Directional feature contributions toward model-estimated risk without causal attribution.
+                      </p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                        {heartDiseasePrediction.topContributingFactors.map((f, i) => {
+                          const isIncrease = f.impact?.includes('higher') || f.impact?.includes('increase');
+                          return (
+                            <div key={i} className="p-3 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-between">
+                              <div>
+                                <span className="font-bold text-white capitalize block">{f.feature?.replace(/_/g, ' ')}</span>
+                                <span className="text-[11px] text-slate-400 block">Observed: {f.value ?? 'N/A'}</span>
+                              </div>
+                              <span
+                                className={`text-[10px] px-2 py-0.5 rounded font-bold border ${
+                                  isIncrease
+                                    ? 'bg-rose-500/10 text-rose-400 border-rose-500/20'
+                                    : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                                }`}
+                              >
+                                {isIncrease ? 'higher estimated risk' : 'lower estimated risk'}
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Predictors Grid */}
+                  {heartDiseasePrediction.inputFeatures && (
+                    <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-2 text-xs">
+                      <h5 className="font-bold text-slate-300">Observed Clinical Predictors (Framingham 8-Feature Contract)</h5>
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 text-[11px]">
+                        {Object.entries(heartDiseasePrediction.inputFeatures).map(([k, v]) => {
+                          const isObserved = v !== null && v !== undefined && !Number.isNaN(v);
+                          let displayVal = v;
+                          if (k === 'sex') displayVal = v === 1 ? 'Male' : (v === 0 ? 'Female' : v);
+                          if (k === 'currentSmoker') displayVal = v === 1 ? 'Smoker' : (v === 0 ? 'Non-smoker' : v);
+
+                          return (
+                            <div key={k} className="p-2.5 rounded-lg bg-slate-900 border border-slate-800/80">
+                              <span className="text-slate-400 capitalize block text-[10px]">
+                                {k === 'totChol' ? 'Total Cholesterol' : k === 'sysBP' ? 'Systolic BP' : k === 'diaBP' ? 'Diastolic BP' : k === 'currentSmoker' ? 'Smoking Status' : k.replace(/_/g, ' ')}
+                              </span>
+                              <span className="font-bold text-white mt-0.5 block">
+                                {isObserved ? displayVal : <em className="text-slate-500 font-normal">Preprocessor Imputed</em>}
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Clinical Disclaimer */}
+                  <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800/80 text-[10px] text-slate-500 leading-relaxed italic">
+                    {heartDiseasePrediction.clinicalDisclaimer ||
+                      'Model-estimated risk for clinical decision support. This tool provides non-diagnostic risk estimation derived from routine cardiometabolic parameters and does not substitute for clinical evaluation or diagnostic laboratory testing.'}
+                  </div>
+                </div>
+              ) : heartDiseasePrediction && heartDiseasePrediction.status === 'INSUFFICIENT_DATA' ? (
+                <div className="p-6 text-center space-y-2 bg-slate-950/60 rounded-2xl border border-slate-800">
+                  <AlertTriangle className="w-5 h-5 text-amber-400 mx-auto" />
+                  <h5 className="text-xs font-bold text-white">Insufficient Data for Heart Disease Assessment</h5>
+                  <p className="text-[11px] text-slate-400 max-w-md mx-auto">
+                    Required parameters missing: {heartDiseasePrediction.missingDomain || 'Age, Sex, Total Cholesterol, Systolic BP, Diastolic BP'}.
+                  </p>
+                </div>
+              ) : (
+                <div className="p-6 text-center space-y-2 bg-slate-950/60 rounded-2xl border border-slate-800">
+                  <HeartPulse className="w-5 h-5 text-slate-500 mx-auto" />
+                  <h5 className="text-xs font-bold text-white">No Heart Disease Assessment Available</h5>
+                  <p className="text-[11px] text-slate-400 max-w-md mx-auto">
+                    A confirmed lab report with Total Cholesterol and Blood Pressure or complete patient profile vitals will automatically activate this model.
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
         )}
 

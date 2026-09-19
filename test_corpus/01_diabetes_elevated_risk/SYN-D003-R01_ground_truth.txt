@@ -1,0 +1,31 @@
+========================================================================
+MEDTEST DIAGNOSTIC LABORATORIES
+SYNTHETIC TEST DOCUMENT — NOT A REAL MEDICAL RECORD — FOR TESTING ONLY
+========================================================================
+Report ID: SYN-D003-R01
+Report Date: 2025-08-04
+Patient Name: Test Patient D003
+Patient ID: SYN-D003
+Age: 43 Years
+Gender: Male
+DOB: 1982-02-14
+Referring Clinician: Dr. Julian Ross, MD
+------------------------------------------------------------------------
+
+[VITAL SIGNS & ANTHROPOMETRY]
+Resting Blood Pressure: 142/88 mmHg
+Body Mass Index (BMI): 37.6 kg/m²
+Pulse Rate: 84 BPM
+
+[CARDIOMETABOLIC LABORATORY PANEL]
+Investigation                  | Result     | Unit       | Ref Interval         | Flag
+------------------------------------------------------------------------
+Total Cholesterol              | 258.0      | mg/dL      | 125.0 - 200.0        | HIGH
+HDL Cholesterol                | 32.0       | mg/dL      | > 40.0               | LOW
+Serum Creatinine               | 1.28       | mg/dL      | 0.70 - 1.20          | HIGH
+Fasting Blood Glucose          | 162.0      | mg/dL      | 70.0 - 99.0          | HIGH
+HbA1c                          | 8.1        | %          | 4.0 - 5.6            | HIGH
+
+========================================================================
+END OF SYNTHETIC REPORT — NOT A REAL MEDICAL RECORD
+========================================================================

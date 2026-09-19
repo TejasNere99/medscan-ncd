@@ -1,0 +1,110 @@
+{
+  "model": "diabetes_scenario_a",
+  "version": "1.0.0",
+  "task": "non_diagnostic_risk_assessment",
+  "input_feature_count": 8,
+  "features": [
+    {
+      "name": "age",
+      "dtype": "int",
+      "unit": "years",
+      "domain": "demographic",
+      "required": true,
+      "valid_range": [
+        18,
+        120
+      ],
+      "description": "Patient age in completed years at screening"
+    },
+    {
+      "name": "sex",
+      "dtype": "int",
+      "unit": "binary_code",
+      "domain": "demographic",
+      "required": true,
+      "valid_values": [
+        0,
+        1
+      ],
+      "description": "Biological sex: 0 = Female, 1 = Male"
+    },
+    {
+      "name": "bmi",
+      "dtype": "float",
+      "unit": "kg/m^2",
+      "domain": "physical",
+      "required": false,
+      "valid_range": [
+        10.0,
+        90.0
+      ],
+      "description": "Body Mass Index"
+    },
+    {
+      "name": "systolic_bp",
+      "dtype": "float",
+      "unit": "mmHg",
+      "domain": "physical",
+      "required": false,
+      "valid_range": [
+        60.0,
+        260.0
+      ],
+      "description": "Averaged resting systolic blood pressure"
+    },
+    {
+      "name": "diastolic_bp",
+      "dtype": "float",
+      "unit": "mmHg",
+      "domain": "physical",
+      "required": false,
+      "valid_range": [
+        30.0,
+        150.0
+      ],
+      "description": "Averaged resting diastolic blood pressure"
+    },
+    {
+      "name": "total_cholesterol",
+      "dtype": "float",
+      "unit": "mg/dL",
+      "domain": "laboratory",
+      "required": false,
+      "valid_range": [
+        50.0,
+        600.0
+      ],
+      "description": "Total serum cholesterol concentration"
+    },
+    {
+      "name": "hdl",
+      "dtype": "float",
+      "unit": "mg/dL",
+      "domain": "laboratory",
+      "required": false,
+      "valid_range": [
+        10.0,
+        200.0
+      ],
+      "description": "High-density lipoprotein cholesterol"
+    },
+    {
+      "name": "creatinine",
+      "dtype": "float",
+      "unit": "mg/dL",
+      "domain": "laboratory",
+      "required": false,
+      "valid_range": [
+        0.1,
+        20.0
+      ],
+      "description": "Serum creatinine concentration"
+    }
+  ],
+  "minimum_input_policy": {
+    "demographic_rule": "Both age and sex are strictly mandatory.",
+    "physical_rule": "At least one physical feature (bmi OR (systolic_bp AND diastolic_bp)) is required.",
+    "laboratory_rule": "At least one laboratory feature ((total_cholesterol AND hdl) OR creatinine) is required.",
+    "failure_action": "Return status 'INSUFFICIENT_DATA' with canCalculate=false. Zero value fabrication."
+  }
+}

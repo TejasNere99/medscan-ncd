@@ -77,10 +77,21 @@ export const CHODashboard = () => {
               className="bg-transparent text-white font-semibold focus:outline-none"
             >
               <option value="All" className="bg-slate-900">All Villages</option>
-              <option value="Green Valley" className="bg-slate-900">Green Valley</option>
-              <option value="Sunrise Hill" className="bg-slate-900">Sunrise Hill</option>
-              <option value="Riverdale" className="bg-slate-900">Riverdale</option>
-              <option value="Oakridge" className="bg-slate-900">Oakridge</option>
+              {stats?.villageStats ? (
+                stats.villageStats.map((v) => (
+                  <option key={v.name} value={v.name} className="bg-slate-900">
+                    {v.name}
+                  </option>
+                ))
+              ) : (
+                <>
+                  <option value="Green Valley" className="bg-slate-900">Green Valley</option>
+                  <option value="Kopargaon" className="bg-slate-900">Kopargaon</option>
+                  <option value="Sunrise Hill" className="bg-slate-900">Sunrise Hill</option>
+                  <option value="Riverdale" className="bg-slate-900">Riverdale</option>
+                  <option value="Oakridge" className="bg-slate-900">Oakridge</option>
+                </>
+              )}
             </select>
           </div>
         </div>

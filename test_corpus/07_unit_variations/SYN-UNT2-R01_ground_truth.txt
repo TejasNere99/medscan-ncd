@@ -1,0 +1,29 @@
+========================================================================
+MEDTEST DIAGNOSTIC LABORATORIES
+SYNTHETIC TEST DOCUMENT — NOT A REAL MEDICAL RECORD — FOR TESTING ONLY
+========================================================================
+Report ID: SYN-UNT2-R01
+Report Date: 2025-07-28
+Patient Name: Test Patient UNT2
+Patient ID: SYN-UNT2
+Age: 53 Years
+Gender: Female
+DOB: 1972-10-08
+Referring Clinician: Dr. Brenda Vance, MD
+------------------------------------------------------------------------
+
+[RESTING VITALS]
+Resting Blood Pressure: 142 / 88 mm-Hg
+Body Mass Index (BMI): 28.8 kg/m2
+Pulse Rate: 78 beats/min
+
+[METABOLIC CHEMISTRIES]
+Investigation                  | Result     | Unit       | Ref Interval         | Flag
+------------------------------------------------------------------------
+Total Cholesterol              | 225.0      | mg%        | 130 - 200            | HIGH
+HDL Cholesterol                | 44.0       | mg/dL      | > 50                 | LOW
+Serum Creatinine               | 110.0      | umol/L     | 44 - 97              | HIGH
+
+========================================================================
+END OF SYNTHETIC REPORT — NOT A REAL MEDICAL RECORD
+========================================================================

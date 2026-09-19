@@ -1,0 +1,29 @@
+{
+  "patient_id": "HD-SYN-013",
+  "report_date": "2026-01-18",
+  "printed_values": {
+    "age": null,
+    "sex": "Male",
+    "totChol": {
+      "value": 215,
+      "unit": "mg/dL"
+    },
+    "sysBP": {
+      "value": 135,
+      "unit": "mmHg"
+    },
+    "diaBP": {
+      "value": 85,
+      "unit": "mmHg"
+    },
+    "BMI": {
+      "value": 26.0,
+      "unit": "kg/m2"
+    },
+    "glucose": {
+      "value": 100,
+      "unit": "mg/dL"
+    },
+    "currentSmoker": false
+  }
+}

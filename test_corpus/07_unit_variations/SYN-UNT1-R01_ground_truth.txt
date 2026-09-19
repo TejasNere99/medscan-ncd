@@ -1,0 +1,30 @@
+========================================================================
+MEDTEST DIAGNOSTIC LABORATORIES
+SYNTHETIC TEST DOCUMENT — NOT A REAL MEDICAL RECORD — FOR TESTING ONLY
+========================================================================
+Report ID: SYN-UNT1-R01
+Report Date: 2025-06-30
+Patient Name: Test Patient UNT1
+Patient ID: SYN-UNT1
+Age: 46 Years
+Gender: Male
+DOB: 1979-02-14
+Referring Clinician: Dr. Marcus Thorne, MD
+------------------------------------------------------------------------
+
+[CLINIC PHYSICAL VITALS]
+Resting Blood Pressure: 130/84 mmHg
+Body Mass Index (BMI): 27.5 kg/m²
+Heart Rate: 72 BPM
+
+[INTERNATIONAL SI UNIT BIOCHEMISTRY PANEL]
+Investigation                  | Result     | Unit       | Ref Interval         | Flag
+------------------------------------------------------------------------
+Total Cholesterol              | 5.6        | mmol/L     | 3.2 - 5.2            | HIGH
+HDL Cholesterol                | 1.1        | mmol/L     | > 1.0                | NORMAL
+Serum Creatinine               | 95.0       | µmol/L     | 62.0 - 106.0         | NORMAL
+Fasting Blood Glucose          | 6.2        | mmol/L     | 3.9 - 5.5            | HIGH
+
+========================================================================
+END OF SYNTHETIC REPORT — NOT A REAL MEDICAL RECORD
+========================================================================

@@ -1,0 +1,29 @@
+========================================================================
+MEDTEST DIAGNOSTIC LABORATORIES
+SYNTHETIC TEST DOCUMENT — NOT A REAL MEDICAL RECORD — FOR TESTING ONLY
+========================================================================
+Report ID: SYN-L001-R03
+Report Date: 2026-02-20
+Patient Name: Test Patient L001
+Patient ID: SYN-L001
+Age: 49 Years
+Gender: Male
+DOB: 1977-03-10
+Referring Clinician: Dr. Marcus Thorne, MD
+------------------------------------------------------------------------
+
+[ANNUAL REVIEW VITALS (VISIT 3)]
+Resting Blood Pressure: 140/88 mmHg
+Body Mass Index (BMI): 28.2 kg/m²
+Heart Rate: 80 BPM
+
+[CHEMISTRIES & LIPIDS]
+Investigation                  | Result     | Unit       | Ref Interval         | Flag
+------------------------------------------------------------------------
+Total Cholesterol              | 226.0      | mg/dL      | 125.0 - 200.0        | HIGH
+HDL Cholesterol                | 41.0       | mg/dL      | > 40.0               | NORMAL
+Serum Creatinine               | 1.05       | mg/dL      | 0.70 - 1.20          | NORMAL
+
+========================================================================
+END OF SYNTHETIC REPORT — NOT A REAL MEDICAL RECORD
+========================================================================

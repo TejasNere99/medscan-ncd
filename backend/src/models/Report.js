@@ -20,8 +20,7 @@ const reportSchema = new mongoose.Schema(
     },
     reportType: {
       type: String,
-      enum: ['Blood Test', 'Urine Test', 'Radiology', 'Prescription', 'Other'],
-      default: 'Blood Test',
+      default: 'General Laboratory Report',
       index: true,
     },
     fileUrl: {
@@ -31,12 +30,52 @@ const reportSchema = new mongoose.Schema(
     publicId: {
       type: String,
     },
+    storageProvider: {
+      type: String,
+      enum: ['cloudinary', 'local'],
+      default: 'local',
+    },
+    // Status state-machine: UPLOADED -> PROCESSING -> PENDING_REVIEW -> CONFIRMED
+    status: {
+      type: String,
+      enum: ['UPLOADED', 'PROCESSING', 'PENDING_REVIEW', 'CONFIRMED', 'UPLOAD_FAILED', 'OCR_FAILED'],
+      default: 'PENDING_REVIEW',
+      index: true,
+    },
+    // Raw, unedited OCR text preserved for audit and future AI refinement (immutable)
+    rawOcrText: {
+      type: String,
+      default: '',
+    },
+    // For backwards compatibility with older queries
     extractedText: {
       type: String,
+      default: '',
     },
+    // Pristine complete machine extraction snapshot immediately after OCR/parser/normalization (immutable)
+    initialExtraction: {
+      type: mongoose.Schema.Types.Mixed,
+      default: {},
+    },
+    // Audit trail of human corrections before and upon confirmation
+    corrections: {
+      type: mongoose.Schema.Types.Mixed,
+      default: {},
+    },
+    // Automatically machine-extracted structured medical JSON
+    extractedData: {
+      type: mongoose.Schema.Types.Mixed,
+      default: {},
+    },
+    // User-confirmed and validated parameters
+    confirmedData: {
+      type: mongoose.Schema.Types.Mixed,
+      default: {},
+    },
+    // Flat structuredData for backward compatibility with existing readers
     structuredData: {
-      type: Map,
-      of: mongoose.Schema.Types.Mixed,
+      type: mongoose.Schema.Types.Mixed,
+      default: {},
     },
     confidence: {
       type: Number,
@@ -45,6 +84,10 @@ const reportSchema = new mongoose.Schema(
     uploadDate: {
       type: Date,
       default: Date.now,
+      index: true,
+    },
+    confirmedAt: {
+      type: Date,
     },
   },
   {

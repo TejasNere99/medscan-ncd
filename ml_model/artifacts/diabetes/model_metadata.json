@@ -1,0 +1,353 @@
+{
+  "model_name": "diabetes_scenario_a",
+  "version": "1.0.0",
+  "task_description": "Routine Medical Report Diabetes Risk Assessment (Non-Diagnostic Decision Support)",
+  "training_timestamp_utc": "2026-09-10T04:49:45.550648+00:00",
+  "dataset_provenance": {
+    "source": "Official CDC/NCHS Continuous NHANES 2017-2018 Cycle",
+    "candidate_file": "scenario_a_candidate.csv",
+    "total_cohort_size": 5856,
+    "adult_criteria": "Age >= 18 years"
+  },
+  "target_definition": "Composite diabetes-status ground truth derived from NHANES questionnaire, medication, and laboratory criteria (DIQ010==1 | DIQ050==1 | DIQ070==1 | LBXGH>=6.5 | LBXGLU>=126)",
+  "split_protocol": {
+    "strategy": "Stratified 80/20 train/test split",
+    "random_state": 42,
+    "training_samples": 4684,
+    "held_out_test_samples": 1172,
+    "test_isolation": "Held-out test set locked until after threshold, calibration, and champion selection."
+  },
+  "algorithm": "LightGBM",
+  "calibration_method": "Sigmoid (Platt Scaling) via 5-Fold CalibratedClassifierCV",
+  "selected_development_threshold": 0.21,
+  "threshold_label": "Development threshold \u2014 requires external clinical validation",
+  "cross_validation_performance": {
+    "Logistic_Regression": {
+      "roc_auc": {
+        "mean": 0.7947679096795838,
+        "std": 0.017048620313376228
+      },
+      "pr_auc": {
+        "mean": 0.4701819115424491,
+        "std": 0.04046021109348668
+      },
+      "accuracy": {
+        "mean": 0.7115724397741474,
+        "std": 0.004770906729591729
+      },
+      "precision": {
+        "mean": 0.3876856002141573,
+        "std": 0.00547944025621858
+      },
+      "recall": {
+        "mean": 0.7465833614769786,
+        "std": 0.015729136581775747
+      },
+      "specificity": {
+        "mean": 0.7027555457187123,
+        "std": 0.006015716004196989
+      },
+      "f1": {
+        "mean": 0.5103160933567963,
+        "std": 0.00738107436858175
+      },
+      "brier": {
+        "mean": 0.18850890235029097,
+        "std": 0.00497061145048995
+      }
+    },
+    "Decision_Tree": {
+      "roc_auc": {
+        "mean": 0.7685936867290166,
+        "std": 0.018754985344835037
+      },
+      "pr_auc": {
+        "mean": 0.41618938174685394,
+        "std": 0.03450539811514687
+      },
+      "accuracy": {
+        "mean": 0.6618212334327596,
+        "std": 0.029610366958425945
+      },
+      "precision": {
+        "mean": 0.34944848310836985,
+        "std": 0.020846493722299842
+      },
+      "recall": {
+        "mean": 0.7763368231453338,
+        "std": 0.04482881578969094
+      },
+      "specificity": {
+        "mean": 0.6329994359681,
+        "std": 0.04548302707079818
+      },
+      "f1": {
+        "mean": 0.4809132993181084,
+        "std": 0.01729896437484693
+      },
+      "brier": {
+        "mean": 0.19580328528775265,
+        "std": 0.006776226076878167
+      }
+    },
+    "Random_Forest": {
+      "roc_auc": {
+        "mean": 0.8109918453643962,
+        "std": 0.016530737078663992
+      },
+      "pr_auc": {
+        "mean": 0.5005901332693272,
+        "std": 0.036484454273966106
+      },
+      "accuracy": {
+        "mean": 0.7096525554369737,
+        "std": 0.01242214001597331
+      },
+      "precision": {
+        "mean": 0.3890604964674776,
+        "std": 0.011736174054990832
+      },
+      "recall": {
+        "mean": 0.7719970730609028,
+        "std": 0.01618534745023193
+      },
+      "specificity": {
+        "mean": 0.6939398699156808,
+        "std": 0.01707198676915754
+      },
+      "f1": {
+        "mean": 0.517206710999721,
+        "std": 0.010711694042305257
+      },
+      "brier": {
+        "mean": 0.1766869731192418,
+        "std": 0.005363923321762586
+      }
+    },
+    "HistGradientBoosting": {
+      "roc_auc": {
+        "mean": 0.7909379502417091,
+        "std": 0.013381012729581393
+      },
+      "pr_auc": {
+        "mean": 0.4582941833037172,
+        "std": 0.023353034483195974
+      },
+      "accuracy": {
+        "mean": 0.7574699668883234,
+        "std": 0.01546434784625518
+      },
+      "precision": {
+        "mean": 0.42619198538814385,
+        "std": 0.027678592060922658
+      },
+      "recall": {
+        "mean": 0.5863728470111449,
+        "std": 0.029590994610380124
+      },
+      "specificity": {
+        "mean": 0.8005918765127122,
+        "std": 0.013636656623292238
+      },
+      "f1": {
+        "mean": 0.49349883911197984,
+        "std": 0.028205786655594898
+      },
+      "brier": {
+        "mean": 0.15810274465474158,
+        "std": 0.006167833639497964
+      }
+    },
+    "LightGBM": {
+      "roc_auc": {
+        "mean": 0.811282693670433,
+        "std": 0.017041228412902544
+      },
+      "pr_auc": {
+        "mean": 0.4976812234228021,
+        "std": 0.029004555709150857
+      },
+      "accuracy": {
+        "mean": 0.7239539720329475,
+        "std": 0.012120811606213856
+      },
+      "precision": {
+        "mean": 0.4021845135509893,
+        "std": 0.01408910922247031
+      },
+      "recall": {
+        "mean": 0.7603343465045592,
+        "std": 0.01789049176563074
+      },
+      "specificity": {
+        "mean": 0.71478834524464,
+        "std": 0.0134012981020615
+      },
+      "f1": {
+        "mean": 0.525994348609623,
+        "std": 0.015089666369877625
+      },
+      "brier": {
+        "mean": 0.17200254940589882,
+        "std": 0.006801277490072138
+      }
+    },
+    "XGBoost": {
+      "roc_auc": {
+        "mean": 0.8152315024109352,
+        "std": 0.01542470242802319
+      },
+      "pr_auc": {
+        "mean": 0.5058541130837573,
+        "std": 0.029325900479205986
+      },
+      "accuracy": {
+        "mean": 0.7290776163241478,
+        "std": 0.013625283301623875
+      },
+      "precision": {
+        "mean": 0.4074855263176621,
+        "std": 0.015199143479511634
+      },
+      "recall": {
+        "mean": 0.7560959135427221,
+        "std": 0.017078259578360195
+      },
+      "specificity": {
+        "mean": 0.7222717634207464,
+        "std": 0.01767997109734302
+      },
+      "f1": {
+        "mean": 0.5293536981552286,
+        "std": 0.013844705712683422
+      },
+      "brier": {
+        "mean": 0.16913605034351348,
+        "std": 0.00615226499853543
+      }
+    }
+  },
+  "calibration_benchmarks": {
+    "Logistic_Regression": {
+      "uncalibrated_brier": 0.18850826891179867,
+      "sigmoid_brier": 0.13173081041369727,
+      "isotonic_brier": 0.13061081834121316
+    },
+    "Random_Forest": {
+      "uncalibrated_brier": 0.17668712731507583,
+      "sigmoid_brier": 0.11331232014344694,
+      "isotonic_brier": 0.11228555460314459
+    },
+    "LightGBM": {
+      "uncalibrated_brier": 0.1720023355116161,
+      "sigmoid_brier": 0.11052396796115892,
+      "isotonic_brier": 0.10772138318080214
+    }
+  },
+  "missing_feature_sensitivity": {
+    "Full_Data": {
+      "dropped_features": [],
+      "mean_abs_delta_p": 0.0,
+      "spearman_rank_correlation": 1.0,
+      "roc_auc": 0.8846336899615986,
+      "clinically_acceptable": true
+    },
+    "No_BMI": {
+      "dropped_features": [
+        "bmi"
+      ],
+      "mean_abs_delta_p": 0.084792612712395,
+      "spearman_rank_correlation": 0.9237902965612107,
+      "roc_auc": 0.8450454296391227,
+      "clinically_acceptable": true
+    },
+    "No_BP": {
+      "dropped_features": [
+        "systolic_bp",
+        "diastolic_bp"
+      ],
+      "mean_abs_delta_p": 0.04540789376210515,
+      "spearman_rank_correlation": 0.9732943868701636,
+      "roc_auc": 0.8480086389023299,
+      "clinically_acceptable": true
+    },
+    "No_Lipids": {
+      "dropped_features": [
+        "total_cholesterol",
+        "hdl"
+      ],
+      "mean_abs_delta_p": 0.07905203999462489,
+      "spearman_rank_correlation": 0.9152644516411163,
+      "roc_auc": 0.8235023157734802,
+      "clinically_acceptable": true
+    },
+    "No_Creatinine": {
+      "dropped_features": [
+        "creatinine"
+      ],
+      "mean_abs_delta_p": 0.03551945385792882,
+      "spearman_rank_correlation": 0.9664779868238778,
+      "roc_auc": 0.8549997548021225,
+      "clinically_acceptable": true
+    },
+    "Missing_Both_Physical": {
+      "dropped_features": [
+        "bmi",
+        "systolic_bp",
+        "diastolic_bp"
+      ],
+      "mean_abs_delta_p": 0.08291963453474717,
+      "spearman_rank_correlation": 0.9107896158550799,
+      "roc_auc": 0.8172467935062531,
+      "clinically_acceptable": true
+    },
+    "Missing_Both_Labs": {
+      "dropped_features": [
+        "total_cholesterol",
+        "hdl",
+        "creatinine"
+      ],
+      "mean_abs_delta_p": 0.09692799032776486,
+      "spearman_rank_correlation": 0.8764612005808178,
+      "roc_auc": 0.7953426860024327,
+      "clinically_acceptable": true
+    },
+    "Missing_Age": {
+      "dropped_features": [
+        "age"
+      ],
+      "mean_abs_delta_p": 0.30805284044413084,
+      "spearman_rank_correlation": 0.44876626707348954,
+      "roc_auc": 0.6863954579715248,
+      "clinically_acceptable": false
+    }
+  },
+  "final_held_out_test_performance": {
+    "test_sample_size": 1172,
+    "test_positive_count": 236,
+    "test_negative_count": 936,
+    "selected_development_threshold": 0.21,
+    "roc_auc": 0.8278352708967116,
+    "pr_auc": 0.5399726838273519,
+    "accuracy": 0.7141638225255973,
+    "precision": 0.3979381443298969,
+    "sensitivity": 0.8177966101694916,
+    "specificity": 0.688034188034188,
+    "f1_score": 0.5353675450762829,
+    "brier_score": 0.12392480300536576,
+    "confusion_matrix": {
+      "true_negatives": 644,
+      "false_positives": 292,
+      "false_negatives": 43,
+      "true_positives": 193
+    }
+  },
+  "environment_versions": {
+    "python": "3.14.4",
+    "scikit_learn": "1.9.0",
+    "lightgbm": "4.7.0",
+    "xgboost": "3.4.1",
+    "shap": "0.52.0",
+    "joblib": "1.6.0"
+  }
+}

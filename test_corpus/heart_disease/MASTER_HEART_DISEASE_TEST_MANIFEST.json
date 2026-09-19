@@ -1,0 +1,1110 @@
+[
+  {
+    "id": "HD_ELEV_001",
+    "category": "01_elevated_risk",
+    "file": "test_corpus/heart_disease/01_elevated_risk/HD_ELEV_001.pdf",
+    "patient_id": "HD-SYN-001",
+    "report_date": "2026-01-15",
+    "features_present": [
+      "age",
+      "sex",
+      "totChol",
+      "sysBP",
+      "diaBP",
+      "BMI",
+      "glucose",
+      "currentSmoker"
+    ],
+    "features_missing": [],
+    "units": {
+      "totChol": "mg/dL",
+      "sysBP": "mmHg",
+      "diaBP": "mmHg",
+      "BMI": "kg/m2",
+      "glucose": "mg/dL"
+    },
+    "ocr_challenge": false,
+    "manual_correction_candidate": false
+  },
+  {
+    "id": "HD_ELEV_002",
+    "category": "01_elevated_risk",
+    "file": "test_corpus/heart_disease/01_elevated_risk/HD_ELEV_002.pdf",
+    "patient_id": "HD-SYN-002",
+    "report_date": "2026-02-10",
+    "features_present": [
+      "age",
+      "sex",
+      "totChol",
+      "sysBP",
+      "diaBP",
+      "BMI",
+      "glucose",
+      "currentSmoker"
+    ],
+    "features_missing": [],
+    "units": {
+      "totChol": "mg/dL",
+      "sysBP": "mmHg",
+      "diaBP": "mmHg",
+      "BMI": "kg/m2",
+      "glucose": "mg/dL"
+    },
+    "ocr_challenge": false,
+    "manual_correction_candidate": false
+  },
+  {
+    "id": "HD_ELEV_003",
+    "category": "01_elevated_risk",
+    "file": "test_corpus/heart_disease/01_elevated_risk/HD_ELEV_003.pdf",
+    "patient_id": "HD-SYN-003",
+    "report_date": "2026-03-04",
+    "features_present": [
+      "age",
+      "sex",
+      "totChol",
+      "sysBP",
+      "diaBP",
+      "BMI",
+      "glucose",
+      "currentSmoker"
+    ],
+    "features_missing": [],
+    "units": {
+      "totChol": "mg/dL",
+      "sysBP": "mmHg",
+      "diaBP": "mmHg",
+      "BMI": "kg/m2",
+      "glucose": "mg/dL"
+    },
+    "ocr_challenge": false,
+    "manual_correction_candidate": false
+  },
+  {
+    "id": "HD_ELEV_004",
+    "category": "01_elevated_risk",
+    "file": "test_corpus/heart_disease/01_elevated_risk/HD_ELEV_004.pdf",
+    "patient_id": "HD-SYN-004",
+    "report_date": "2026-03-22",
+    "features_present": [
+      "age",
+      "sex",
+      "totChol",
+      "sysBP",
+      "diaBP",
+      "BMI",
+      "glucose",
+      "currentSmoker"
+    ],
+    "features_missing": [],
+    "units": {
+      "totChol": "mg/dL",
+      "sysBP": "mmHg",
+      "diaBP": "mmHg",
+      "BMI": "kg/m2",
+      "glucose": "mg/dL"
+    },
+    "ocr_challenge": false,
+    "manual_correction_candidate": false
+  },
+  {
+    "id": "HD_LOW_001",
+    "category": "02_lower_risk",
+    "file": "test_corpus/heart_disease/02_lower_risk/HD_LOW_001.pdf",
+    "patient_id": "HD-SYN-005",
+    "report_date": "2026-01-20",
+    "features_present": [
+      "age",
+      "sex",
+      "totChol",
+      "sysBP",
+      "diaBP",
+      "BMI",
+      "glucose",
+      "currentSmoker"
+    ],
+    "features_missing": [],
+    "units": {
+      "totChol": "mg/dL",
+      "sysBP": "mmHg",
+      "diaBP": "mmHg",
+      "BMI": "kg/m2",
+      "glucose": "mg/dL"
+    },
+    "ocr_challenge": false,
+    "manual_correction_candidate": false
+  },
+  {
+    "id": "HD_LOW_002",
+    "category": "02_lower_risk",
+    "file": "test_corpus/heart_disease/02_lower_risk/HD_LOW_002.pdf",
+    "patient_id": "HD-SYN-006",
+    "report_date": "2026-02-14",
+    "features_present": [
+      "age",
+      "sex",
+      "totChol",
+      "sysBP",
+      "diaBP",
+      "BMI",
+      "glucose",
+      "currentSmoker"
+    ],
+    "features_missing": [],
+    "units": {
+      "totChol": "mg/dL",
+      "sysBP": "mmHg",
+      "diaBP": "mmHg",
+      "BMI": "kg/m2",
+      "glucose": "mg/dL"
+    },
+    "ocr_challenge": false,
+    "manual_correction_candidate": false
+  },
+  {
+    "id": "HD_LOW_003",
+    "category": "02_lower_risk",
+    "file": "test_corpus/heart_disease/02_lower_risk/HD_LOW_003.pdf",
+    "patient_id": "HD-SYN-007",
+    "report_date": "2026-03-08",
+    "features_present": [
+      "age",
+      "sex",
+      "totChol",
+      "sysBP",
+      "diaBP",
+      "BMI",
+      "glucose",
+      "currentSmoker"
+    ],
+    "features_missing": [],
+    "units": {
+      "totChol": "mg/dL",
+      "sysBP": "mmHg",
+      "diaBP": "mmHg",
+      "BMI": "kg/m2",
+      "glucose": "mg/dL"
+    },
+    "ocr_challenge": false,
+    "manual_correction_candidate": false
+  },
+  {
+    "id": "HD_LOW_004",
+    "category": "02_lower_risk",
+    "file": "test_corpus/heart_disease/02_lower_risk/HD_LOW_004.pdf",
+    "patient_id": "HD-SYN-008",
+    "report_date": "2026-04-02",
+    "features_present": [
+      "age",
+      "sex",
+      "totChol",
+      "sysBP",
+      "diaBP",
+      "BMI",
+      "glucose",
+      "currentSmoker"
+    ],
+    "features_missing": [],
+    "units": {
+      "totChol": "mg/dL",
+      "sysBP": "mmHg",
+      "diaBP": "mmHg",
+      "BMI": "kg/m2",
+      "glucose": "mg/dL"
+    },
+    "ocr_challenge": false,
+    "manual_correction_candidate": false
+  },
+  {
+    "id": "HD_BORD_001",
+    "category": "03_borderline",
+    "file": "test_corpus/heart_disease/03_borderline/HD_BORD_001.pdf",
+    "patient_id": "HD-SYN-009",
+    "report_date": "2026-01-28",
+    "features_present": [
+      "age",
+      "sex",
+      "totChol",
+      "sysBP",
+      "diaBP",
+      "BMI",
+      "glucose",
+      "currentSmoker"
+    ],
+    "features_missing": [],
+    "units": {
+      "totChol": "mg/dL",
+      "sysBP": "mmHg",
+      "diaBP": "mmHg",
+      "BMI": "kg/m2",
+      "glucose": "mg/dL"
+    },
+    "ocr_challenge": false,
+    "manual_correction_candidate": false
+  },
+  {
+    "id": "HD_BORD_002",
+    "category": "03_borderline",
+    "file": "test_corpus/heart_disease/03_borderline/HD_BORD_002.pdf",
+    "patient_id": "HD-SYN-010",
+    "report_date": "2026-02-18",
+    "features_present": [
+      "age",
+      "sex",
+      "totChol",
+      "sysBP",
+      "diaBP",
+      "BMI",
+      "glucose",
+      "currentSmoker"
+    ],
+    "features_missing": [],
+    "units": {
+      "totChol": "mg/dL",
+      "sysBP": "mmHg",
+      "diaBP": "mmHg",
+      "BMI": "kg/m2",
+      "glucose": "mg/dL"
+    },
+    "ocr_challenge": false,
+    "manual_correction_candidate": false
+  },
+  {
+    "id": "HD_BORD_003",
+    "category": "03_borderline",
+    "file": "test_corpus/heart_disease/03_borderline/HD_BORD_003.pdf",
+    "patient_id": "HD-SYN-011",
+    "report_date": "2026-03-12",
+    "features_present": [
+      "age",
+      "sex",
+      "totChol",
+      "sysBP",
+      "diaBP",
+      "BMI",
+      "glucose",
+      "currentSmoker"
+    ],
+    "features_missing": [],
+    "units": {
+      "totChol": "mg/dL",
+      "sysBP": "mmHg",
+      "diaBP": "mmHg",
+      "BMI": "kg/m2",
+      "glucose": "mg/dL"
+    },
+    "ocr_challenge": false,
+    "manual_correction_candidate": false
+  },
+  {
+    "id": "HD_BORD_004",
+    "category": "03_borderline",
+    "file": "test_corpus/heart_disease/03_borderline/HD_BORD_004.pdf",
+    "patient_id": "HD-SYN-012",
+    "report_date": "2026-04-10",
+    "features_present": [
+      "age",
+      "sex",
+      "totChol",
+      "sysBP",
+      "diaBP",
+      "BMI",
+      "glucose",
+      "currentSmoker"
+    ],
+    "features_missing": [],
+    "units": {
+      "totChol": "mg/dL",
+      "sysBP": "mmHg",
+      "diaBP": "mmHg",
+      "BMI": "kg/m2",
+      "glucose": "mg/dL"
+    },
+    "ocr_challenge": false,
+    "manual_correction_candidate": false
+  },
+  {
+    "id": "HD_MISS_REQ_001",
+    "category": "04_missing_required_data",
+    "file": "test_corpus/heart_disease/04_missing_required_data/HD_MISS_REQ_001.pdf",
+    "patient_id": "HD-SYN-013",
+    "report_date": "2026-01-18",
+    "features_present": [
+      "sex",
+      "totChol",
+      "sysBP",
+      "diaBP",
+      "BMI",
+      "glucose",
+      "currentSmoker"
+    ],
+    "features_missing": [
+      "age"
+    ],
+    "units": {
+      "totChol": "mg/dL",
+      "sysBP": "mmHg",
+      "diaBP": "mmHg",
+      "BMI": "kg/m2",
+      "glucose": "mg/dL"
+    },
+    "ocr_challenge": false,
+    "manual_correction_candidate": false
+  },
+  {
+    "id": "HD_MISS_REQ_002",
+    "category": "04_missing_required_data",
+    "file": "test_corpus/heart_disease/04_missing_required_data/HD_MISS_REQ_002.pdf",
+    "patient_id": "HD-SYN-014",
+    "report_date": "2026-02-22",
+    "features_present": [
+      "age",
+      "totChol",
+      "sysBP",
+      "diaBP",
+      "BMI",
+      "glucose",
+      "currentSmoker"
+    ],
+    "features_missing": [
+      "sex"
+    ],
+    "units": {
+      "totChol": "mg/dL",
+      "sysBP": "mmHg",
+      "diaBP": "mmHg",
+      "BMI": "kg/m2",
+      "glucose": "mg/dL"
+    },
+    "ocr_challenge": false,
+    "manual_correction_candidate": false
+  },
+  {
+    "id": "HD_MISS_REQ_003",
+    "category": "04_missing_required_data",
+    "file": "test_corpus/heart_disease/04_missing_required_data/HD_MISS_REQ_003.pdf",
+    "patient_id": "HD-SYN-015",
+    "report_date": "2026-03-15",
+    "features_present": [
+      "age",
+      "sex",
+      "sysBP",
+      "diaBP",
+      "BMI",
+      "glucose",
+      "currentSmoker"
+    ],
+    "features_missing": [
+      "totChol"
+    ],
+    "units": {
+      "sysBP": "mmHg",
+      "diaBP": "mmHg",
+      "BMI": "kg/m2",
+      "glucose": "mg/dL"
+    },
+    "ocr_challenge": false,
+    "manual_correction_candidate": false
+  },
+  {
+    "id": "HD_MISS_REQ_004",
+    "category": "04_missing_required_data",
+    "file": "test_corpus/heart_disease/04_missing_required_data/HD_MISS_REQ_004.pdf",
+    "patient_id": "HD-SYN-016",
+    "report_date": "2026-04-05",
+    "features_present": [
+      "age",
+      "sex",
+      "totChol",
+      "BMI",
+      "glucose",
+      "currentSmoker"
+    ],
+    "features_missing": [
+      "sysBP",
+      "diaBP"
+    ],
+    "units": {
+      "totChol": "mg/dL",
+      "BMI": "kg/m2",
+      "glucose": "mg/dL"
+    },
+    "ocr_challenge": false,
+    "manual_correction_candidate": false
+  },
+  {
+    "id": "HD_MISS_OPT_001",
+    "category": "05_optional_missing_data",
+    "file": "test_corpus/heart_disease/05_optional_missing_data/HD_MISS_OPT_001.pdf",
+    "patient_id": "HD-SYN-017",
+    "report_date": "2026-01-25",
+    "features_present": [
+      "age",
+      "sex",
+      "totChol",
+      "sysBP",
+      "diaBP",
+      "glucose",
+      "currentSmoker"
+    ],
+    "features_missing": [
+      "BMI"
+    ],
+    "units": {
+      "totChol": "mg/dL",
+      "sysBP": "mmHg",
+      "diaBP": "mmHg",
+      "glucose": "mg/dL"
+    },
+    "ocr_challenge": false,
+    "manual_correction_candidate": false
+  },
+  {
+    "id": "HD_MISS_OPT_002",
+    "category": "05_optional_missing_data",
+    "file": "test_corpus/heart_disease/05_optional_missing_data/HD_MISS_OPT_002.pdf",
+    "patient_id": "HD-SYN-018",
+    "report_date": "2026-02-12",
+    "features_present": [
+      "age",
+      "sex",
+      "totChol",
+      "sysBP",
+      "diaBP",
+      "BMI",
+      "currentSmoker"
+    ],
+    "features_missing": [
+      "glucose"
+    ],
+    "units": {
+      "totChol": "mg/dL",
+      "sysBP": "mmHg",
+      "diaBP": "mmHg",
+      "BMI": "kg/m2"
+    },
+    "ocr_challenge": false,
+    "manual_correction_candidate": false
+  },
+  {
+    "id": "HD_MISS_OPT_003",
+    "category": "05_optional_missing_data",
+    "file": "test_corpus/heart_disease/05_optional_missing_data/HD_MISS_OPT_003.pdf",
+    "patient_id": "HD-SYN-019",
+    "report_date": "2026-03-02",
+    "features_present": [
+      "age",
+      "sex",
+      "totChol",
+      "sysBP",
+      "diaBP",
+      "BMI",
+      "glucose"
+    ],
+    "features_missing": [
+      "currentSmoker"
+    ],
+    "units": {
+      "totChol": "mg/dL",
+      "sysBP": "mmHg",
+      "diaBP": "mmHg",
+      "BMI": "kg/m2",
+      "glucose": "mg/dL"
+    },
+    "ocr_challenge": false,
+    "manual_correction_candidate": false
+  },
+  {
+    "id": "HD_MISS_OPT_004",
+    "category": "05_optional_missing_data",
+    "file": "test_corpus/heart_disease/05_optional_missing_data/HD_MISS_OPT_004.pdf",
+    "patient_id": "HD-SYN-020",
+    "report_date": "2026-04-14",
+    "features_present": [
+      "age",
+      "sex",
+      "totChol",
+      "sysBP",
+      "diaBP"
+    ],
+    "features_missing": [
+      "BMI",
+      "glucose",
+      "currentSmoker"
+    ],
+    "units": {
+      "totChol": "mg/dL",
+      "sysBP": "mmHg",
+      "diaBP": "mmHg"
+    },
+    "ocr_challenge": false,
+    "manual_correction_candidate": false
+  },
+  {
+    "id": "HD_OCR_001",
+    "category": "06_ocr_challenging",
+    "file": "test_corpus/heart_disease/06_ocr_challenging/HD_OCR_001.pdf",
+    "patient_id": "HD-SYN-021",
+    "report_date": "2026-01-30",
+    "features_present": [
+      "age",
+      "sex",
+      "totChol",
+      "sysBP",
+      "diaBP",
+      "BMI",
+      "glucose",
+      "currentSmoker"
+    ],
+    "features_missing": [],
+    "units": {
+      "totChol": "mg/dL",
+      "sysBP": "mmHg",
+      "diaBP": "mmHg",
+      "BMI": "kg/m2",
+      "glucose": "mg/dL"
+    },
+    "ocr_challenge": true,
+    "manual_correction_candidate": false
+  },
+  {
+    "id": "HD_OCR_002",
+    "category": "06_ocr_challenging",
+    "file": "test_corpus/heart_disease/06_ocr_challenging/HD_OCR_002.pdf",
+    "patient_id": "HD-SYN-022",
+    "report_date": "2026-02-24",
+    "features_present": [
+      "age",
+      "sex",
+      "totChol",
+      "sysBP",
+      "diaBP",
+      "BMI",
+      "glucose",
+      "currentSmoker"
+    ],
+    "features_missing": [],
+    "units": {
+      "totChol": "mg/dL",
+      "sysBP": "mmHg",
+      "diaBP": "mmHg",
+      "BMI": "kg/m2",
+      "glucose": "mg/dL"
+    },
+    "ocr_challenge": true,
+    "manual_correction_candidate": false
+  },
+  {
+    "id": "HD_OCR_003",
+    "category": "06_ocr_challenging",
+    "file": "test_corpus/heart_disease/06_ocr_challenging/HD_OCR_003.pdf",
+    "patient_id": "HD-SYN-023",
+    "report_date": "2026-03-18",
+    "features_present": [
+      "age",
+      "sex",
+      "totChol",
+      "sysBP",
+      "diaBP",
+      "BMI",
+      "glucose",
+      "currentSmoker"
+    ],
+    "features_missing": [],
+    "units": {
+      "totChol": "mg/dL",
+      "sysBP": "mmHg",
+      "diaBP": "mmHg",
+      "BMI": "kg/m2",
+      "glucose": "mg/dL"
+    },
+    "ocr_challenge": true,
+    "manual_correction_candidate": false
+  },
+  {
+    "id": "HD_OCR_004",
+    "category": "06_ocr_challenging",
+    "file": "test_corpus/heart_disease/06_ocr_challenging/HD_OCR_004.pdf",
+    "patient_id": "HD-SYN-024",
+    "report_date": "2026-04-08",
+    "features_present": [
+      "age",
+      "sex",
+      "totChol",
+      "sysBP",
+      "diaBP",
+      "BMI",
+      "glucose",
+      "currentSmoker"
+    ],
+    "features_missing": [],
+    "units": {
+      "totChol": "mg/dL",
+      "sysBP": "mmHg",
+      "diaBP": "mmHg",
+      "BMI": "kg/m2",
+      "glucose": "mg/dL"
+    },
+    "ocr_challenge": true,
+    "manual_correction_candidate": false
+  },
+  {
+    "id": "HD_UNIT_001",
+    "category": "07_unit_variations",
+    "file": "test_corpus/heart_disease/07_unit_variations/HD_UNIT_001.pdf",
+    "patient_id": "HD-SYN-025",
+    "report_date": "2026-01-14",
+    "features_present": [
+      "age",
+      "sex",
+      "totChol",
+      "sysBP",
+      "diaBP",
+      "BMI",
+      "glucose",
+      "currentSmoker"
+    ],
+    "features_missing": [],
+    "units": {
+      "totChol": "mmol/L",
+      "sysBP": "mmHg",
+      "diaBP": "mmHg",
+      "BMI": "kg/m2",
+      "glucose": "mg/dL"
+    },
+    "ocr_challenge": false,
+    "manual_correction_candidate": false
+  },
+  {
+    "id": "HD_UNIT_002",
+    "category": "07_unit_variations",
+    "file": "test_corpus/heart_disease/07_unit_variations/HD_UNIT_002.pdf",
+    "patient_id": "HD-SYN-026",
+    "report_date": "2026-02-26",
+    "features_present": [
+      "age",
+      "sex",
+      "totChol",
+      "sysBP",
+      "diaBP",
+      "BMI",
+      "glucose",
+      "currentSmoker"
+    ],
+    "features_missing": [],
+    "units": {
+      "totChol": "mg/dL",
+      "sysBP": "mmHg",
+      "diaBP": "mmHg",
+      "BMI": "kg/m2",
+      "glucose": "mmol/L"
+    },
+    "ocr_challenge": false,
+    "manual_correction_candidate": false
+  },
+  {
+    "id": "HD_UNIT_003",
+    "category": "07_unit_variations",
+    "file": "test_corpus/heart_disease/07_unit_variations/HD_UNIT_003.pdf",
+    "patient_id": "HD-SYN-027",
+    "report_date": "2026-03-20",
+    "features_present": [
+      "age",
+      "sex",
+      "totChol",
+      "sysBP",
+      "diaBP",
+      "BMI",
+      "glucose",
+      "currentSmoker"
+    ],
+    "features_missing": [],
+    "units": {
+      "totChol": "mmol/L",
+      "sysBP": "mmHg",
+      "diaBP": "mmHg",
+      "BMI": "kg/m2",
+      "glucose": "mmol/L"
+    },
+    "ocr_challenge": false,
+    "manual_correction_candidate": false
+  },
+  {
+    "id": "HD_CORR_001",
+    "category": "08_manual_correction",
+    "file": "test_corpus/heart_disease/08_manual_correction/HD_CORR_001.pdf",
+    "patient_id": "HD-SYN-028",
+    "report_date": "2026-02-04",
+    "features_present": [
+      "age",
+      "sex",
+      "totChol",
+      "sysBP",
+      "diaBP",
+      "BMI",
+      "glucose",
+      "currentSmoker"
+    ],
+    "features_missing": [],
+    "units": {
+      "totChol": "mg/dL",
+      "sysBP": "mmHg",
+      "diaBP": "mmHg",
+      "BMI": "kg/m2",
+      "glucose": "mg/dL"
+    },
+    "ocr_challenge": true,
+    "manual_correction_candidate": true
+  },
+  {
+    "id": "HD_CORR_002",
+    "category": "08_manual_correction",
+    "file": "test_corpus/heart_disease/08_manual_correction/HD_CORR_002.pdf",
+    "patient_id": "HD-SYN-029",
+    "report_date": "2026-03-06",
+    "features_present": [
+      "age",
+      "sex",
+      "totChol",
+      "sysBP",
+      "diaBP",
+      "BMI",
+      "glucose",
+      "currentSmoker"
+    ],
+    "features_missing": [],
+    "units": {
+      "totChol": "mg/dL",
+      "sysBP": "mmHg",
+      "diaBP": "mmHg",
+      "BMI": "kg/m2",
+      "glucose": "mg/dL"
+    },
+    "ocr_challenge": false,
+    "manual_correction_candidate": true
+  },
+  {
+    "id": "HD_CORR_003",
+    "category": "08_manual_correction",
+    "file": "test_corpus/heart_disease/08_manual_correction/HD_CORR_003.pdf",
+    "patient_id": "HD-SYN-030",
+    "report_date": "2026-04-11",
+    "features_present": [
+      "age",
+      "sex",
+      "totChol",
+      "sysBP",
+      "diaBP",
+      "BMI",
+      "glucose",
+      "currentSmoker"
+    ],
+    "features_missing": [],
+    "units": {
+      "totChol": "mg/dL",
+      "sysBP": "mmHg",
+      "diaBP": "mmHg",
+      "BMI": "kg/m2",
+      "glucose": "mg/dL"
+    },
+    "ocr_challenge": false,
+    "manual_correction_candidate": true
+  },
+  {
+    "id": "HD_LONG_P101_R1",
+    "category": "09_multi_report_longitudinal",
+    "file": "test_corpus/heart_disease/09_multi_report_longitudinal/HD_LONG_P101_R1.pdf",
+    "patient_id": "HD-SYN-P101",
+    "report_date": "2026-01-12",
+    "features_present": [
+      "age",
+      "sex",
+      "totChol",
+      "sysBP",
+      "diaBP",
+      "BMI",
+      "glucose",
+      "currentSmoker"
+    ],
+    "features_missing": [],
+    "units": {
+      "totChol": "mg/dL",
+      "sysBP": "mmHg",
+      "diaBP": "mmHg",
+      "BMI": "kg/m2",
+      "glucose": "mg/dL"
+    },
+    "ocr_challenge": false,
+    "manual_correction_candidate": false
+  },
+  {
+    "id": "HD_LONG_P101_R2",
+    "category": "09_multi_report_longitudinal",
+    "file": "test_corpus/heart_disease/09_multi_report_longitudinal/HD_LONG_P101_R2.pdf",
+    "patient_id": "HD-SYN-P101",
+    "report_date": "2026-04-18",
+    "features_present": [
+      "age",
+      "sex",
+      "totChol",
+      "sysBP",
+      "diaBP",
+      "BMI",
+      "glucose",
+      "currentSmoker"
+    ],
+    "features_missing": [],
+    "units": {
+      "totChol": "mg/dL",
+      "sysBP": "mmHg",
+      "diaBP": "mmHg",
+      "BMI": "kg/m2",
+      "glucose": "mg/dL"
+    },
+    "ocr_challenge": false,
+    "manual_correction_candidate": false
+  },
+  {
+    "id": "HD_LONG_P101_R3",
+    "category": "09_multi_report_longitudinal",
+    "file": "test_corpus/heart_disease/09_multi_report_longitudinal/HD_LONG_P101_R3.pdf",
+    "patient_id": "HD-SYN-P101",
+    "report_date": "2026-08-24",
+    "features_present": [
+      "age",
+      "sex",
+      "totChol",
+      "sysBP",
+      "diaBP",
+      "BMI",
+      "glucose",
+      "currentSmoker"
+    ],
+    "features_missing": [],
+    "units": {
+      "totChol": "mg/dL",
+      "sysBP": "mmHg",
+      "diaBP": "mmHg",
+      "BMI": "kg/m2",
+      "glucose": "mg/dL"
+    },
+    "ocr_challenge": false,
+    "manual_correction_candidate": false
+  },
+  {
+    "id": "HD_LONG_P102_R1",
+    "category": "09_multi_report_longitudinal",
+    "file": "test_corpus/heart_disease/09_multi_report_longitudinal/HD_LONG_P102_R1.pdf",
+    "patient_id": "HD-SYN-P102",
+    "report_date": "2026-02-05",
+    "features_present": [
+      "age",
+      "sex",
+      "totChol",
+      "sysBP",
+      "diaBP",
+      "BMI",
+      "glucose",
+      "currentSmoker"
+    ],
+    "features_missing": [],
+    "units": {
+      "totChol": "mg/dL",
+      "sysBP": "mmHg",
+      "diaBP": "mmHg",
+      "BMI": "kg/m2",
+      "glucose": "mg/dL"
+    },
+    "ocr_challenge": false,
+    "manual_correction_candidate": false
+  },
+  {
+    "id": "HD_LONG_P102_R2",
+    "category": "09_multi_report_longitudinal",
+    "file": "test_corpus/heart_disease/09_multi_report_longitudinal/HD_LONG_P102_R2.pdf",
+    "patient_id": "HD-SYN-P102",
+    "report_date": "2026-07-14",
+    "features_present": [
+      "age",
+      "sex",
+      "totChol",
+      "sysBP",
+      "diaBP",
+      "BMI",
+      "glucose",
+      "currentSmoker"
+    ],
+    "features_missing": [],
+    "units": {
+      "totChol": "mg/dL",
+      "sysBP": "mmHg",
+      "diaBP": "mmHg",
+      "BMI": "kg/m2",
+      "glucose": "mg/dL"
+    },
+    "ocr_challenge": false,
+    "manual_correction_candidate": false
+  },
+  {
+    "id": "HD_LONG_P103_R1",
+    "category": "09_multi_report_longitudinal",
+    "file": "test_corpus/heart_disease/09_multi_report_longitudinal/HD_LONG_P103_R1.pdf",
+    "patient_id": "HD-SYN-P103",
+    "report_date": "2026-03-10",
+    "features_present": [
+      "age",
+      "sex",
+      "totChol",
+      "sysBP",
+      "diaBP",
+      "BMI",
+      "glucose",
+      "currentSmoker"
+    ],
+    "features_missing": [],
+    "units": {
+      "totChol": "mg/dL",
+      "sysBP": "mmHg",
+      "diaBP": "mmHg",
+      "BMI": "kg/m2",
+      "glucose": "mg/dL"
+    },
+    "ocr_challenge": false,
+    "manual_correction_candidate": false
+  },
+  {
+    "id": "HD_LONG_P103_R2",
+    "category": "09_multi_report_longitudinal",
+    "file": "test_corpus/heart_disease/09_multi_report_longitudinal/HD_LONG_P103_R2.pdf",
+    "patient_id": "HD-SYN-P103",
+    "report_date": "2026-09-15",
+    "features_present": [
+      "age",
+      "sex",
+      "totChol",
+      "sysBP",
+      "diaBP",
+      "BMI",
+      "glucose",
+      "currentSmoker"
+    ],
+    "features_missing": [],
+    "units": {
+      "totChol": "mg/dL",
+      "sysBP": "mmHg",
+      "diaBP": "mmHg",
+      "BMI": "kg/m2",
+      "glucose": "mg/dL"
+    },
+    "ocr_challenge": false,
+    "manual_correction_candidate": false
+  },
+  {
+    "id": "HD_MIX_001",
+    "category": "10_realistic_mixed_reports",
+    "file": "test_corpus/heart_disease/10_realistic_mixed_reports/HD_MIX_001.pdf",
+    "patient_id": "HD-SYN-031",
+    "report_date": "2026-01-22",
+    "features_present": [
+      "age",
+      "sex",
+      "totChol",
+      "sysBP",
+      "diaBP",
+      "BMI",
+      "glucose",
+      "currentSmoker"
+    ],
+    "features_missing": [],
+    "units": {
+      "totChol": "mg/dL",
+      "sysBP": "mmHg",
+      "diaBP": "mmHg",
+      "BMI": "kg/m2",
+      "glucose": "mg/dL"
+    },
+    "ocr_challenge": false,
+    "manual_correction_candidate": false
+  },
+  {
+    "id": "HD_MIX_002",
+    "category": "10_realistic_mixed_reports",
+    "file": "test_corpus/heart_disease/10_realistic_mixed_reports/HD_MIX_002.pdf",
+    "patient_id": "HD-SYN-032",
+    "report_date": "2026-02-20",
+    "features_present": [
+      "age",
+      "sex",
+      "totChol",
+      "sysBP",
+      "diaBP",
+      "BMI",
+      "glucose",
+      "currentSmoker"
+    ],
+    "features_missing": [],
+    "units": {
+      "totChol": "mg/dL",
+      "sysBP": "mmHg",
+      "diaBP": "mmHg",
+      "BMI": "kg/m2",
+      "glucose": "mg/dL"
+    },
+    "ocr_challenge": false,
+    "manual_correction_candidate": false
+  },
+  {
+    "id": "HD_MIX_003",
+    "category": "10_realistic_mixed_reports",
+    "file": "test_corpus/heart_disease/10_realistic_mixed_reports/HD_MIX_003.pdf",
+    "patient_id": "HD-SYN-033",
+    "report_date": "2026-03-25",
+    "features_present": [
+      "age",
+      "sex",
+      "totChol",
+      "sysBP",
+      "diaBP",
+      "BMI",
+      "glucose",
+      "currentSmoker"
+    ],
+    "features_missing": [],
+    "units": {
+      "totChol": "mg/dL",
+      "sysBP": "mmHg",
+      "diaBP": "mmHg",
+      "BMI": "kg/m2",
+      "glucose": "mg/dL"
+    },
+    "ocr_challenge": false,
+    "manual_correction_candidate": false
+  },
+  {
+    "id": "HD_MIX_004",
+    "category": "10_realistic_mixed_reports",
+    "file": "test_corpus/heart_disease/10_realistic_mixed_reports/HD_MIX_004.pdf",
+    "patient_id": "HD-SYN-034",
+    "report_date": "2026-04-18",
+    "features_present": [
+      "age",
+      "sex",
+      "totChol",
+      "sysBP",
+      "diaBP",
+      "BMI",
+      "glucose",
+      "currentSmoker"
+    ],
+    "features_missing": [],
+    "units": {
+      "totChol": "mg/dL",
+      "sysBP": "mmHg",
+      "diaBP": "mmHg",
+      "BMI": "kg/m2",
+      "glucose": "mg/dL"
+    },
+    "ocr_challenge": false,
+    "manual_correction_candidate": false
+  }
+]

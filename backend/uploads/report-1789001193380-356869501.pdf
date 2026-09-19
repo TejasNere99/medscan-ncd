@@ -1,0 +1,92 @@
+%PDF-1.4
+1 0 obj << /Type /Catalog /Pages 2 0 R >> endobj
+2 0 obj << /Type /Pages /Kids [3 0 R] /Count 1 >> endobj
+3 0 obj << /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >> endobj
+4 0 obj << /Length 1630 >> stream
+BT
+/F1 10 Tf
+50 720 Td
+(SENTINEL ABP REPORT - 24-HOUR AMBULATORY BLOOD PRESSURE MONITORING) Tj
+0 -13 Td
+(Patient Name: Robert Davis    ID: 90210    Recorder: Sentinel 90207) Tj
+0 -13 Td
+(Recording Duration: 24 Hours) Tj
+0 -13 Td
+() Tj
+0 -13 Td
+(OVERALL SUMMARY) Tj
+0 -13 Td
+(Hourly avg. | Std. dev. | Min. | Max. | Dipping) Tj
+0 -13 Td
+(Systolic mmHg        142     23.38     103    191    10.39%) Tj
+0 -13 Td
+(Diastolic mmHg        79     13.06      48    107    14.43%) Tj
+0 -13 Td
+(MAP mmHg             101     16.20      69    143) Tj
+0 -13 Td
+(Pulse pressure mmHg   63     13.50      37     89) Tj
+0 -13 Td
+(Heart rate BPM        66      6.55      57     84) Tj
+0 -13 Td
+() Tj
+0 -13 Td
+(24-Hour Average BP: 142/79 mmHg) Tj
+0 -13 Td
+(Systolic above limits: 67.57%) Tj
+0 -13 Td
+(Diastolic above limits: 54.05%) Tj
+0 -13 Td
+(Systolic dipping: 10.39%) Tj
+0 -13 Td
+(Diastolic dipping: 14.43%) Tj
+0 -13 Td
+(AASI: 0.51) Tj
+0 -13 Td
+(MSI: 28.97) Tj
+0 -13 Td
+() Tj
+0 -13 Td
+(WAKE PERIODS SUMMARY) Tj
+0 -13 Td
+(Hourly avg. | Std. dev. | Min. | Max.) Tj
+0 -13 Td
+(Average BP: 147/83 mmHg) Tj
+0 -13 Td
+(Systolic mmHg        147     24.06     112    191) Tj
+0 -13 Td
+(Diastolic mmHg        83     12.29      62    107) Tj
+0 -13 Td
+(Systolic > 135: 65.52%) Tj
+0 -13 Td
+(Diastolic > 85: 51.72%) Tj
+0 -13 Td
+() Tj
+0 -13 Td
+(SLEEP PERIODS SUMMARY) Tj
+0 -13 Td
+(Hourly avg. | Std. dev. | Min. | Max.) Tj
+0 -13 Td
+(Average BP: 133/72 mmHg) Tj
+0 -13 Td
+(Systolic mmHg        133     16.87     103    152) Tj
+0 -13 Td
+(Diastolic mmHg        72     11.90      48     86) Tj
+0 -13 Td
+(Systolic > 120: 75%) Tj
+0 -13 Td
+(Diastolic > 70: 62.50%) Tj
+ET
+endstream endobj
+5 0 obj << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> endobj
+xref
+0 6
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000241 00000 n 
+0000001923 00000 n 
+trailer << /Size 6 /Root 1 0 R >>
+startxref
+1993
+%%EOF

@@ -5,6 +5,10 @@ export const patientService = {
     return await api.get('/patients/me');
   },
 
+  updateMyDemographics: async (data) => {
+    return await api.patch('/patients/me/demographics', data);
+  },
+
   getPatients: async (params = {}) => {
     return await api.get('/patients', { params });
   },

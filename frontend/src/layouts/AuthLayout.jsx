@@ -17,9 +17,9 @@ export const AuthLayout = () => {
             </div>
             <div className="text-left">
               <span className="text-xl font-extrabold text-white tracking-tight block leading-none">
-                Smart<span className="text-brand-400">Health</span>
+                MedScan<span className="text-brand-400">-NCD</span>
               </span>
-              <span className="text-xs text-slate-400 font-semibold tracking-wider uppercase">AI & IoT Platform</span>
+              <span className="text-xs text-slate-400 font-semibold tracking-wider uppercase">AI Preventive Health Platform</span>
             </div>
           </Link>
         </div>

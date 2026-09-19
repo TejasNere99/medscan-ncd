@@ -1,0 +1,37 @@
+========================================================================
+MEDTEST DIAGNOSTIC LABORATORIES
+SYNTHETIC TEST DOCUMENT — NOT A REAL MEDICAL RECORD — FOR TESTING ONLY
+========================================================================
+Report ID: SYN-CNF1-R01
+Report Date: 2025-08-10
+Patient Name: Test Patient CNF1
+Patient ID: SYN-CNF1
+Age: 55 Years
+Gender: Male
+DOB: 1970-05-18
+Referring Clinician: Dr. Marcus Thorne, MD
+------------------------------------------------------------------------
+
+[SECTION A: TRIAGE NURSE INTAKE VITAL SIGNS (08:15 AM)]
+Blood Pressure: 124/80 mmHg
+Body Mass Index (BMI): 29.5 kg/m²
+Heart Rate: 72 BPM
+
+[SECTION B: ATTENDING PHYSICIAN RE-EXAMINATION VITALS (09:45 AM)]
+Blood Pressure: 148/92 mmHg
+Body Mass Index (BMI): 29.5 kg/m²
+Heart Rate: 82 BPM
+
+[SECTION C: CLINICAL LABORATORY INVESTIGATIONS]
+Investigation                  | Result     | Unit       | Ref Interval         | Flag
+------------------------------------------------------------------------
+Total Cholesterol              | 224.0      | mg/dL      | 125.0 - 200.0        | HIGH
+HDL Cholesterol                | 40.0       | mg/dL      | > 40.0               | NORMAL
+Serum Creatinine               | 1.1        | mg/dL      | 0.70 - 1.20          | NORMAL
+
+[CONFLICT AUDIT NOTICE]
+Clinical Discrepancy Note: Initial triage reading showed normotensive BP (124/80 mmHg), while subsequent physician evaluation recorded Stage 2 hypertension (148/92 mmHg). Automated extraction triggers WARNING status for manual clinician reconciliation.
+
+========================================================================
+END OF SYNTHETIC REPORT — NOT A REAL MEDICAL RECORD
+========================================================================

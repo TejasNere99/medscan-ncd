@@ -13,8 +13,6 @@ export const Register = () => {
     name: '',
     email: '',
     password: '',
-    role: 'Patient',
-    phone: '',
     village: 'Green Valley',
   });
   const [loading, setLoading] = useState(false);
@@ -28,12 +26,14 @@ export const Register = () => {
 
     setLoading(true);
     try {
-      const response = await register(formData);
+      const response = await register({
+        ...formData,
+        role: 'Patient',
+      });
       const user = response?.data?.user || response?.user;
       addToast('Account created successfully!', 'success');
       
-      const role = user?.role || formData.role;
-      navigate(`/${role.toLowerCase()}/dashboard`);
+      navigate('/patient/dashboard');
     } catch (err) {
       addToast(err?.message || 'Registration failed.', 'error');
     } finally {
@@ -46,7 +46,7 @@ export const Register = () => {
       <div>
         <h2 className="text-xl font-extrabold text-white">Create New Account</h2>
         <p className="text-xs text-slate-400 mt-1">
-          Select your healthcare role to join the smart telemetry ecosystem.
+          Create your Patient account to securely manage your health reports and AI-powered health insights.
         </p>
       </div>
 
@@ -96,34 +96,17 @@ export const Register = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="block text-xs font-bold text-slate-300 mb-1">Role</label>
-            <select
-              value={formData.role}
-              onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:border-brand-500 focus:outline-none"
-            >
-              <option value="Patient">Patient</option>
-              <option value="Doctor">Doctor</option>
-              <option value="Family">Family Member</option>
-              <option value="Nurse">Nurse</option>
-              <option value="CHO">CHO (Health Officer)</option>
-              <option value="Admin">Admin</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-xs font-bold text-slate-300 mb-1">Village / Region</label>
-            <div className="relative">
-              <Building className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
-              <input
-                type="text"
-                value={formData.village}
-                onChange={(e) => setFormData({ ...formData, village: e.target.value })}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3 py-2 text-xs text-white focus:border-brand-500 focus:outline-none"
-              />
-            </div>
+        <div>
+          <label className="block text-xs font-bold text-slate-300 mb-1">Village / Region</label>
+          <div className="relative">
+            <Building className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" />
+            <input
+              type="text"
+              value={formData.village}
+              onChange={(e) => setFormData({ ...formData, village: e.target.value })}
+              placeholder="e.g. Green Valley"
+              className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-4 py-2 text-xs text-white placeholder-slate-500 focus:border-brand-500 focus:outline-none"
+            />
           </div>
         </div>
 
@@ -136,6 +119,12 @@ export const Register = () => {
           <ArrowRight className="w-4 h-4" />
         </button>
       </form>
+
+      <div className="p-3 bg-slate-900/60 border border-slate-800/80 rounded-xl">
+        <p className="text-[11px] text-slate-400 leading-relaxed">
+          <span className="font-semibold text-slate-300">Staff & Caregivers:</span> Healthcare staff accounts are created through authorized administrative provisioning. Family access is provided through patient invitation.
+        </p>
+      </div>
 
       <div className="text-center pt-2">
         <p className="text-xs text-slate-400">

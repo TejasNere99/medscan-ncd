@@ -1,0 +1,94 @@
+%PDF-1.4
+1 0 obj << /Type /Catalog /Pages 2 0 R >> endobj
+2 0 obj << /Type /Pages /Kids [3 0 R] /Count 1 >> endobj
+3 0 obj << /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >> endobj
+4 0 obj << /Length 1766 >> stream
+BT
+/F1 10 Tf
+50 720 Td
+(SENTINEL ABP REPORT) Tj
+0 -13 Td
+(Ambulatory Blood Pressure Monitoring Report) Tj
+0 -13 Td
+(Patient: Robert Davis  Age: 58  Gender: Male) Tj
+0 -13 Td
+(Monitoring Period: 24 Hours) Tj
+0 -13 Td
+() Tj
+0 -13 Td
+(OVERALL SUMMARY  00:00 - 23:59 ) Tj
+0 -13 Td
+(Parameter        Average   Std. Dev.   Minimum   Maximum) Tj
+0 -13 Td
+(Systolic  mmHg   142       23.38       103       191) Tj
+0 -13 Td
+(Diastolic  mmHg  79        14.22       52        118) Tj
+0 -13 Td
+(MAP  mmHg        100       16.12       72        139) Tj
+0 -13 Td
+(Pulse Pressure   63        12.45       41        94) Tj
+0 -13 Td
+(Heart Rate  BPM  66        10.15       49        98) Tj
+0 -13 Td
+() Tj
+0 -13 Td
+(WAKE PERIODS SUMMARY  07:00 - 22:59 ) Tj
+0 -13 Td
+(Parameter        Average   Std. Dev.   Minimum   Maximum) Tj
+0 -13 Td
+(Systolic  mmHg   147       21.10       112       191) Tj
+0 -13 Td
+(Diastolic  mmHg  83        13.50       58        118) Tj
+0 -13 Td
+(Heart Rate  BPM  71        9.80        52        98) Tj
+0 -13 Td
+() Tj
+0 -13 Td
+(SLEEP PERIODS SUMMARY  23:00 - 06:59 ) Tj
+0 -13 Td
+(Parameter        Average   Std. Dev.   Minimum   Maximum) Tj
+0 -13 Td
+(Systolic  mmHg   133       18.40       103       165) Tj
+0 -13 Td
+(Diastolic  mmHg  72        11.20       52        95) Tj
+0 -13 Td
+(Heart Rate  BPM  58        7.30        49        74) Tj
+0 -13 Td
+() Tj
+0 -13 Td
+(HYPERTENSION INDICATORS) Tj
+0 -13 Td
+(Systolic Load: 42.5%) Tj
+0 -13 Td
+(Diastolic Load: 18.2%) Tj
+0 -13 Td
+(Wake Systolic Load: 46.0%) Tj
+0 -13 Td
+(Wake Diastolic Load: 22.0%) Tj
+0 -13 Td
+(Sleep Systolic Load: 35.0%) Tj
+0 -13 Td
+(Sleep Diastolic Load: 12.0%) Tj
+0 -13 Td
+(Systolic Dipping: 9.5%) Tj
+0 -13 Td
+(Diastolic Dipping: 13.3%) Tj
+0 -13 Td
+(AASI: 0.54) Tj
+0 -13 Td
+(MSI: 26.4 mmHg) Tj
+ET
+endstream endobj
+5 0 obj << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> endobj
+xref
+0 6
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000241 00000 n 
+0000002059 00000 n 
+trailer << /Size 6 /Root 1 0 R >>
+startxref
+2129
+%%EOF

@@ -1,0 +1,29 @@
+========================================================================
+MEDTEST DIAGNOSTIC LABORATORIES
+SYNTHETIC TEST DOCUMENT — NOT A REAL MEDICAL RECORD — FOR TESTING ONLY
+========================================================================
+Report ID: SYN-L002-R02
+Report Date: 2025-07-25
+Patient Name: Test Patient L002
+Patient ID: SYN-L002
+Age: 56 Years
+Gender: Female
+DOB: 1969-10-15
+Referring Clinician: Dr. Brenda Vance, MD
+------------------------------------------------------------------------
+
+[6-MONTH EVALUATION VITALS]
+Resting Blood Pressure: 136/86 mmHg
+Body Mass Index (BMI): 29.8 kg/m²
+Heart Rate: 74 BPM
+
+[LIPID & RENAL PROFILE]
+Investigation                  | Result     | Unit       | Ref Interval         | Flag
+------------------------------------------------------------------------
+Total Cholesterol              | 218.0      | mg/dL      | 125.0 - 200.0        | HIGH
+HDL Cholesterol                | 44.0       | mg/dL      | > 50.0               | LOW
+Serum Creatinine               | 1.02       | mg/dL      | 0.50 - 1.10          | NORMAL
+
+========================================================================
+END OF SYNTHETIC REPORT — NOT A REAL MEDICAL RECORD
+========================================================================

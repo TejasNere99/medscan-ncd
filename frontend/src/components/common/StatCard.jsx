@@ -16,38 +16,46 @@ export const StatCard = ({ title, value, icon: Icon, color = 'cyan', trend, tren
     down: 'bg-rose-500/10 text-rose-400 border-rose-500/20',
   };
 
+  const getValueSizeClass = (val) => {
+    if (typeof val === 'string') {
+      if (val.length > 13) return 'text-lg sm:text-xl';
+      if (val.length > 8) return 'text-xl sm:text-2xl';
+    }
+    return 'text-2xl sm:text-3xl';
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ y: -4, transition: { duration: 0.2 } }}
-      className={`glass-card p-6 rounded-2xl border transition-all duration-300 relative overflow-hidden group ${
+      className={`glass-card p-5 sm:p-6 rounded-2xl border transition-all duration-300 relative overflow-hidden group ${
         colorMap[color] || colorMap.cyan
       }`}
     >
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">{title}</p>
-          <div className="flex items-baseline space-x-2">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5 truncate">{title}</p>
+          <div className="flex items-baseline flex-wrap gap-2">
             <motion.span
-              initial={{ scale: 0.5, opacity: 0 }}
+              initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ duration: 0.4 }}
-              className="text-3xl font-extrabold text-white tracking-tight"
+              className={`${getValueSizeClass(value)} font-extrabold text-white tracking-tight leading-tight break-words`}
             >
               {value}
             </motion.span>
             {trend && (
-              <span className={`text-xs px-2 py-0.5 rounded-full border font-medium ${badgeColor[trendType]}`}>
+              <span className={`text-xs px-2 py-0.5 rounded-full border font-medium shrink-0 ${badgeColor[trendType]}`}>
                 {trend}
               </span>
             )}
           </div>
-          {description && <p className="text-xs text-slate-400 mt-2 font-normal">{description}</p>}
+          {description && <p className="text-xs text-slate-400 mt-2 font-normal leading-relaxed">{description}</p>}
         </div>
         {Icon && (
-          <div className={`p-3.5 rounded-xl bg-slate-900/80 border border-slate-800 shadow-inner group-hover:scale-110 transition-transform`}>
-            <Icon className="w-6 h-6" />
+          <div className={`p-3 rounded-xl bg-slate-900/80 border border-slate-800 shadow-inner shrink-0 group-hover:scale-105 transition-transform`}>
+            <Icon className="w-5 h-5 sm:w-6 sm:h-6" />
           </div>
         )}
       </div>

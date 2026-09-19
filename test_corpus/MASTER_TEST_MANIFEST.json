@@ -1,0 +1,1662 @@
+[
+  {
+    "reportId": "SYN-D001-R01",
+    "patientId": "SYN-D001",
+    "category": "01_diabetes_elevated_risk",
+    "relativePdfPath": "test_corpus/01_diabetes_elevated_risk/SYN-D001-R01.pdf",
+    "relativeTextPath": "test_corpus/01_diabetes_elevated_risk/SYN-D001-R01_ground_truth.txt",
+    "reportType": "metabolic_panel",
+    "clinicalScenario": "elevated_diabetes_risk",
+    "synthetic": true,
+    "patientContext": {
+      "age": 62,
+      "sex": 1,
+      "genderStr": "Male",
+      "dob": "1963-05-12"
+    },
+    "availableFeatures": [
+      "age",
+      "sex",
+      "bmi",
+      "systolic_bp",
+      "diastolic_bp",
+      "total_cholesterol",
+      "hdl",
+      "creatinine"
+    ],
+    "missingFeatures": [],
+    "modelRelevantFeatures": {
+      "age": 62,
+      "sex": 1,
+      "bmi": 32.4,
+      "systolic_bp": 146.0,
+      "diastolic_bp": 92.0,
+      "total_cholesterol": 242.0,
+      "hdl": 36.0,
+      "creatinine": 1.15
+    },
+    "expectedNormalization": [],
+    "expectedValidation": "VALID",
+    "expectedConflict": false,
+    "ocrDifficulty": "STANDARD",
+    "multiReportGroup": null,
+    "actualModelOutput": null
+  },
+  {
+    "reportId": "SYN-D002-R01",
+    "patientId": "SYN-D002",
+    "category": "01_diabetes_elevated_risk",
+    "relativePdfPath": "test_corpus/01_diabetes_elevated_risk/SYN-D002-R01.pdf",
+    "relativeTextPath": "test_corpus/01_diabetes_elevated_risk/SYN-D002-R01_ground_truth.txt",
+    "reportType": "general_lab_report",
+    "clinicalScenario": "elevated_diabetes_risk",
+    "synthetic": true,
+    "patientContext": {
+      "age": 54,
+      "sex": 0,
+      "genderStr": "Female",
+      "dob": "1971-09-20"
+    },
+    "availableFeatures": [
+      "age",
+      "sex",
+      "bmi",
+      "systolic_bp",
+      "diastolic_bp",
+      "total_cholesterol",
+      "hdl",
+      "creatinine"
+    ],
+    "missingFeatures": [],
+    "modelRelevantFeatures": {
+      "age": 54,
+      "sex": 0,
+      "bmi": 29.8,
+      "systolic_bp": 152.0,
+      "diastolic_bp": 94.0,
+      "total_cholesterol": 228.0,
+      "hdl": 41.0,
+      "creatinine": 0.95
+    },
+    "expectedNormalization": [],
+    "expectedValidation": "VALID",
+    "expectedConflict": false,
+    "ocrDifficulty": "STANDARD",
+    "multiReportGroup": null,
+    "actualModelOutput": null
+  },
+  {
+    "reportId": "SYN-D003-R01",
+    "patientId": "SYN-D003",
+    "category": "01_diabetes_elevated_risk",
+    "relativePdfPath": "test_corpus/01_diabetes_elevated_risk/SYN-D003-R01.pdf",
+    "relativeTextPath": "test_corpus/01_diabetes_elevated_risk/SYN-D003-R01_ground_truth.txt",
+    "reportType": "metabolic_panel",
+    "clinicalScenario": "elevated_diabetes_risk",
+    "synthetic": true,
+    "patientContext": {
+      "age": 43,
+      "sex": 1,
+      "genderStr": "Male",
+      "dob": "1982-02-14"
+    },
+    "availableFeatures": [
+      "age",
+      "sex",
+      "bmi",
+      "systolic_bp",
+      "diastolic_bp",
+      "total_cholesterol",
+      "hdl",
+      "creatinine"
+    ],
+    "missingFeatures": [],
+    "modelRelevantFeatures": {
+      "age": 43,
+      "sex": 1,
+      "bmi": 37.6,
+      "systolic_bp": 142.0,
+      "diastolic_bp": 88.0,
+      "total_cholesterol": 258.0,
+      "hdl": 32.0,
+      "creatinine": 1.28
+    },
+    "expectedNormalization": [],
+    "expectedValidation": "VALID",
+    "expectedConflict": false,
+    "ocrDifficulty": "STANDARD",
+    "multiReportGroup": null,
+    "actualModelOutput": null
+  },
+  {
+    "reportId": "SYN-D004-R01",
+    "patientId": "SYN-D004",
+    "category": "01_diabetes_elevated_risk",
+    "relativePdfPath": "test_corpus/01_diabetes_elevated_risk/SYN-D004-R01.pdf",
+    "relativeTextPath": "test_corpus/01_diabetes_elevated_risk/SYN-D004-R01_ground_truth.txt",
+    "reportType": "renal_function",
+    "clinicalScenario": "elevated_diabetes_risk",
+    "synthetic": true,
+    "patientContext": {
+      "age": 71,
+      "sex": 0,
+      "genderStr": "Female",
+      "dob": "1954-11-04"
+    },
+    "availableFeatures": [
+      "age",
+      "sex",
+      "bmi",
+      "systolic_bp",
+      "diastolic_bp",
+      "total_cholesterol",
+      "hdl",
+      "creatinine"
+    ],
+    "missingFeatures": [],
+    "modelRelevantFeatures": {
+      "age": 71,
+      "sex": 0,
+      "bmi": 30.5,
+      "systolic_bp": 158.0,
+      "diastolic_bp": 86.0,
+      "total_cholesterol": 215.0,
+      "hdl": 42.0,
+      "creatinine": 1.34
+    },
+    "expectedNormalization": [],
+    "expectedValidation": "VALID",
+    "expectedConflict": false,
+    "ocrDifficulty": "STANDARD",
+    "multiReportGroup": null,
+    "actualModelOutput": null
+  },
+  {
+    "reportId": "SYN-D005-R01",
+    "patientId": "SYN-D005",
+    "category": "01_diabetes_elevated_risk",
+    "relativePdfPath": "test_corpus/01_diabetes_elevated_risk/SYN-D005-R01.pdf",
+    "relativeTextPath": "test_corpus/01_diabetes_elevated_risk/SYN-D005-R01_ground_truth.txt",
+    "reportType": "general_lab_report",
+    "clinicalScenario": "elevated_diabetes_risk",
+    "synthetic": true,
+    "patientContext": {
+      "age": 49,
+      "sex": 1,
+      "genderStr": "Male",
+      "dob": "1976-07-28"
+    },
+    "availableFeatures": [
+      "age",
+      "sex",
+      "bmi",
+      "systolic_bp",
+      "diastolic_bp",
+      "total_cholesterol",
+      "hdl",
+      "creatinine"
+    ],
+    "missingFeatures": [],
+    "modelRelevantFeatures": {
+      "age": 49,
+      "sex": 1,
+      "bmi": 28.6,
+      "systolic_bp": 136.0,
+      "diastolic_bp": 86.0,
+      "total_cholesterol": 218.0,
+      "hdl": 40.0,
+      "creatinine": 1.08
+    },
+    "expectedNormalization": [],
+    "expectedValidation": "VALID",
+    "expectedConflict": false,
+    "ocrDifficulty": "STANDARD",
+    "multiReportGroup": null,
+    "actualModelOutput": null
+  },
+  {
+    "reportId": "SYN-H001-R01",
+    "patientId": "SYN-H001",
+    "category": "02_lower_risk_healthy",
+    "relativePdfPath": "test_corpus/02_lower_risk_healthy/SYN-H001-R01.pdf",
+    "relativeTextPath": "test_corpus/02_lower_risk_healthy/SYN-H001-R01_ground_truth.txt",
+    "reportType": "general_lab_report",
+    "clinicalScenario": "lower_risk_healthy",
+    "synthetic": true,
+    "patientContext": {
+      "age": 24,
+      "sex": 0,
+      "genderStr": "Female",
+      "dob": "2001-03-18"
+    },
+    "availableFeatures": [
+      "age",
+      "sex",
+      "bmi",
+      "systolic_bp",
+      "diastolic_bp",
+      "total_cholesterol",
+      "hdl",
+      "creatinine"
+    ],
+    "missingFeatures": [],
+    "modelRelevantFeatures": {
+      "age": 24,
+      "sex": 0,
+      "bmi": 21.2,
+      "systolic_bp": 112.0,
+      "diastolic_bp": 72.0,
+      "total_cholesterol": 162.0,
+      "hdl": 64.0,
+      "creatinine": 0.76
+    },
+    "expectedNormalization": [],
+    "expectedValidation": "VALID",
+    "expectedConflict": false,
+    "ocrDifficulty": "STANDARD",
+    "multiReportGroup": null,
+    "actualModelOutput": null
+  },
+  {
+    "reportId": "SYN-H002-R01",
+    "patientId": "SYN-H002",
+    "category": "02_lower_risk_healthy",
+    "relativePdfPath": "test_corpus/02_lower_risk_healthy/SYN-H002-R01.pdf",
+    "relativeTextPath": "test_corpus/02_lower_risk_healthy/SYN-H002-R01_ground_truth.txt",
+    "reportType": "general_lab_report",
+    "clinicalScenario": "lower_risk_healthy",
+    "synthetic": true,
+    "patientContext": {
+      "age": 31,
+      "sex": 1,
+      "genderStr": "Male",
+      "dob": "1994-08-11"
+    },
+    "availableFeatures": [
+      "age",
+      "sex",
+      "bmi",
+      "systolic_bp",
+      "diastolic_bp",
+      "total_cholesterol",
+      "hdl",
+      "creatinine"
+    ],
+    "missingFeatures": [],
+    "modelRelevantFeatures": {
+      "age": 31,
+      "sex": 1,
+      "bmi": 22.8,
+      "systolic_bp": 118.0,
+      "diastolic_bp": 76.0,
+      "total_cholesterol": 174.0,
+      "hdl": 56.0,
+      "creatinine": 0.92
+    },
+    "expectedNormalization": [],
+    "expectedValidation": "VALID",
+    "expectedConflict": false,
+    "ocrDifficulty": "STANDARD",
+    "multiReportGroup": null,
+    "actualModelOutput": null
+  },
+  {
+    "reportId": "SYN-H003-R01",
+    "patientId": "SYN-H003",
+    "category": "02_lower_risk_healthy",
+    "relativePdfPath": "test_corpus/02_lower_risk_healthy/SYN-H003-R01.pdf",
+    "relativeTextPath": "test_corpus/02_lower_risk_healthy/SYN-H003-R01_ground_truth.txt",
+    "reportType": "general_lab_report",
+    "clinicalScenario": "lower_risk_healthy",
+    "synthetic": true,
+    "patientContext": {
+      "age": 66,
+      "sex": 0,
+      "genderStr": "Female",
+      "dob": "1959-04-03"
+    },
+    "availableFeatures": [
+      "age",
+      "sex",
+      "bmi",
+      "systolic_bp",
+      "diastolic_bp",
+      "total_cholesterol",
+      "hdl",
+      "creatinine"
+    ],
+    "missingFeatures": [],
+    "modelRelevantFeatures": {
+      "age": 66,
+      "sex": 0,
+      "bmi": 23.4,
+      "systolic_bp": 122.0,
+      "diastolic_bp": 78.0,
+      "total_cholesterol": 186.0,
+      "hdl": 68.0,
+      "creatinine": 0.84
+    },
+    "expectedNormalization": [],
+    "expectedValidation": "VALID",
+    "expectedConflict": false,
+    "ocrDifficulty": "STANDARD",
+    "multiReportGroup": null,
+    "actualModelOutput": null
+  },
+  {
+    "reportId": "SYN-H004-R01",
+    "patientId": "SYN-H004",
+    "category": "02_lower_risk_healthy",
+    "relativePdfPath": "test_corpus/02_lower_risk_healthy/SYN-H004-R01.pdf",
+    "relativeTextPath": "test_corpus/02_lower_risk_healthy/SYN-H004-R01_ground_truth.txt",
+    "reportType": "general_lab_report",
+    "clinicalScenario": "lower_risk_healthy",
+    "synthetic": true,
+    "patientContext": {
+      "age": 38,
+      "sex": 1,
+      "genderStr": "Male",
+      "dob": "1987-10-15"
+    },
+    "availableFeatures": [
+      "age",
+      "sex",
+      "bmi",
+      "systolic_bp",
+      "diastolic_bp",
+      "total_cholesterol",
+      "hdl",
+      "creatinine"
+    ],
+    "missingFeatures": [],
+    "modelRelevantFeatures": {
+      "age": 38,
+      "sex": 1,
+      "bmi": 24.6,
+      "systolic_bp": 124.0,
+      "diastolic_bp": 80.0,
+      "total_cholesterol": 198.0,
+      "hdl": 51.0,
+      "creatinine": 0.98
+    },
+    "expectedNormalization": [],
+    "expectedValidation": "VALID",
+    "expectedConflict": false,
+    "ocrDifficulty": "STANDARD",
+    "multiReportGroup": null,
+    "actualModelOutput": null
+  },
+  {
+    "reportId": "SYN-H005-R01",
+    "patientId": "SYN-H005",
+    "category": "02_lower_risk_healthy",
+    "relativePdfPath": "test_corpus/02_lower_risk_healthy/SYN-H005-R01.pdf",
+    "relativeTextPath": "test_corpus/02_lower_risk_healthy/SYN-H005-R01_ground_truth.txt",
+    "reportType": "general_lab_report",
+    "clinicalScenario": "lower_risk_healthy",
+    "synthetic": true,
+    "patientContext": {
+      "age": 45,
+      "sex": 0,
+      "genderStr": "Female",
+      "dob": "1980-06-25"
+    },
+    "availableFeatures": [
+      "age",
+      "sex",
+      "bmi",
+      "systolic_bp",
+      "diastolic_bp",
+      "total_cholesterol",
+      "hdl",
+      "creatinine"
+    ],
+    "missingFeatures": [],
+    "modelRelevantFeatures": {
+      "age": 45,
+      "sex": 0,
+      "bmi": 22.0,
+      "systolic_bp": 115.0,
+      "diastolic_bp": 74.0,
+      "total_cholesterol": 170.0,
+      "hdl": 62.0,
+      "creatinine": 0.8
+    },
+    "expectedNormalization": [],
+    "expectedValidation": "VALID",
+    "expectedConflict": false,
+    "ocrDifficulty": "STANDARD",
+    "multiReportGroup": null,
+    "actualModelOutput": null
+  },
+  {
+    "reportId": "SYN-B001-R01",
+    "patientId": "SYN-B001",
+    "category": "03_borderline_cases",
+    "relativePdfPath": "test_corpus/03_borderline_cases/SYN-B001-R01.pdf",
+    "relativeTextPath": "test_corpus/03_borderline_cases/SYN-B001-R01_ground_truth.txt",
+    "reportType": "general_lab_report",
+    "clinicalScenario": "borderline",
+    "synthetic": true,
+    "patientContext": {
+      "age": 51,
+      "sex": 1,
+      "genderStr": "Male",
+      "dob": "1974-01-19"
+    },
+    "availableFeatures": [
+      "age",
+      "sex",
+      "bmi",
+      "systolic_bp",
+      "diastolic_bp",
+      "total_cholesterol",
+      "hdl",
+      "creatinine"
+    ],
+    "missingFeatures": [],
+    "modelRelevantFeatures": {
+      "age": 51,
+      "sex": 1,
+      "bmi": 27.2,
+      "systolic_bp": 128.0,
+      "diastolic_bp": 82.0,
+      "total_cholesterol": 208.0,
+      "hdl": 46.0,
+      "creatinine": 1.02
+    },
+    "expectedNormalization": [],
+    "expectedValidation": "VALID",
+    "expectedConflict": false,
+    "ocrDifficulty": "STANDARD",
+    "multiReportGroup": null,
+    "actualModelOutput": null
+  },
+  {
+    "reportId": "SYN-B002-R01",
+    "patientId": "SYN-B002",
+    "category": "03_borderline_cases",
+    "relativePdfPath": "test_corpus/03_borderline_cases/SYN-B002-R01.pdf",
+    "relativeTextPath": "test_corpus/03_borderline_cases/SYN-B002-R01_ground_truth.txt",
+    "reportType": "general_lab_report",
+    "clinicalScenario": "borderline",
+    "synthetic": true,
+    "patientContext": {
+      "age": 46,
+      "sex": 0,
+      "genderStr": "Female",
+      "dob": "1979-05-30"
+    },
+    "availableFeatures": [
+      "age",
+      "sex",
+      "bmi",
+      "systolic_bp",
+      "diastolic_bp",
+      "total_cholesterol",
+      "hdl",
+      "creatinine"
+    ],
+    "missingFeatures": [],
+    "modelRelevantFeatures": {
+      "age": 46,
+      "sex": 0,
+      "bmi": 28.1,
+      "systolic_bp": 132.0,
+      "diastolic_bp": 84.0,
+      "total_cholesterol": 202.0,
+      "hdl": 48.0,
+      "creatinine": 0.88
+    },
+    "expectedNormalization": [],
+    "expectedValidation": "VALID",
+    "expectedConflict": false,
+    "ocrDifficulty": "STANDARD",
+    "multiReportGroup": null,
+    "actualModelOutput": null
+  },
+  {
+    "reportId": "SYN-B003-R01",
+    "patientId": "SYN-B003",
+    "category": "03_borderline_cases",
+    "relativePdfPath": "test_corpus/03_borderline_cases/SYN-B003-R01.pdf",
+    "relativeTextPath": "test_corpus/03_borderline_cases/SYN-B003-R01_ground_truth.txt",
+    "reportType": "general_lab_report",
+    "clinicalScenario": "borderline",
+    "synthetic": true,
+    "patientContext": {
+      "age": 58,
+      "sex": 1,
+      "genderStr": "Male",
+      "dob": "1967-09-08"
+    },
+    "availableFeatures": [
+      "age",
+      "sex",
+      "bmi",
+      "systolic_bp",
+      "diastolic_bp",
+      "total_cholesterol",
+      "hdl",
+      "creatinine"
+    ],
+    "missingFeatures": [],
+    "modelRelevantFeatures": {
+      "age": 58,
+      "sex": 1,
+      "bmi": 25.8,
+      "systolic_bp": 134.0,
+      "diastolic_bp": 86.0,
+      "total_cholesterol": 212.0,
+      "hdl": 44.0,
+      "creatinine": 1.06
+    },
+    "expectedNormalization": [],
+    "expectedValidation": "VALID",
+    "expectedConflict": false,
+    "ocrDifficulty": "STANDARD",
+    "multiReportGroup": null,
+    "actualModelOutput": null
+  },
+  {
+    "reportId": "SYN-B004-R01",
+    "patientId": "SYN-B004",
+    "category": "03_borderline_cases",
+    "relativePdfPath": "test_corpus/03_borderline_cases/SYN-B004-R01.pdf",
+    "relativeTextPath": "test_corpus/03_borderline_cases/SYN-B004-R01_ground_truth.txt",
+    "reportType": "general_lab_report",
+    "clinicalScenario": "borderline",
+    "synthetic": true,
+    "patientContext": {
+      "age": 39,
+      "sex": 0,
+      "genderStr": "Female",
+      "dob": "1986-12-14"
+    },
+    "availableFeatures": [
+      "age",
+      "sex",
+      "bmi",
+      "systolic_bp",
+      "diastolic_bp",
+      "total_cholesterol",
+      "hdl",
+      "creatinine"
+    ],
+    "missingFeatures": [],
+    "modelRelevantFeatures": {
+      "age": 39,
+      "sex": 0,
+      "bmi": 29.4,
+      "systolic_bp": 126.0,
+      "diastolic_bp": 82.0,
+      "total_cholesterol": 194.0,
+      "hdl": 45.0,
+      "creatinine": 0.82
+    },
+    "expectedNormalization": [],
+    "expectedValidation": "VALID",
+    "expectedConflict": false,
+    "ocrDifficulty": "STANDARD",
+    "multiReportGroup": null,
+    "actualModelOutput": null
+  },
+  {
+    "reportId": "SYN-M001-R01",
+    "patientId": "SYN-MIS1",
+    "category": "04_missing_data",
+    "relativePdfPath": "test_corpus/04_missing_data/SYN-M001-R01.pdf",
+    "relativeTextPath": "test_corpus/04_missing_data/SYN-M001-R01_ground_truth.txt",
+    "reportType": "complete_blood_count",
+    "clinicalScenario": "insufficient_data_cbc_only",
+    "synthetic": true,
+    "patientContext": {
+      "age": 42,
+      "sex": 1,
+      "genderStr": "Male",
+      "dob": "1983-04-10"
+    },
+    "availableFeatures": [
+      "age",
+      "sex"
+    ],
+    "missingFeatures": [
+      "bmi",
+      "systolic_bp",
+      "diastolic_bp",
+      "total_cholesterol",
+      "hdl",
+      "creatinine"
+    ],
+    "modelRelevantFeatures": {
+      "age": 42,
+      "sex": 1,
+      "bmi": null,
+      "systolic_bp": null,
+      "diastolic_bp": null,
+      "total_cholesterol": null,
+      "hdl": null,
+      "creatinine": null
+    },
+    "expectedNormalization": [],
+    "expectedValidation": "VALID",
+    "expectedConflict": false,
+    "ocrDifficulty": "STANDARD",
+    "multiReportGroup": null,
+    "actualModelOutput": null
+  },
+  {
+    "reportId": "SYN-M002-R01",
+    "patientId": "SYN-MIS2",
+    "category": "04_missing_data",
+    "relativePdfPath": "test_corpus/04_missing_data/SYN-M002-R01.pdf",
+    "relativeTextPath": "test_corpus/04_missing_data/SYN-M002-R01_ground_truth.txt",
+    "reportType": "renal_function",
+    "clinicalScenario": "insufficient_data_missing_physical",
+    "synthetic": true,
+    "patientContext": {
+      "age": 50,
+      "sex": 0,
+      "genderStr": "Female",
+      "dob": "1975-02-18"
+    },
+    "availableFeatures": [
+      "age",
+      "sex",
+      "creatinine"
+    ],
+    "missingFeatures": [
+      "bmi",
+      "systolic_bp",
+      "diastolic_bp",
+      "total_cholesterol",
+      "hdl"
+    ],
+    "modelRelevantFeatures": {
+      "age": 50,
+      "sex": 0,
+      "bmi": null,
+      "systolic_bp": null,
+      "diastolic_bp": null,
+      "total_cholesterol": null,
+      "hdl": null,
+      "creatinine": 0.88
+    },
+    "expectedNormalization": [],
+    "expectedValidation": "VALID",
+    "expectedConflict": false,
+    "ocrDifficulty": "STANDARD",
+    "multiReportGroup": null,
+    "actualModelOutput": null
+  },
+  {
+    "reportId": "SYN-M003-R01",
+    "patientId": "SYN-MIS3",
+    "category": "04_missing_data",
+    "relativePdfPath": "test_corpus/04_missing_data/SYN-M003-R01.pdf",
+    "relativeTextPath": "test_corpus/04_missing_data/SYN-M003-R01_ground_truth.txt",
+    "reportType": "lipid_profile",
+    "clinicalScenario": "insufficient_data_lipid_only",
+    "synthetic": true,
+    "patientContext": {
+      "age": 36,
+      "sex": 1,
+      "genderStr": "Male",
+      "dob": "1989-11-29"
+    },
+    "availableFeatures": [
+      "age",
+      "sex",
+      "total_cholesterol",
+      "hdl"
+    ],
+    "missingFeatures": [
+      "bmi",
+      "systolic_bp",
+      "diastolic_bp",
+      "creatinine"
+    ],
+    "modelRelevantFeatures": {
+      "age": 36,
+      "sex": 1,
+      "bmi": null,
+      "systolic_bp": null,
+      "diastolic_bp": null,
+      "total_cholesterol": 215.0,
+      "hdl": 42.0,
+      "creatinine": null
+    },
+    "expectedNormalization": [],
+    "expectedValidation": "VALID",
+    "expectedConflict": false,
+    "ocrDifficulty": "STANDARD",
+    "multiReportGroup": null,
+    "actualModelOutput": null
+  },
+  {
+    "reportId": "SYN-M004-R01",
+    "patientId": "SYN-MIS4",
+    "category": "04_missing_data",
+    "relativePdfPath": "test_corpus/04_missing_data/SYN-M004-R01.pdf",
+    "relativeTextPath": "test_corpus/04_missing_data/SYN-M004-R01_ground_truth.txt",
+    "reportType": "general_lab_report",
+    "clinicalScenario": "partial_data_calculable",
+    "synthetic": true,
+    "patientContext": {
+      "age": 55,
+      "sex": 0,
+      "genderStr": "Female",
+      "dob": "1970-03-12"
+    },
+    "availableFeatures": [
+      "age",
+      "sex",
+      "bmi",
+      "total_cholesterol",
+      "hdl"
+    ],
+    "missingFeatures": [
+      "systolic_bp",
+      "diastolic_bp",
+      "creatinine"
+    ],
+    "modelRelevantFeatures": {
+      "age": 55,
+      "sex": 0,
+      "bmi": 31.0,
+      "systolic_bp": null,
+      "diastolic_bp": null,
+      "total_cholesterol": 220.0,
+      "hdl": 38.0,
+      "creatinine": null
+    },
+    "expectedNormalization": [],
+    "expectedValidation": "VALID",
+    "expectedConflict": false,
+    "ocrDifficulty": "STANDARD",
+    "multiReportGroup": null,
+    "actualModelOutput": null
+  },
+  {
+    "reportId": "SYN-L001-R01",
+    "patientId": "SYN-L001",
+    "category": "05_multi_report_patients",
+    "relativePdfPath": "test_corpus/05_multi_report_patients/SYN-L001-R01.pdf",
+    "relativeTextPath": "test_corpus/05_multi_report_patients/SYN-L001-R01_ground_truth.txt",
+    "reportType": "general_lab_report",
+    "clinicalScenario": "multi_report_baseline",
+    "synthetic": true,
+    "patientContext": {
+      "age": 48,
+      "sex": 1,
+      "genderStr": "Male",
+      "dob": "1977-03-10"
+    },
+    "availableFeatures": [
+      "age",
+      "sex",
+      "bmi",
+      "systolic_bp",
+      "diastolic_bp",
+      "total_cholesterol",
+      "hdl",
+      "creatinine"
+    ],
+    "missingFeatures": [],
+    "modelRelevantFeatures": {
+      "age": 48,
+      "sex": 1,
+      "bmi": 25.2,
+      "systolic_bp": 124.0,
+      "diastolic_bp": 80.0,
+      "total_cholesterol": 192.0,
+      "hdl": 50.0,
+      "creatinine": 0.95
+    },
+    "expectedNormalization": [],
+    "expectedValidation": "VALID",
+    "expectedConflict": false,
+    "ocrDifficulty": "STANDARD",
+    "multiReportGroup": "SYN-L001",
+    "actualModelOutput": null
+  },
+  {
+    "reportId": "SYN-L001-R02",
+    "patientId": "SYN-L001",
+    "category": "05_multi_report_patients",
+    "relativePdfPath": "test_corpus/05_multi_report_patients/SYN-L001-R02.pdf",
+    "relativeTextPath": "test_corpus/05_multi_report_patients/SYN-L001-R02_ground_truth.txt",
+    "reportType": "general_lab_report",
+    "clinicalScenario": "multi_report_midterm",
+    "synthetic": true,
+    "patientContext": {
+      "age": 48,
+      "sex": 1,
+      "genderStr": "Male",
+      "dob": "1977-03-10"
+    },
+    "availableFeatures": [
+      "age",
+      "sex",
+      "bmi",
+      "systolic_bp",
+      "diastolic_bp",
+      "total_cholesterol",
+      "hdl",
+      "creatinine"
+    ],
+    "missingFeatures": [],
+    "modelRelevantFeatures": {
+      "age": 48,
+      "sex": 1,
+      "bmi": 26.5,
+      "systolic_bp": 132.0,
+      "diastolic_bp": 84.0,
+      "total_cholesterol": 208.0,
+      "hdl": 46.0,
+      "creatinine": 0.98
+    },
+    "expectedNormalization": [],
+    "expectedValidation": "VALID",
+    "expectedConflict": false,
+    "ocrDifficulty": "STANDARD",
+    "multiReportGroup": "SYN-L001",
+    "actualModelOutput": null
+  },
+  {
+    "reportId": "SYN-L001-R03",
+    "patientId": "SYN-L001",
+    "category": "05_multi_report_patients",
+    "relativePdfPath": "test_corpus/05_multi_report_patients/SYN-L001-R03.pdf",
+    "relativeTextPath": "test_corpus/05_multi_report_patients/SYN-L001-R03_ground_truth.txt",
+    "reportType": "general_lab_report",
+    "clinicalScenario": "multi_report_progression",
+    "synthetic": true,
+    "patientContext": {
+      "age": 49,
+      "sex": 1,
+      "genderStr": "Male",
+      "dob": "1977-03-10"
+    },
+    "availableFeatures": [
+      "age",
+      "sex",
+      "bmi",
+      "systolic_bp",
+      "diastolic_bp",
+      "total_cholesterol",
+      "hdl",
+      "creatinine"
+    ],
+    "missingFeatures": [],
+    "modelRelevantFeatures": {
+      "age": 49,
+      "sex": 1,
+      "bmi": 28.2,
+      "systolic_bp": 140.0,
+      "diastolic_bp": 88.0,
+      "total_cholesterol": 226.0,
+      "hdl": 41.0,
+      "creatinine": 1.05
+    },
+    "expectedNormalization": [],
+    "expectedValidation": "VALID",
+    "expectedConflict": false,
+    "ocrDifficulty": "STANDARD",
+    "multiReportGroup": "SYN-L001",
+    "actualModelOutput": null
+  },
+  {
+    "reportId": "SYN-L002-R01",
+    "patientId": "SYN-L002",
+    "category": "05_multi_report_patients",
+    "relativePdfPath": "test_corpus/05_multi_report_patients/SYN-L002-R01.pdf",
+    "relativeTextPath": "test_corpus/05_multi_report_patients/SYN-L002-R01_ground_truth.txt",
+    "reportType": "general_lab_report",
+    "clinicalScenario": "multi_report_intervention_baseline",
+    "synthetic": true,
+    "patientContext": {
+      "age": 56,
+      "sex": 0,
+      "genderStr": "Female",
+      "dob": "1969-10-15"
+    },
+    "availableFeatures": [
+      "age",
+      "sex",
+      "bmi",
+      "systolic_bp",
+      "diastolic_bp",
+      "total_cholesterol",
+      "hdl",
+      "creatinine"
+    ],
+    "missingFeatures": [],
+    "modelRelevantFeatures": {
+      "age": 56,
+      "sex": 0,
+      "bmi": 32.0,
+      "systolic_bp": 148.0,
+      "diastolic_bp": 92.0,
+      "total_cholesterol": 245.0,
+      "hdl": 38.0,
+      "creatinine": 1.1
+    },
+    "expectedNormalization": [],
+    "expectedValidation": "VALID",
+    "expectedConflict": false,
+    "ocrDifficulty": "STANDARD",
+    "multiReportGroup": "SYN-L002",
+    "actualModelOutput": null
+  },
+  {
+    "reportId": "SYN-L002-R02",
+    "patientId": "SYN-L002",
+    "category": "05_multi_report_patients",
+    "relativePdfPath": "test_corpus/05_multi_report_patients/SYN-L002-R02.pdf",
+    "relativeTextPath": "test_corpus/05_multi_report_patients/SYN-L002-R02_ground_truth.txt",
+    "reportType": "general_lab_report",
+    "clinicalScenario": "multi_report_intervention_progress",
+    "synthetic": true,
+    "patientContext": {
+      "age": 56,
+      "sex": 0,
+      "genderStr": "Female",
+      "dob": "1969-10-15"
+    },
+    "availableFeatures": [
+      "age",
+      "sex",
+      "bmi",
+      "systolic_bp",
+      "diastolic_bp",
+      "total_cholesterol",
+      "hdl",
+      "creatinine"
+    ],
+    "missingFeatures": [],
+    "modelRelevantFeatures": {
+      "age": 56,
+      "sex": 0,
+      "bmi": 29.8,
+      "systolic_bp": 136.0,
+      "diastolic_bp": 86.0,
+      "total_cholesterol": 218.0,
+      "hdl": 44.0,
+      "creatinine": 1.02
+    },
+    "expectedNormalization": [],
+    "expectedValidation": "VALID",
+    "expectedConflict": false,
+    "ocrDifficulty": "STANDARD",
+    "multiReportGroup": "SYN-L002",
+    "actualModelOutput": null
+  },
+  {
+    "reportId": "SYN-L002-R03",
+    "patientId": "SYN-L002",
+    "category": "05_multi_report_patients",
+    "relativePdfPath": "test_corpus/05_multi_report_patients/SYN-L002-R03.pdf",
+    "relativeTextPath": "test_corpus/05_multi_report_patients/SYN-L002-R03_ground_truth.txt",
+    "reportType": "general_lab_report",
+    "clinicalScenario": "multi_report_intervention_success",
+    "synthetic": true,
+    "patientContext": {
+      "age": 57,
+      "sex": 0,
+      "genderStr": "Female",
+      "dob": "1969-10-15"
+    },
+    "availableFeatures": [
+      "age",
+      "sex",
+      "bmi",
+      "systolic_bp",
+      "diastolic_bp",
+      "total_cholesterol",
+      "hdl",
+      "creatinine"
+    ],
+    "missingFeatures": [],
+    "modelRelevantFeatures": {
+      "age": 57,
+      "sex": 0,
+      "bmi": 27.9,
+      "systolic_bp": 128.0,
+      "diastolic_bp": 82.0,
+      "total_cholesterol": 198.0,
+      "hdl": 49.0,
+      "creatinine": 0.96
+    },
+    "expectedNormalization": [],
+    "expectedValidation": "VALID",
+    "expectedConflict": false,
+    "ocrDifficulty": "STANDARD",
+    "multiReportGroup": "SYN-L002",
+    "actualModelOutput": null
+  },
+  {
+    "reportId": "SYN-L003-R01",
+    "patientId": "SYN-L003",
+    "category": "05_multi_report_patients",
+    "relativePdfPath": "test_corpus/05_multi_report_patients/SYN-L003-R01.pdf",
+    "relativeTextPath": "test_corpus/05_multi_report_patients/SYN-L003-R01_ground_truth.txt",
+    "reportType": "general_lab_report",
+    "clinicalScenario": "multi_report_split_vitals",
+    "synthetic": true,
+    "patientContext": {
+      "age": 63,
+      "sex": 1,
+      "genderStr": "Male",
+      "dob": "1962-12-05"
+    },
+    "availableFeatures": [
+      "age",
+      "sex",
+      "bmi",
+      "systolic_bp",
+      "diastolic_bp"
+    ],
+    "missingFeatures": [
+      "total_cholesterol",
+      "hdl",
+      "creatinine"
+    ],
+    "modelRelevantFeatures": {
+      "age": 63,
+      "sex": 1,
+      "bmi": 27.5,
+      "systolic_bp": 138.0,
+      "diastolic_bp": 88.0,
+      "total_cholesterol": null,
+      "hdl": null,
+      "creatinine": null
+    },
+    "expectedNormalization": [],
+    "expectedValidation": "VALID",
+    "expectedConflict": false,
+    "ocrDifficulty": "STANDARD",
+    "multiReportGroup": "SYN-L003",
+    "actualModelOutput": null
+  },
+  {
+    "reportId": "SYN-L003-R02",
+    "patientId": "SYN-L003",
+    "category": "05_multi_report_patients",
+    "relativePdfPath": "test_corpus/05_multi_report_patients/SYN-L003-R02.pdf",
+    "relativeTextPath": "test_corpus/05_multi_report_patients/SYN-L003-R02_ground_truth.txt",
+    "reportType": "lipid_profile",
+    "clinicalScenario": "multi_report_split_labs",
+    "synthetic": true,
+    "patientContext": {
+      "age": 63,
+      "sex": 1,
+      "genderStr": "Male",
+      "dob": "1962-12-05"
+    },
+    "availableFeatures": [
+      "age",
+      "sex",
+      "total_cholesterol",
+      "hdl",
+      "creatinine"
+    ],
+    "missingFeatures": [
+      "bmi",
+      "systolic_bp",
+      "diastolic_bp"
+    ],
+    "modelRelevantFeatures": {
+      "age": 63,
+      "sex": 1,
+      "bmi": null,
+      "systolic_bp": null,
+      "diastolic_bp": null,
+      "total_cholesterol": 224.0,
+      "hdl": 43.0,
+      "creatinine": 1.12
+    },
+    "expectedNormalization": [],
+    "expectedValidation": "VALID",
+    "expectedConflict": false,
+    "ocrDifficulty": "STANDARD",
+    "multiReportGroup": "SYN-L003",
+    "actualModelOutput": null
+  },
+  {
+    "reportId": "SYN-L004-R01",
+    "patientId": "SYN-L004",
+    "category": "05_multi_report_patients",
+    "relativePdfPath": "test_corpus/05_multi_report_patients/SYN-L004-R01.pdf",
+    "relativeTextPath": "test_corpus/05_multi_report_patients/SYN-L004-R01_ground_truth.txt",
+    "reportType": "general_lab_report",
+    "clinicalScenario": "multi_report_stable_1",
+    "synthetic": true,
+    "patientContext": {
+      "age": 34,
+      "sex": 0,
+      "genderStr": "Female",
+      "dob": "1991-08-22"
+    },
+    "availableFeatures": [
+      "age",
+      "sex",
+      "bmi",
+      "systolic_bp",
+      "diastolic_bp",
+      "total_cholesterol",
+      "hdl",
+      "creatinine"
+    ],
+    "missingFeatures": [],
+    "modelRelevantFeatures": {
+      "age": 34,
+      "sex": 0,
+      "bmi": 26.4,
+      "systolic_bp": 120.0,
+      "diastolic_bp": 78.0,
+      "total_cholesterol": 184.0,
+      "hdl": 54.0,
+      "creatinine": 0.78
+    },
+    "expectedNormalization": [],
+    "expectedValidation": "VALID",
+    "expectedConflict": false,
+    "ocrDifficulty": "STANDARD",
+    "multiReportGroup": "SYN-L004",
+    "actualModelOutput": null
+  },
+  {
+    "reportId": "SYN-L004-R02",
+    "patientId": "SYN-L004",
+    "category": "05_multi_report_patients",
+    "relativePdfPath": "test_corpus/05_multi_report_patients/SYN-L004-R02.pdf",
+    "relativeTextPath": "test_corpus/05_multi_report_patients/SYN-L004-R02_ground_truth.txt",
+    "reportType": "general_lab_report",
+    "clinicalScenario": "multi_report_stable_2",
+    "synthetic": true,
+    "patientContext": {
+      "age": 35,
+      "sex": 0,
+      "genderStr": "Female",
+      "dob": "1991-08-22"
+    },
+    "availableFeatures": [
+      "age",
+      "sex",
+      "bmi",
+      "systolic_bp",
+      "diastolic_bp",
+      "total_cholesterol",
+      "hdl",
+      "creatinine"
+    ],
+    "missingFeatures": [],
+    "modelRelevantFeatures": {
+      "age": 35,
+      "sex": 0,
+      "bmi": 24.5,
+      "systolic_bp": 116.0,
+      "diastolic_bp": 74.0,
+      "total_cholesterol": 176.0,
+      "hdl": 58.0,
+      "creatinine": 0.75
+    },
+    "expectedNormalization": [],
+    "expectedValidation": "VALID",
+    "expectedConflict": false,
+    "ocrDifficulty": "STANDARD",
+    "multiReportGroup": "SYN-L004",
+    "actualModelOutput": null
+  },
+  {
+    "reportId": "SYN-OCR1-R01",
+    "patientId": "SYN-OCR1",
+    "category": "06_ocr_challenging",
+    "relativePdfPath": "test_corpus/06_ocr_challenging/SYN-OCR1-R01.pdf",
+    "relativeTextPath": "test_corpus/06_ocr_challenging/SYN-OCR1-R01_ground_truth.txt",
+    "reportType": "general_lab_report",
+    "clinicalScenario": "ocr_dense_abbreviations",
+    "synthetic": true,
+    "patientContext": {
+      "age": 52,
+      "sex": 1,
+      "genderStr": "Male",
+      "dob": "1973-04-12"
+    },
+    "availableFeatures": [
+      "age",
+      "sex",
+      "bmi",
+      "systolic_bp",
+      "diastolic_bp",
+      "total_cholesterol",
+      "hdl",
+      "creatinine"
+    ],
+    "missingFeatures": [],
+    "modelRelevantFeatures": {
+      "age": 52,
+      "sex": 1,
+      "bmi": 30.8,
+      "systolic_bp": 144.0,
+      "diastolic_bp": 88.0,
+      "total_cholesterol": 232.0,
+      "hdl": 39.0,
+      "creatinine": 1.18
+    },
+    "expectedNormalization": [],
+    "expectedValidation": "VALID",
+    "expectedConflict": false,
+    "ocrDifficulty": "HIGH_DENSE_ABBREVIATIONS",
+    "multiReportGroup": null,
+    "actualModelOutput": null
+  },
+  {
+    "reportId": "SYN-OCR2-R01",
+    "patientId": "SYN-OCR2",
+    "category": "06_ocr_challenging",
+    "relativePdfPath": "test_corpus/06_ocr_challenging/SYN-OCR2-R01.pdf",
+    "relativeTextPath": "test_corpus/06_ocr_challenging/SYN-OCR2-R01_ground_truth.txt",
+    "reportType": "general_lab_report",
+    "clinicalScenario": "ocr_wrapped_labels_commas",
+    "synthetic": true,
+    "patientContext": {
+      "age": 47,
+      "sex": 0,
+      "genderStr": "Female",
+      "dob": "1978-01-25"
+    },
+    "availableFeatures": [
+      "age",
+      "sex",
+      "bmi",
+      "systolic_bp",
+      "diastolic_bp",
+      "total_cholesterol",
+      "hdl",
+      "creatinine"
+    ],
+    "missingFeatures": [],
+    "modelRelevantFeatures": {
+      "age": 47,
+      "sex": 0,
+      "bmi": 28.4,
+      "systolic_bp": 138.0,
+      "diastolic_bp": 86.0,
+      "total_cholesterol": 214.0,
+      "hdl": 43.0,
+      "creatinine": 1.04
+    },
+    "expectedNormalization": [],
+    "expectedValidation": "VALID",
+    "expectedConflict": false,
+    "ocrDifficulty": "HIGH_WRAPPED_TABLES",
+    "multiReportGroup": null,
+    "actualModelOutput": null
+  },
+  {
+    "reportId": "SYN-OCR3-R01",
+    "patientId": "SYN-OCR3",
+    "category": "06_ocr_challenging",
+    "relativePdfPath": "test_corpus/06_ocr_challenging/SYN-OCR3-R01.pdf",
+    "relativeTextPath": "test_corpus/06_ocr_challenging/SYN-OCR3-R01_ground_truth.txt",
+    "reportType": "general_lab_report",
+    "clinicalScenario": "ocr_digit_confusion_normalizer",
+    "synthetic": true,
+    "patientContext": {
+      "age": 50,
+      "sex": 1,
+      "genderStr": "Male",
+      "dob": "1975-06-30"
+    },
+    "availableFeatures": [
+      "age",
+      "sex",
+      "bmi",
+      "systolic_bp",
+      "diastolic_bp",
+      "total_cholesterol",
+      "hdl",
+      "creatinine"
+    ],
+    "missingFeatures": [],
+    "modelRelevantFeatures": {
+      "age": 50,
+      "sex": 1,
+      "bmi": 29.5,
+      "systolic_bp": 130.0,
+      "diastolic_bp": 85.0,
+      "total_cholesterol": 205.0,
+      "hdl": 42.0,
+      "creatinine": 1.02
+    },
+    "expectedNormalization": [
+      {
+        "parameter": "totalCholesterol",
+        "rawText": "2O5",
+        "normalizedValue": 205.0,
+        "rule": "OCR digit substitution (letter O -> 0)"
+      },
+      {
+        "parameter": "systolicBP",
+        "rawText": "13O",
+        "normalizedValue": 130.0,
+        "rule": "OCR digit substitution (letter O -> 0)"
+      }
+    ],
+    "expectedValidation": "VALID",
+    "expectedConflict": false,
+    "ocrDifficulty": "HIGH_OCR_TYPOS",
+    "multiReportGroup": null,
+    "actualModelOutput": null
+  },
+  {
+    "reportId": "SYN-UNT1-R01",
+    "patientId": "SYN-UNT1",
+    "category": "07_unit_variations",
+    "relativePdfPath": "test_corpus/07_unit_variations/SYN-UNT1-R01.pdf",
+    "relativeTextPath": "test_corpus/07_unit_variations/SYN-UNT1-R01_ground_truth.txt",
+    "reportType": "general_lab_report",
+    "clinicalScenario": "si_unit_conversions",
+    "synthetic": true,
+    "patientContext": {
+      "age": 46,
+      "sex": 1,
+      "genderStr": "Male",
+      "dob": "1979-02-14"
+    },
+    "availableFeatures": [
+      "age",
+      "sex",
+      "bmi",
+      "systolic_bp",
+      "diastolic_bp",
+      "total_cholesterol",
+      "hdl",
+      "creatinine"
+    ],
+    "missingFeatures": [],
+    "modelRelevantFeatures": {
+      "age": 46,
+      "sex": 1,
+      "bmi": 27.5,
+      "systolic_bp": 130.0,
+      "diastolic_bp": 84.0,
+      "total_cholesterol": 216.6,
+      "hdl": 42.5,
+      "creatinine": 1.07
+    },
+    "expectedNormalization": [
+      {
+        "parameter": "totalCholesterol",
+        "originalValue": 5.6,
+        "originalUnit": "mmol/L",
+        "normalizedValue": 216.6,
+        "normalizedUnit": "mg/dL",
+        "factor": 38.67
+      },
+      {
+        "parameter": "hdl",
+        "originalValue": 1.1,
+        "originalUnit": "mmol/L",
+        "normalizedValue": 42.5,
+        "normalizedUnit": "mg/dL",
+        "factor": 38.67
+      },
+      {
+        "parameter": "creatinine",
+        "originalValue": 95.0,
+        "originalUnit": "\u00b5mol/L",
+        "normalizedValue": 1.07,
+        "normalizedUnit": "mg/dL",
+        "factor": "1/88.4"
+      },
+      {
+        "parameter": "fastingGlucose",
+        "originalValue": 6.2,
+        "originalUnit": "mmol/L",
+        "normalizedValue": 111.7,
+        "normalizedUnit": "mg/dL",
+        "factor": 18.0182
+      }
+    ],
+    "expectedValidation": "VALID",
+    "expectedConflict": false,
+    "ocrDifficulty": "STANDARD",
+    "multiReportGroup": null,
+    "actualModelOutput": null
+  },
+  {
+    "reportId": "SYN-UNT2-R01",
+    "patientId": "SYN-UNT2",
+    "category": "07_unit_variations",
+    "relativePdfPath": "test_corpus/07_unit_variations/SYN-UNT2-R01.pdf",
+    "relativeTextPath": "test_corpus/07_unit_variations/SYN-UNT2-R01_ground_truth.txt",
+    "reportType": "general_lab_report",
+    "clinicalScenario": "alternate_unit_spellings",
+    "synthetic": true,
+    "patientContext": {
+      "age": 53,
+      "sex": 0,
+      "genderStr": "Female",
+      "dob": "1972-10-08"
+    },
+    "availableFeatures": [
+      "age",
+      "sex",
+      "bmi",
+      "systolic_bp",
+      "diastolic_bp",
+      "total_cholesterol",
+      "hdl",
+      "creatinine"
+    ],
+    "missingFeatures": [],
+    "modelRelevantFeatures": {
+      "age": 53,
+      "sex": 0,
+      "bmi": 28.8,
+      "systolic_bp": 142.0,
+      "diastolic_bp": 88.0,
+      "total_cholesterol": 225.0,
+      "hdl": 44.0,
+      "creatinine": 1.24
+    },
+    "expectedNormalization": [
+      {
+        "parameter": "totalCholesterol",
+        "originalValue": 225.0,
+        "originalUnit": "mg%",
+        "normalizedValue": 225.0,
+        "normalizedUnit": "mg/dL",
+        "rule": "Archaic clinical mg% to mg/dL identity"
+      },
+      {
+        "parameter": "creatinine",
+        "originalValue": 110.0,
+        "originalUnit": "umol/L",
+        "normalizedValue": 1.24,
+        "normalizedUnit": "mg/dL",
+        "factor": "1/88.4"
+      }
+    ],
+    "expectedValidation": "VALID",
+    "expectedConflict": false,
+    "ocrDifficulty": "STANDARD",
+    "multiReportGroup": null,
+    "actualModelOutput": null
+  },
+  {
+    "reportId": "SYN-CNF1-R01",
+    "patientId": "SYN-CNF1",
+    "category": "08_conflicting_data",
+    "relativePdfPath": "test_corpus/08_conflicting_data/SYN-CNF1-R01.pdf",
+    "relativeTextPath": "test_corpus/08_conflicting_data/SYN-CNF1-R01_ground_truth.txt",
+    "reportType": "general_lab_report",
+    "clinicalScenario": "conflicting_multisection_vitals",
+    "synthetic": true,
+    "patientContext": {
+      "age": 55,
+      "sex": 1,
+      "genderStr": "Male",
+      "dob": "1970-05-18"
+    },
+    "availableFeatures": [
+      "age",
+      "sex",
+      "bmi",
+      "systolic_bp",
+      "diastolic_bp",
+      "total_cholesterol",
+      "hdl",
+      "creatinine"
+    ],
+    "missingFeatures": [],
+    "modelRelevantFeatures": {
+      "age": 55,
+      "sex": 1,
+      "bmi": 29.5,
+      "systolic_bp": 124.0,
+      "diastolic_bp": 80.0,
+      "total_cholesterol": 224.0,
+      "hdl": 40.0,
+      "creatinine": 1.1
+    },
+    "expectedNormalization": [],
+    "expectedValidation": "WARNING",
+    "expectedConflict": true,
+    "ocrDifficulty": "STANDARD",
+    "multiReportGroup": null,
+    "actualModelOutput": null
+  },
+  {
+    "reportId": "SYN-OUT1-R01",
+    "patientId": "SYN-OUT1",
+    "category": "09_outlier_cases",
+    "relativePdfPath": "test_corpus/09_outlier_cases/SYN-OUT1-R01.pdf",
+    "relativeTextPath": "test_corpus/09_outlier_cases/SYN-OUT1-R01_ground_truth.txt",
+    "reportType": "general_lab_report",
+    "clinicalScenario": "outlier_extreme_physiological",
+    "synthetic": true,
+    "patientContext": {
+      "age": 58,
+      "sex": 1,
+      "genderStr": "Male",
+      "dob": "1967-08-20"
+    },
+    "availableFeatures": [
+      "age",
+      "sex",
+      "bmi",
+      "systolic_bp",
+      "diastolic_bp",
+      "total_cholesterol",
+      "hdl",
+      "creatinine"
+    ],
+    "missingFeatures": [],
+    "modelRelevantFeatures": {
+      "age": 58,
+      "sex": 1,
+      "bmi": 52.4,
+      "systolic_bp": 215.0,
+      "diastolic_bp": 125.0,
+      "total_cholesterol": 410.0,
+      "hdl": 22.0,
+      "creatinine": 4.8
+    },
+    "expectedNormalization": [],
+    "expectedValidation": "WARNING",
+    "expectedConflict": false,
+    "ocrDifficulty": "STANDARD",
+    "multiReportGroup": null,
+    "actualModelOutput": null
+  },
+  {
+    "reportId": "SYN-MIX1-R01",
+    "patientId": "SYN-MIX1",
+    "category": "10_mixed_realistic_reports",
+    "relativePdfPath": "test_corpus/10_mixed_realistic_reports/SYN-MIX1-R01.pdf",
+    "relativeTextPath": "test_corpus/10_mixed_realistic_reports/SYN-MIX1-R01_ground_truth.txt",
+    "reportType": "general_lab_report",
+    "clinicalScenario": "multipage_health_checkup",
+    "synthetic": true,
+    "patientContext": {
+      "age": 53,
+      "sex": 0,
+      "genderStr": "Female",
+      "dob": "1972-03-24"
+    },
+    "availableFeatures": [
+      "age",
+      "sex",
+      "bmi",
+      "systolic_bp",
+      "diastolic_bp",
+      "total_cholesterol",
+      "hdl",
+      "creatinine"
+    ],
+    "missingFeatures": [],
+    "modelRelevantFeatures": {
+      "age": 53,
+      "sex": 0,
+      "bmi": 26.8,
+      "systolic_bp": 134.0,
+      "diastolic_bp": 86.0,
+      "total_cholesterol": 210.0,
+      "hdl": 48.0,
+      "creatinine": 0.92
+    },
+    "expectedNormalization": [],
+    "expectedValidation": "VALID",
+    "expectedConflict": false,
+    "ocrDifficulty": "MULTI_PAGE_DOCUMENT",
+    "multiReportGroup": null,
+    "actualModelOutput": null
+  },
+  {
+    "reportId": "SYN-MIX2-R01",
+    "patientId": "SYN-MIX2",
+    "category": "10_mixed_realistic_reports",
+    "relativePdfPath": "test_corpus/10_mixed_realistic_reports/SYN-MIX2-R01.pdf",
+    "relativeTextPath": "test_corpus/10_mixed_realistic_reports/SYN-MIX2-R01_ground_truth.txt",
+    "reportType": "ambulatory_blood_pressure_monitoring",
+    "clinicalScenario": "abpm_with_concurrent_labs",
+    "synthetic": true,
+    "patientContext": {
+      "age": 51,
+      "sex": 1,
+      "genderStr": "Male",
+      "dob": "1974-09-16"
+    },
+    "availableFeatures": [
+      "age",
+      "sex",
+      "bmi",
+      "systolic_bp",
+      "diastolic_bp",
+      "total_cholesterol",
+      "hdl",
+      "creatinine"
+    ],
+    "missingFeatures": [],
+    "modelRelevantFeatures": {
+      "age": 51,
+      "sex": 1,
+      "bmi": 30.2,
+      "systolic_bp": 139.0,
+      "diastolic_bp": 87.0,
+      "total_cholesterol": 228.0,
+      "hdl": 39.0,
+      "creatinine": 1.1
+    },
+    "expectedNormalization": [],
+    "expectedValidation": "VALID",
+    "expectedConflict": false,
+    "ocrDifficulty": "ABPM_STATISTICAL_TABLES",
+    "multiReportGroup": null,
+    "actualModelOutput": null
+  }
+]
