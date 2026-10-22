@@ -37,6 +37,24 @@ export const getFrontendBaseUrl = () => {
  */
 const createTransporter = () => {
   const host = process.env.EMAIL_HOST || 'smtp.gmail.com';
+  const user = (process.env.EMAIL_USER || '').trim();
+  const pass = (process.env.EMAIL_PASS || '').trim();
+
+  // For Gmail, Nodemailer's native service configuration connects via direct SSL (Port 465)
+  // preventing port 587 STARTTLS connection timeouts commonly encountered in cloud containers (Render/AWS).
+  if (host.includes('gmail') || process.env.EMAIL_SERVICE === 'gmail') {
+    return nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user,
+        pass,
+      },
+      connectionTimeout: 15000,
+      greetingTimeout: 15000,
+      socketTimeout: 20000,
+    });
+  }
+
   const port = parseInt(process.env.EMAIL_PORT || '587', 10);
   const secure = process.env.EMAIL_SECURE === 'true' || port === 465;
 
@@ -45,14 +63,15 @@ const createTransporter = () => {
     port,
     secure,
     auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
+      user,
+      pass,
     },
-    connectionTimeout: 10000, // 10s
-    greetingTimeout: 10000,
-    socketTimeout: 15000,
+    connectionTimeout: 15000,
+    greetingTimeout: 15000,
+    socketTimeout: 20000,
   });
 };
+
 
 /**
  * Core send routine with sanitized error handling & test capturing
