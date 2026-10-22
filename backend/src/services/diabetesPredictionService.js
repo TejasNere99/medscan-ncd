@@ -13,12 +13,17 @@
 const DEFAULT_SERVICE_URL = 'http://localhost:8000';
 const REQUEST_TIMEOUT_MS = 5000;
 
+function getBaseMlUrl() {
+  const raw = process.env.DIABETES_ML_SERVICE_URL || process.env.ML_SERVICE_URL || DEFAULT_SERVICE_URL;
+  return raw.replace(/\/predict(?:\/.*)?\/?$/, '').replace(/\/$/, '');
+}
+
 /**
  * Executes health check against Python ML service.
  */
 export async function checkDiabetesServiceHealth() {
-  const baseUrl = process.env.DIABETES_ML_SERVICE_URL || DEFAULT_SERVICE_URL;
-  const endpoint = `${baseUrl.replace(/\/$/, '')}/health`;
+  const baseUrl = getBaseMlUrl();
+  const endpoint = `${baseUrl}/health`;
 
   try {
     const controller = new AbortController();
@@ -60,19 +65,24 @@ export async function checkDiabetesServiceHealth() {
  * @returns {Promise<Object>} Cleaned application-level prediction result
  */
 export async function callDiabetesPredictionService(featureVector) {
-  const baseUrl = process.env.DIABETES_ML_SERVICE_URL || DEFAULT_SERVICE_URL;
-  const endpoint = `${baseUrl.replace(/\/$/, '')}/predict/diabetes`;
+  const baseUrl = getBaseMlUrl();
+  const endpoint = `${baseUrl}/predict/diabetes`;
 
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
 
+    const headers = {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    };
+    if (process.env.ML_INTERNAL_API_KEY) {
+      headers['X-ML-Internal-Token'] = process.env.ML_INTERNAL_API_KEY;
+    }
+
     const res = await fetch(endpoint, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-      },
+      headers,
       body: JSON.stringify(featureVector),
       signal: controller.signal,
     });

@@ -52,6 +52,9 @@ const patientSchema = new mongoose.Schema(
     serumCreatinine: {
       type: Number,
     },
+    bloodUrea: {
+      type: Number,
+    },
     hemoglobin: {
       type: Number,
     },
@@ -71,16 +74,6 @@ const patientSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
     },
-    assignedNurse: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-    },
-    linkedFamilyMembers: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-      },
-    ],
     emergencyContact: {
       name: { type: String },
       relation: { type: String },

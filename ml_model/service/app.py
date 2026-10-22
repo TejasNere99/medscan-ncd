@@ -14,11 +14,12 @@ Enforces:
 import os
 import json
 import logging
+import hmac
 from pathlib import Path
 from typing import Optional, Union, List, Dict, Any
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, HTTPException, status
+from fastapi import FastAPI, HTTPException, Header, Depends, status
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 import numpy as np
@@ -44,6 +45,10 @@ HEART_PREP_PATH = (HEART_DIR / "preprocessing" / "preprocessor.joblib").resolve(
 HEART_CALIB_PATH = (HEART_DIR / "calibration" / "calibrator.joblib").resolve()
 HEART_SCHEMA_PATH = (HEART_DIR / "feature_schema.json").resolve()
 HEART_METADATA_PATH = (HEART_DIR / "model_metadata.json").resolve()
+
+# Newly trained research models use separate, versioned artifact directories.
+HYPERTENSION_DIR = (SERVICE_DIR.parent / "artifacts" / "hypertension" / "v1").resolve()
+CKD_DIR = (SERVICE_DIR.parent / "artifacts" / "kidney_disease" / "v1").resolve()
 
 # In-memory artifact singletons - Diabetes
 MODEL_PIPELINE = None
@@ -72,6 +77,17 @@ HEART_CALIBRATOR = None
 HEART_FEATURE_SCHEMA = None
 HEART_METADATA = None
 HEART_EXPLAINER = None
+
+HYPERTENSION_MODEL = None
+HYPERTENSION_SCHEMA = None
+HYPERTENSION_METADATA = None
+HYPERTENSION_EXPLAINER = None
+HYPERTENSION_LOAD_ERROR = None
+CKD_MODEL = None
+CKD_SCHEMA = None
+CKD_METADATA = None
+CKD_EXPLAINER = None
+CKD_LOAD_ERROR = None
 
 HEART_LOCKED_THRESHOLD = 0.110
 HEART_MODEL_VERSION = "1.0.0"
@@ -150,6 +166,8 @@ def load_artifacts():
             logger.warning("Heart Disease ML artifacts not fully found on disk.")
     except Exception as e:
         logger.error(f"Failed to load Heart Disease ML artifacts: {e}", exc_info=True)
+
+    load_research_artifacts()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -250,6 +268,250 @@ class HeartDiseasePredictionResponse(BaseModel):
     topContributingFactors: List[HeartDiseaseFactorContribution] = []
     clinicalDisclaimer: str
 
+class ResearchDiseasePredictionRequest(BaseModel):
+    model_config = {"extra": "forbid"}
+    features: Dict[str, Optional[float]]
+
+class ResearchDiseasePredictionResponse(BaseModel):
+    success: bool
+    disease: str
+    modelVersion: str
+    featureSchemaVersion: str
+    taskInterpretation: str
+    status: str
+    canCalculate: bool
+    dataCompleteness: str
+    probability: Optional[float] = None
+    developmentThreshold: float
+    riskCategory: Optional[str] = None
+    missingFeatures: List[str] = []
+    message: Optional[str] = None
+    features: Dict[str, Optional[float]] = {}
+    topContributingFactors: List[FeatureContribution] = []
+    explanationStatus: str = "unavailable"
+    clinicalDisclaimer: str
+
+
+def require_internal_prediction_token(x_ml_internal_token: Optional[str] = Header(default=None)):
+    configured = os.getenv("ML_INTERNAL_API_KEY")
+    if not configured:
+        raise HTTPException(status_code=503, detail="Protected model inference is not configured.")
+    if not x_ml_internal_token or not hmac.compare_digest(x_ml_internal_token, configured):
+        raise HTTPException(status_code=401, detail="Unauthorized internal model request.")
+
+
+def _research_prediction(
+    disease: str,
+    payload: ResearchDiseasePredictionRequest,
+    model: Any,
+    schema: Any,
+    metadata: Any,
+    explainer: Any,
+    model_id: str,
+):
+    if model is None or schema is None or metadata is None:
+        raise HTTPException(status_code=503, detail=f"{disease} model artifacts are unavailable.")
+    feature_order = schema["ordered_features"]
+    incoming = payload.features
+    unknown = sorted(set(incoming) - set(feature_order))
+    if unknown:
+        raise HTTPException(status_code=422, detail=f"Unexpected feature names for {disease}: {unknown}")
+
+    required = schema.get("required_features") or [
+        name for name, definition in schema.get("fields", {}).items() if definition.get("required")
+    ]
+    row: dict[str, float] = {}
+    missing_required = []
+    for name in feature_order:
+        raw = incoming.get(name)
+        if raw is None:
+            row[name] = np.nan
+            if name in required:
+                missing_required.append(name)
+            continue
+        try:
+            value = float(raw)
+        except (TypeError, ValueError):
+            raise HTTPException(status_code=422, detail=f"Invalid numeric value for {name}.")
+        if not np.isfinite(value):
+            raise HTTPException(status_code=422, detail=f"Non-finite numeric value for {name}.")
+        if name == "age":
+            lower = 16 if disease == "hypertension" else 0
+            if value < lower or value > 130:
+                raise HTTPException(status_code=422, detail="Age is outside the supported data range.")
+        elif name == "sex":
+            if value not in (0.0, 1.0):
+                raise HTTPException(status_code=422, detail="Sex must be encoded as 0 or 1.")
+        elif name == "current_smoker":
+            if value not in (0.0, 1.0):
+                raise HTTPException(status_code=422, detail="Current smoker must be encoded as 0 or 1.")
+        elif value <= 0:
+            raise HTTPException(status_code=422, detail=f"{name} must be a positive finite value.")
+        row[name] = value
+
+    threshold = float(metadata["development_threshold"])
+    interpretation = schema["task_interpretation"]
+    common = {
+        "disease": disease,
+        "modelVersion": str(metadata["version"]),
+        "featureSchemaVersion": str(schema["schema_version"]),
+        "taskInterpretation": interpretation,
+        "developmentThreshold": threshold,
+        "features": {key: (None if not np.isfinite(value) else float(value)) for key, value in row.items()},
+        "clinicalDisclaimer": "Statistical classification estimate only; not a diagnosis, future-onset prediction, or clinically validated tool.",
+    }
+    if missing_required:
+        return ResearchDiseasePredictionResponse(
+            success=False,
+            status="INSUFFICIENT_DATA",
+            canCalculate=False,
+            dataCompleteness="INSUFFICIENT",
+            probability=None,
+            riskCategory=None,
+            missingFeatures=missing_required,
+            message=f"Required confirmed features are missing: {', '.join(missing_required)}.",
+            topContributingFactors=[],
+            explanationStatus="unavailable",
+            **common,
+        )
+
+    frame = pd.DataFrame([row], columns=feature_order)
+    try:
+        probability = float(model.predict_proba(frame)[0, 1])
+    except Exception as exc:
+        logger.exception("Research model inference failed for %s", disease)
+        raise HTTPException(status_code=500, detail=f"{disease} model inference failed; no prediction was produced.") from exc
+    if not np.isfinite(probability) or not 0.0 <= probability <= 1.0:
+        raise HTTPException(status_code=500, detail=f"{disease} model returned an invalid probability.")
+
+    factors: list[FeatureContribution] = []
+    explanation_status = "unavailable"
+    if explainer is not None:
+        try:
+            explanation = explainer(frame, max_evals=2 * len(feature_order) + 1)
+            contributions = np.asarray(explanation.values)
+            if contributions.ndim == 3:
+                contributions = contributions[0, :, 1]
+            elif contributions.ndim == 2:
+                contributions = contributions[0]
+            labels = {
+                "age": "Age", "sex": "Sex", "bmi": "Body mass index",
+                "fasting_glucose": "Fasting glucose", "blood_glucose": "Blood glucose",
+                "total_cholesterol": "Total cholesterol", "hdl": "HDL cholesterol",
+                "serum_creatinine": "Serum creatinine", "heart_rate": "Heart rate",
+                "current_smoker": "Current smoking", "blood_urea": "Blood urea",
+                "blood_pressure": "Blood pressure", "hemoglobin": "Hemoglobin",
+            }
+            pairs = sorted(zip(feature_order, contributions), key=lambda item: abs(float(item[1])), reverse=True)
+            for feature, contribution in pairs[:3]:
+                impact = "increases_estimated_risk" if float(contribution) > 0 else "decreases_estimated_risk"
+                factors.append(FeatureContribution(
+                    feature=labels.get(feature, feature),
+                    value=None if not np.isfinite(row[feature]) else round(float(row[feature]), 3),
+                    impact=impact,
+                    description=f"{labels.get(feature, feature)} contributed toward the model's positive-class estimate." if contribution > 0 else f"{labels.get(feature, feature)} contributed toward the model's negative-class estimate.",
+                ))
+            explanation_status = "available"
+        except Exception as exc:
+            logger.warning("Research model explanation unavailable for %s: %s", disease, exc)
+
+    elevated = probability >= threshold
+    completeness = "FULL" if all(np.isfinite(value) for value in row.values()) else "PARTIAL"
+    return ResearchDiseasePredictionResponse(
+        success=True,
+        status="SUCCESS",
+        canCalculate=True,
+        dataCompleteness=completeness,
+        probability=round(probability, 6),
+        riskCategory="POSITIVE_CLASSIFICATION_ESTIMATE" if elevated else "NEGATIVE_CLASSIFICATION_ESTIMATE",
+        missingFeatures=[name for name, value in row.items() if not np.isfinite(value)],
+        message="Model-estimated probability for the dataset classification task. This result is not a diagnosis.",
+        topContributingFactors=factors,
+        explanationStatus=explanation_status,
+        **common,
+    )
+
+
+@app.post("/predict/hypertension", response_model=ResearchDiseasePredictionResponse, dependencies=[Depends(require_internal_prediction_token)])
+def predict_hypertension(payload: ResearchDiseasePredictionRequest):
+    return _research_prediction(
+        "hypertension", payload, HYPERTENSION_MODEL, HYPERTENSION_SCHEMA,
+        HYPERTENSION_METADATA, HYPERTENSION_EXPLAINER, "hypertension_diagnosed_treated",
+    )
+
+
+@app.post("/predict/ckd", response_model=ResearchDiseasePredictionResponse, dependencies=[Depends(require_internal_prediction_token)])
+def predict_ckd(payload: ResearchDiseasePredictionRequest):
+    return _research_prediction(
+        "chronic_kidney_disease", payload, CKD_MODEL, CKD_SCHEMA,
+        CKD_METADATA, CKD_EXPLAINER, "chronic_kidney_disease",
+    )
+
+
+def _load_research_artifact(directory: Path, expected_id: str):
+    """Load an isolated research model; never substitute another disease artifact."""
+    model_path = directory / "model.joblib"
+    schema_path = directory / "feature_schema.json"
+    metadata_path = directory / "model_metadata.json"
+    background_path = directory / "explainability_background.csv"
+    if not all(path.exists() for path in (model_path, schema_path, metadata_path)):
+        raise FileNotFoundError(f"Required {expected_id} model artifacts are missing")
+    model = joblib.load(model_path)
+    with schema_path.open("r", encoding="utf-8") as stream:
+        schema = json.load(stream)
+    with metadata_path.open("r", encoding="utf-8") as stream:
+        metadata = json.load(stream)
+    ordered = schema.get("ordered_features")
+    if not isinstance(ordered, list) or not ordered or len(ordered) != len(set(ordered)):
+        raise ValueError(f"{expected_id} schema has an invalid ordered feature list")
+    if metadata.get("model_id") != expected_id or metadata.get("ordered_features") != ordered:
+        raise ValueError(f"{expected_id} metadata does not match its feature schema")
+    threshold = float(metadata.get("development_threshold"))
+    if not np.isfinite(threshold) or not 0.0 <= threshold <= 1.0:
+        raise ValueError(f"{expected_id} has an invalid stored threshold")
+    if metadata.get("calibration_ensemble") is not True or not metadata.get("calibration_method"):
+        raise ValueError(f"{expected_id} calibrated estimator metadata is missing")
+    if not getattr(model, "calibrated_classifiers_", None):
+        raise ValueError(f"{expected_id} calibrated estimators are missing")
+    model_order = list(getattr(model, "feature_names_in_", []))
+    if model_order and model_order != ordered:
+        raise ValueError(f"{expected_id} model feature order differs from its schema")
+    if int(getattr(model, "n_features_in_", -1)) != len(ordered):
+        raise ValueError(f"{expected_id} model feature count differs from its schema")
+    # Request-time permutation SHAP exceeded the backend's 15s timeout on this
+    # CPU for both new calibrated estimators. Keep the development-only sample
+    # for future offline explanation work, but do not block inference or emit
+    # unvalidated proxy factors. API responses report explanation unavailable.
+    explainer = None
+    return model, schema, metadata, explainer
+
+
+def load_research_artifacts():
+    global HYPERTENSION_MODEL, HYPERTENSION_SCHEMA, HYPERTENSION_METADATA, HYPERTENSION_EXPLAINER, HYPERTENSION_LOAD_ERROR
+    global CKD_MODEL, CKD_SCHEMA, CKD_METADATA, CKD_EXPLAINER, CKD_LOAD_ERROR
+    for disease, directory, expected in (
+        ("hypertension", HYPERTENSION_DIR, "hypertension_diagnosed_treated"),
+        ("ckd", CKD_DIR, "chronic_kidney_disease"),
+    ):
+        try:
+            model, schema, metadata, explainer = _load_research_artifact(directory, expected)
+            if disease == "hypertension":
+                HYPERTENSION_MODEL, HYPERTENSION_SCHEMA, HYPERTENSION_METADATA, HYPERTENSION_EXPLAINER = model, schema, metadata, explainer
+                HYPERTENSION_LOAD_ERROR = None
+            else:
+                CKD_MODEL, CKD_SCHEMA, CKD_METADATA, CKD_EXPLAINER = model, schema, metadata, explainer
+                CKD_LOAD_ERROR = None
+            logger.info("Loaded %s research model %s", disease, metadata.get("version"))
+        except Exception as exc:
+            if disease == "hypertension":
+                HYPERTENSION_MODEL = HYPERTENSION_SCHEMA = HYPERTENSION_METADATA = HYPERTENSION_EXPLAINER = None
+                HYPERTENSION_LOAD_ERROR = str(exc)
+            else:
+                CKD_MODEL = CKD_SCHEMA = CKD_METADATA = CKD_EXPLAINER = None
+                CKD_LOAD_ERROR = str(exc)
+            logger.error("%s research model unavailable: %s", disease, exc)
+
+
 @app.get("/health", status_code=status.HTTP_200_OK)
 def health_check():
     """Verify service status, model artifacts, schemas, and metadata."""
@@ -283,9 +545,15 @@ def health_check():
         and heart_schema_loaded
         and heart_meta_loaded
     )
+
+    hypertension_loaded = HYPERTENSION_MODEL is not None
+    ckd_loaded = CKD_MODEL is not None
+    all_existing_healthy = all_ok and heart_healthy
+    all_models_healthy = all_existing_healthy and hypertension_loaded and ckd_loaded
+    service_status = "healthy" if all_models_healthy else ("degraded" if all_existing_healthy else "unhealthy")
     
     return {
-        "status": "healthy" if (all_ok and heart_healthy) else ("degraded" if all_ok else "unhealthy"),
+        "status": service_status,
         "service": "medscan-ncd-ml-service",
         "modelVersion": MODEL_VERSION,
         "artifactLoaded": artifact_loaded,
@@ -314,6 +582,29 @@ def health_check():
             "featureSchemaLoaded": heart_schema_loaded,
             "threshold": HEART_LOCKED_THRESHOLD,
             "modelVersion": HEART_MODEL_VERSION
+        },
+        "hypertension": {
+            "modelLoaded": hypertension_loaded,
+            "featureSchemaLoaded": HYPERTENSION_SCHEMA is not None,
+            "metadataLoaded": HYPERTENSION_METADATA is not None,
+            "calibratorLoaded": bool(HYPERTENSION_MODEL is not None and getattr(HYPERTENSION_MODEL, "calibrated_classifiers_", None)),
+            "explanationAvailable": HYPERTENSION_EXPLAINER is not None,
+            "modelVersion": HYPERTENSION_METADATA.get("version") if HYPERTENSION_METADATA else None,
+            "featureSchemaVersion": HYPERTENSION_SCHEMA.get("schema_version") if HYPERTENSION_SCHEMA else None,
+            "threshold": HYPERTENSION_METADATA.get("development_threshold") if HYPERTENSION_METADATA else None,
+            "error": HYPERTENSION_LOAD_ERROR,
+        },
+        "kidneyDisease": {
+            "modelLoaded": ckd_loaded,
+            "featureSchemaLoaded": CKD_SCHEMA is not None,
+            "metadataLoaded": CKD_METADATA is not None,
+            "calibratorLoaded": bool(CKD_MODEL is not None and getattr(CKD_MODEL, "calibrated_classifiers_", None)),
+            "explanationAvailable": CKD_EXPLAINER is not None,
+            "modelVersion": CKD_METADATA.get("version") if CKD_METADATA else None,
+            "featureSchemaVersion": CKD_SCHEMA.get("schema_version") if CKD_SCHEMA else None,
+            "threshold": CKD_METADATA.get("development_threshold") if CKD_METADATA else None,
+            "selectedFeatureGroup": CKD_METADATA.get("selected_feature_group") if CKD_METADATA else None,
+            "error": CKD_LOAD_ERROR,
         }
     }
 

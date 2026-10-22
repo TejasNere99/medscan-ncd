@@ -1,0 +1,40 @@
+{
+  "disclaimer": "SYNTHETIC \u2014 FOR DEMONSTRATION ONLY",
+  "diseaseFeatureVectors": {
+    "diabetes": {
+      "age": 28.0,
+      "sex": 1,
+      "bmi": 22.4,
+      "systolic_bp": 116.0,
+      "diastolic_bp": 76.0,
+      "total_cholesterol": 165.0,
+      "hdl": 58.0,
+      "creatinine": 0.8
+    },
+    "heartDisease": {
+      "age": 28.0,
+      "sex": 1,
+      "totChol": 165.0,
+      "sysBP": 116.0,
+      "diaBP": 76.0,
+      "BMI": 22.4,
+      "glucose": 88.0,
+      "currentSmoker": 0
+    },
+    "hypertension": {
+      "age": 28.0,
+      "sex": 1,
+      "bmi": 22.4,
+      "fasting_glucose": 88.0,
+      "total_cholesterol": 165.0,
+      "hdl": 58.0,
+      "serum_creatinine": 0.8,
+      "heart_rate": 72.0,
+      "current_smoker": 0
+    },
+    "chronicKidneyDisease": {
+      "age": 28.0,
+      "serum_creatinine": 0.8
+    }
+  }
+}

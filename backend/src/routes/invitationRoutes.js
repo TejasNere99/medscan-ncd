@@ -1,23 +1,11 @@
 import express from 'express';
-import {
-  createFamilyInvite,
-  validateFamilyInvite,
-  redeemFamilyInvite,
-  getPatientFamilyInvitations,
-  revokeFamilyInvite,
-} from '../controllers/invitationController.js';
-import { verifyJWT } from '../middleware/auth.js';
-import { authorizeRoles } from '../middleware/roleCheck.js';
+import { ApiError } from '../utils/apiError.js';
 
 const router = express.Router();
 
-// Public verification and redemption endpoints
-router.get('/family/:token', validateFamilyInvite);
-router.post('/family/:token/redeem', redeemFamilyInvite);
-
-// Authenticated Patient endpoints
-router.post('/family', verifyJWT, authorizeRoles('Patient'), createFamilyInvite);
-router.get('/family', verifyJWT, authorizeRoles('Patient'), getPatientFamilyInvitations);
-router.patch('/family/:id/revoke', verifyJWT, authorizeRoles('Patient'), revokeFamilyInvite);
+// Deprecated endpoint guard: Family role and invitation workflows are removed
+router.all('*', (req, res, next) => {
+  return next(new ApiError(410, 'Family invitation endpoints are deprecated and no longer supported in MedScan-NCD.'));
+});
 
 export default router;

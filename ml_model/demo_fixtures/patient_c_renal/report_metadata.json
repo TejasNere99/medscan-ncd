@@ -1,0 +1,11 @@
+{
+  "disclaimer": "SYNTHETIC \u2014 FOR DEMONSTRATION ONLY",
+  "scenario": "Patient C Renal Function Report",
+  "reportId": "SYN-REP-C-001",
+  "pdfFilename": "report_renal.pdf",
+  "title": "Renal Function & Metabolic Panel",
+  "uploadDate": "2026-09-14T08:45:00.000Z",
+  "reportType": "General Laboratory Report",
+  "documentType": "general_lab_report",
+  "status": "CONFIRMED"
+}

@@ -3,17 +3,17 @@ import { motion } from 'framer-motion';
 
 export const StatCard = ({ title, value, icon: Icon, color = 'cyan', trend, trendType = 'up', description }) => {
   const colorMap = {
-    cyan: 'from-cyan-500/20 to-blue-500/10 text-cyan-400 border-cyan-500/30',
-    emerald: 'from-emerald-500/20 to-teal-500/10 text-emerald-400 border-emerald-500/30',
-    rose: 'from-rose-500/20 to-red-500/10 text-rose-400 border-rose-500/30',
-    amber: 'from-amber-500/20 to-yellow-500/10 text-amber-400 border-amber-500/30',
-    purple: 'from-purple-500/20 to-indigo-500/10 text-purple-400 border-purple-500/30',
-    pink: 'from-pink-500/20 to-rose-500/10 text-pink-400 border-pink-500/30',
+    cyan: 'from-cyan-50 to-blue-50 text-cyan-800 border-cyan-200',
+    emerald: 'from-emerald-50 to-teal-50 text-emerald-800 border-emerald-200',
+    rose: 'from-rose-50 to-red-50 text-rose-800 border-rose-200',
+    amber: 'from-amber-50 to-yellow-50 text-amber-900 border-amber-200',
+    purple: 'from-purple-50 to-indigo-50 text-purple-800 border-purple-200',
+    pink: 'from-pink-50 to-rose-50 text-pink-800 border-pink-200',
   };
 
   const badgeColor = {
-    up: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
-    down: 'bg-rose-500/10 text-rose-400 border-rose-500/20',
+    up: 'bg-emerald-100 text-emerald-800 border-emerald-300 font-bold',
+    down: 'bg-rose-100 text-rose-800 border-rose-300 font-bold',
   };
 
   const getValueSizeClass = (val) => {

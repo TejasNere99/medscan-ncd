@@ -1,0 +1,23 @@
+{
+  "disclaimer": "SYNTHETIC \u2014 FOR DEMONSTRATION ONLY",
+  "patientId": "SYN-PAT-001",
+  "name": "Aarav Sharma",
+  "email": "synthetic.patient.a@example.com",
+  "role": "Patient",
+  "age": 28,
+  "gender": "Male",
+  "sexEncoded": 1,
+  "isCurrentSmoker": false,
+  "village": "Demo Community Central",
+  "assignedDoctor": "Dr. Demo Clinician",
+  "medicalHistory": [
+    "Synthetic baseline profile for software demonstration."
+  ],
+  "scenario": "Patient A \u2014 Lower-Risk Demonstration Profile",
+  "expectedOutcomes": {
+    "diabetes": "LOWER_MODEL_ESTIMATED_RISK",
+    "heartDisease": "LOWER_MODEL_ESTIMATED_RISK",
+    "hypertension": "NEGATIVE_CLASSIFICATION_ESTIMATE",
+    "ckd": "NEGATIVE_CLASSIFICATION_ESTIMATE"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "disclaimer": "SYNTHETIC \u2014 FOR DEMONSTRATION ONLY",
+  "scenario": "Patient A Lower-Risk Sequential Reports",
+  "reports": [
+    {
+      "reportId": "SYN-REP-A-001",
+      "filename": "report_1_baseline.pdf",
+      "title": "Comprehensive Laboratory Examination Report (Baseline)",
+      "uploadDate": "2026-01-15T09:00:00.000Z",
+      "reportType": "General Laboratory Report",
+      "documentType": "general_lab_report",
+      "status": "CONFIRMED"
+    },
+    {
+      "reportId": "SYN-REP-A-002",
+      "filename": "report_2_followup.pdf",
+      "title": "Comprehensive Laboratory Examination Report (Follow-up)",
+      "uploadDate": "2026-06-20T10:30:00.000Z",
+      "reportType": "General Laboratory Report",
+      "documentType": "general_lab_report",
+      "status": "CONFIRMED"
+    }
+  ]
+}

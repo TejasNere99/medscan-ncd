@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 import {
   FileText,
@@ -9,11 +9,15 @@ import {
   Activity,
   HeartPulse,
   TrendingUp,
+  TrendingDown,
+  Minus,
   CheckCircle2,
   Calendar,
   Clock,
   ArrowUpRight,
   ArrowDownRight,
+  ArrowRight,
+  Sparkles,
   Eye,
   ShieldAlert,
   Info,
@@ -22,7 +26,6 @@ import {
   X,
   UserCog,
   Save,
-  Lock,
   XCircle,
   ChevronDown,
   ChevronUp,
@@ -34,6 +37,7 @@ import {
 import { StatCard } from '../../components/common/StatCard';
 import { ReportUploadModal } from '../../components/ocr/ReportUploadModal';
 import { OcrViewerModal } from '../../components/ocr/OcrViewerModal';
+import { ReportComparisonModal, extractBiomarkers } from '../../components/ocr/ReportComparisonModal';
 import { patientService } from '../../services/patientService';
 import { reportService } from '../../services/reportService';
 import { predictionService } from '../../services/predictionService';
@@ -48,16 +52,22 @@ export const PatientDashboard = () => {
   const [reports, setReports] = useState([]);
   const [prediction, setPrediction] = useState(null);
   const [heartDiseasePrediction, setHeartDiseasePrediction] = useState(null);
+  const [hypertensionPrediction, setHypertensionPrediction] = useState(null);
+  const [ckdPrediction, setCkdPrediction] = useState(null);
+  const [runningNewDisease, setRunningNewDisease] = useState(null);
   const [predictionHistory, setPredictionHistory] = useState([]);
   const [loading, setLoading] = useState(true);
 
   // Progressive disclosure states for AI cards
   const [expandedDiabetesDetails, setExpandedDiabetesDetails] = useState(false);
   const [expandedHeartDetails, setExpandedHeartDetails] = useState(false);
+  const [expandedHypertensionDetails, setExpandedHypertensionDetails] = useState(false);
+  const [expandedCkdDetails, setExpandedCkdDetails] = useState(false);
 
   // Modals & interactive state
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [ocrModalOpen, setOcrModalOpen] = useState(false);
+  const [comparisonModalOpen, setComparisonModalOpen] = useState(false);
   const [selectedReport, setSelectedReport] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
@@ -135,10 +145,9 @@ export const PatientDashboard = () => {
         isCurrentSmoker: payload.isCurrentSmoker ?? prev.isCurrentSmoker,
       }));
       setEditDemoOpen(false);
-      addToast('Health profile updated successfully! AI risk assessment updated.', 'success');
+      addToast('Confirmed health profile updated.', 'success');
       fetchData();
     } catch (err) {
-      console.error(err);
       addToast(err.response?.data?.message || 'Failed to update profile.', 'error');
     } finally {
       setSavingDemo(false);
@@ -158,7 +167,6 @@ export const PatientDashboard = () => {
       setReports((prev) => prev.filter((r) => r._id !== reportId));
       addToast('Report deleted successfully.', 'success');
     } catch (err) {
-      console.error(err);
       addToast(err.response?.data?.message || 'Failed to delete report.', 'error');
     } finally {
       setDeletingId(null);
@@ -210,8 +218,41 @@ export const PatientDashboard = () => {
       } catch (hdErr) {
         setHeartDiseasePrediction(null);
       }
+
+      try {
+        let hypRes = await predictionService.getLatestHypertensionPrediction();
+        if (hypRes?.data && hypRes.data.status === 'SUCCESS' && hypRes.data.canCalculate) {
+          setHypertensionPrediction(hypRes.data);
+        } else if (profileRes?.data?.age && profileRes?.data?.gender) {
+          const autoRes = await predictionService.predictHypertension({});
+          if (autoRes?.data) setHypertensionPrediction(autoRes.data);
+          else setHypertensionPrediction(hypRes?.data || null);
+        } else {
+          setHypertensionPrediction(hypRes?.data || null);
+        }
+      } catch (hErr) {
+        const errorResult = hErr?.data || hErr || {};
+        const embeddedResult = errorResult?.data?.status ? errorResult.data : (errorResult?.status ? errorResult : null);
+        setHypertensionPrediction(embeddedResult || null);
+      }
+
+      try {
+        let ckdRes = await predictionService.getLatestCkdPrediction();
+        if (ckdRes?.data && ckdRes.data.status === 'SUCCESS' && ckdRes.data.canCalculate) {
+          setCkdPrediction(ckdRes.data);
+        } else if (profileRes?.data?.age && (profileRes?.data?.serumCreatinine || repRes?.data?.length > 0)) {
+          const autoRes = await predictionService.predictCkd({});
+          if (autoRes?.data) setCkdPrediction(autoRes.data);
+          else setCkdPrediction(ckdRes?.data || null);
+        } else {
+          setCkdPrediction(ckdRes?.data || null);
+        }
+      } catch (cErr) {
+        const errorResult = cErr?.data || cErr || {};
+        const embeddedResult = errorResult?.data?.status ? errorResult.data : (errorResult?.status ? errorResult : null);
+        setCkdPrediction(embeddedResult || null);
+      }
     } catch (err) {
-      console.error(err);
       addToast('Failed to sync patient health profile data.', 'error');
     } finally {
       setLoading(false);
@@ -234,9 +275,43 @@ export const PatientDashboard = () => {
 
   const handleReportUploaded = (data) => {
     fetchData();
-    if (data?.report) {
+    if (data?.report && data.report.status !== 'CONFIRMED') {
       setSelectedReport(data.report);
       setOcrModalOpen(true);
+    }
+  };
+
+  const requestNewDiseasePrediction = async (disease) => {
+    setRunningNewDisease(disease);
+    try {
+      const result = disease === 'hypertension'
+        ? await predictionService.predictHypertension({})
+        : await predictionService.predictCkd({});
+      const predictionResult = result?.data || null;
+      if (disease === 'hypertension') setHypertensionPrediction(predictionResult);
+      else setCkdPrediction(predictionResult);
+      if (predictionResult?.status === 'SUCCESS' && predictionResult?.canCalculate) {
+        addToast('Model estimate generated from your saved health information.', 'success');
+      } else {
+        addToast(predictionResult?.message || 'The model could not generate an estimate.', 'warning');
+      }
+    } catch (error) {
+      const errorResult = error?.data || error || {};
+      const embeddedResult = errorResult?.data?.status ? errorResult.data : (errorResult?.status ? errorResult : null);
+      const unavailableResult = embeddedResult ? {
+        ...embeddedResult,
+        message: embeddedResult.message || errorResult.message || 'The model estimate is temporarily unavailable. No probability was generated.',
+      } : {
+        status: errorResult?.statusCode === 503 ? 'MODEL_UNAVAILABLE' : 'PREDICTION_ERROR',
+        canCalculate: false,
+        probability: null,
+        message: errorResult?.message || error?.message || 'The estimate could not be generated. Please retry.',
+      };
+      if (disease === 'hypertension') setHypertensionPrediction(unavailableResult);
+      else setCkdPrediction(unavailableResult);
+      addToast(unavailableResult.message, 'error');
+    } finally {
+      setRunningNewDisease(null);
     }
   };
 
@@ -247,6 +322,152 @@ export const PatientDashboard = () => {
 
   const pendingReports = reports.filter((r) => r.status === 'PENDING_REVIEW');
   const confirmedReports = reports.filter((r) => r.status !== 'PENDING_REVIEW');
+
+  // Chronological confirmed reports for longitudinal trajectory analysis (oldest baseline to newest)
+  const chronologicalReports = useMemo(() => {
+    return [...confirmedReports].sort(
+      (a, b) => new Date(a.confirmedAt || a.uploadDate) - new Date(b.confirmedAt || b.uploadDate)
+    );
+  }, [confirmedReports]);
+
+  const baselineReport = chronologicalReports[0] || null;
+  const latestReport = chronologicalReports[chronologicalReports.length - 1] || null;
+
+  const baselineBiomarkers = useMemo(() => extractBiomarkers(baselineReport), [baselineReport]);
+  const latestBiomarkers = useMemo(() => extractBiomarkers(latestReport), [latestReport]);
+
+  const daysBetweenEvaluations = useMemo(() => {
+    if (!baselineReport || !latestReport || chronologicalReports.length < 2) return 0;
+    const bDate = new Date(baselineReport.confirmedAt || baselineReport.uploadDate);
+    const lDate = new Date(latestReport.confirmedAt || latestReport.uploadDate);
+    return Math.max(0, Math.round((lDate.getTime() - bDate.getTime()) / (1000 * 60 * 60 * 24)));
+  }, [baselineReport, latestReport, chronologicalReports]);
+
+  const keyTrajectoryBiomarkers = useMemo(() => {
+    if (!baselineReport || !latestReport || chronologicalReports.length < 2) return [];
+
+    const defs = [
+      {
+        key: 'fastingSugar',
+        label: 'Fasting Glucose',
+        unit: 'mg/dL',
+        isLowerBetter: true,
+        isAttention: (v) => v >= 126,
+      },
+      {
+        key: 'systolicBP',
+        label: 'Systolic BP',
+        unit: 'mmHg',
+        isLowerBetter: true,
+        isAttention: (v) => v >= 140,
+      },
+      {
+        key: 'diastolicBP',
+        label: 'Diastolic BP',
+        unit: 'mmHg',
+        isLowerBetter: true,
+        isAttention: (v) => v >= 90,
+      },
+      {
+        key: 'totalCholesterol',
+        label: 'Total Cholesterol',
+        unit: 'mg/dL',
+        isLowerBetter: true,
+        isAttention: (v) => v >= 240,
+      },
+      {
+        key: 'hdl',
+        label: 'HDL Cholesterol',
+        unit: 'mg/dL',
+        isLowerBetter: false,
+        isAttention: (v) => v < 40,
+      },
+      {
+        key: 'serumCreatinine',
+        label: 'Serum Creatinine',
+        unit: 'mg/dL',
+        isLowerBetter: true,
+        isAttention: (v) => v > 1.4,
+      },
+    ];
+
+    return defs.map((d) => {
+      const b = baselineBiomarkers[d.key];
+      const l = latestBiomarkers[d.key];
+      if (b === null && l === null) return null;
+
+      const hasBoth = b !== null && l !== null;
+      const delta = hasBoth ? Math.round((l - b) * 100) / 100 : null;
+
+      let direction = 'stable';
+      let statusLabel = 'Stable';
+      let tone = 'slate';
+
+      if (hasBoth) {
+        if (Math.abs(delta) < 0.001) {
+          direction = 'stable';
+          statusLabel = 'Unchanged';
+          tone = 'slate';
+        } else if (d.isLowerBetter === true) {
+          if (delta < 0) {
+            direction = 'down';
+            statusLabel = `${delta} ${d.unit}`;
+            tone = 'emerald';
+          } else {
+            direction = 'up';
+            statusLabel = `+${delta} ${d.unit}`;
+            tone = d.isAttention(l) ? 'amber' : 'slate';
+          }
+        } else if (d.isLowerBetter === false) {
+          if (delta > 0) {
+            direction = 'up';
+            statusLabel = `+${delta} ${d.unit}`;
+            tone = 'emerald';
+          } else {
+            direction = 'down';
+            statusLabel = `${delta} ${d.unit}`;
+            tone = d.isAttention(l) ? 'amber' : 'slate';
+          }
+        }
+      }
+
+      return {
+        ...d,
+        baseline: b,
+        latest: l,
+        delta,
+        direction,
+        statusLabel,
+        tone,
+      };
+    }).filter(Boolean);
+  }, [baselineReport, latestReport, chronologicalReports, baselineBiomarkers, latestBiomarkers]);
+
+  const trajectoryOverview = useMemo(() => {
+    if (!keyTrajectoryBiomarkers.length) return null;
+    const emeralds = keyTrajectoryBiomarkers.filter((b) => b.tone === 'emerald').length;
+    const ambers = keyTrajectoryBiomarkers.filter((b) => b.tone === 'amber').length;
+
+    if (emeralds >= 2 && ambers === 0) {
+      return {
+        label: 'Favorable Trajectory',
+        badgeClass: 'text-emerald-800 bg-emerald-100 border-emerald-300 font-bold',
+        summary: 'Cardiovascular and metabolic indicators show favorable improvements compared to initial baseline.',
+      };
+    }
+    if (ambers > 0) {
+      return {
+        label: 'Active Follow-up Advised',
+        badgeClass: 'text-amber-900 bg-amber-100 border-amber-300 font-bold',
+        summary: 'One or more laboratory indicators show elevated readings. Review full comparison matrix.',
+      };
+    }
+    return {
+      label: 'Clinically Stable',
+      badgeClass: 'text-teal-800 bg-teal-100 border-teal-300 font-bold',
+      summary: 'Biomarkers demonstrate consistent, steady regulation across consecutive consultations.',
+    };
+  }, [keyTrajectoryBiomarkers]);
 
   const renderReportCard = (rep, isPending = false) => {
     const confirmedMetrics = rep.confirmedData || rep.structuredData || {};
@@ -309,7 +530,7 @@ export const PatientDashboard = () => {
             <div className="flex items-center flex-wrap gap-2">
               <span
                 className={`text-xs sm:text-sm font-bold truncate ${
-                  isPending ? 'text-amber-200' : 'text-white group-hover:text-cyan-400'
+                  isPending ? 'text-amber-950 font-extrabold' : 'text-white group-hover:text-cyan-400'
                 } transition-colors`}
               >
                 {rep.title}
@@ -317,10 +538,10 @@ export const PatientDashboard = () => {
               <span
                 className={`text-[10px] px-2.5 py-0.5 rounded-full border font-bold uppercase tracking-wider ${
                   isPending
-                    ? 'bg-amber-500/15 text-amber-300 border-amber-500/30'
+                    ? 'bg-amber-100 text-amber-900 border-amber-300'
                     : rep.status === 'CONFIRMED'
-                    ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
-                    : 'bg-slate-800 text-slate-400 border-slate-700'
+                    ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                    : 'bg-slate-200 text-slate-700 border-slate-300'
                 }`}
               >
                 {isPending ? 'Pending Verification' : rep.status || 'CONFIRMED'}
@@ -369,10 +590,10 @@ export const PatientDashboard = () => {
                   setSelectedReport(rep);
                   setOcrModalOpen(true);
                 }}
-                className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-amber-300 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 hover:border-amber-500/60 shadow-sm transition-all cursor-pointer"
+                className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-extrabold text-amber-950 bg-amber-400 hover:bg-amber-500 border border-amber-500 shadow-sm transition-all cursor-pointer"
               >
                 <span>Review &amp; Confirm</span>
-                <CheckCircle2 className="w-3.5 h-3.5 text-amber-400" />
+                <CheckCircle2 className="w-3.5 h-3.5 text-amber-950" />
               </button>
             ) : (
               <div className="flex items-center space-x-1.5 text-xs text-brand-400 font-semibold group-hover:text-cyan-400 transition-colors">
@@ -456,16 +677,16 @@ export const PatientDashboard = () => {
     <div className="space-y-8 max-w-7xl mx-auto pb-8">
       {/* ── Demographic Profile Incomplete Warning Banner ── */}
       {patient && (!patient.age || !patient.gender) && !editDemoOpen && (
-        <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg shadow-amber-500/5">
+        <div className="p-4 rounded-2xl bg-amber-50 border border-amber-300 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md shadow-amber-500/5">
           <div className="flex items-start space-x-3">
-            <div className="p-2 rounded-xl bg-amber-500/15 shrink-0 mt-0.5">
-              <UserCog className="w-4 h-4 text-amber-400" />
+            <div className="p-2 rounded-xl bg-amber-100 shrink-0 mt-0.5">
+              <UserCog className="w-4 h-4 text-amber-600" />
             </div>
             <div>
-              <p className="text-xs font-bold text-amber-300">Complete your profile to enable AI Risk Assessment</p>
-              <p className="text-[11px] text-slate-400 mt-0.5">
-                The validated models require your <span className="text-white font-semibold">age</span> and{' '}
-                <span className="text-white font-semibold">biological sex</span> for accurate risk calculation.
+              <p className="text-xs font-bold text-amber-950">Complete your profile to enable AI Risk Assessment</p>
+              <p className="text-[11px] text-slate-500 mt-0.5">
+                The validated models require your <span className="text-stone-900 font-semibold">age</span> and{' '}
+                <span className="text-stone-900 font-semibold">biological sex</span> for accurate risk calculation.
                 {!patient.age && !patient.gender
                   ? ' Both are missing.'
                   : !patient.age
@@ -491,19 +712,19 @@ export const PatientDashboard = () => {
         !patient.bmi &&
         (!patient.systolicBP || !patient.diastolicBP) &&
         !editDemoOpen && (
-          <div className="p-4 rounded-2xl bg-cyan-950/40 border border-cyan-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg shadow-cyan-500/5">
+          <div className="p-4 rounded-2xl bg-cyan-50 border border-cyan-300 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md shadow-cyan-500/5">
             <div className="flex items-start space-x-3">
-              <div className="p-2 rounded-xl bg-cyan-500/15 text-cyan-400 shrink-0 mt-0.5">
+              <div className="p-2 rounded-xl bg-cyan-100 text-cyan-700 shrink-0 mt-0.5">
                 <Activity className="w-4 h-4" />
               </div>
               <div>
-                <p className="text-xs font-bold text-cyan-300">
+                <p className="text-xs font-bold text-cyan-950">
                   Action Needed: Add Resting Blood Pressure or BMI to calculate AI Diabetes Risk
                 </p>
-                <p className="text-[11px] text-slate-300 mt-0.5 leading-relaxed">
+                <p className="text-[11px] text-stone-700 mt-0.5 leading-relaxed">
                   Your demographics (Age {patient.age}, {patient.gender}) are confirmed. The AI model requires at least one
-                  physical indicator (<span className="text-white font-semibold">Resting BP</span> or{' '}
-                  <span className="text-white font-semibold">BMI</span>) to generate your calibrated risk score.
+                  physical indicator (<span className="text-stone-900 font-semibold">Resting BP</span> or{' '}
+                  <span className="text-stone-900 font-semibold">BMI</span>) to generate your calibrated risk score.
                 </p>
               </div>
             </div>
@@ -540,7 +761,7 @@ export const PatientDashboard = () => {
                 type="number"
                 min="1"
                 max="120"
-                placeholder="e.g. 45"
+                placeholder="Age in years"
                 value={demoForm.age}
                 onChange={(e) => setDemoForm((p) => ({ ...p, age: e.target.value }))}
                 className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:border-brand-500 focus:outline-none"
@@ -565,7 +786,7 @@ export const PatientDashboard = () => {
                   type="number"
                   min="60"
                   max="260"
-                  placeholder="Sys (120)"
+                  placeholder="Systolic value"
                   value={demoForm.systolicBP}
                   onChange={(e) => setDemoForm((p) => ({ ...p, systolicBP: e.target.value }))}
                   className="w-1/2 bg-slate-900 border border-slate-700 rounded-xl px-2.5 py-2 text-xs text-white focus:border-brand-500 focus:outline-none"
@@ -575,7 +796,7 @@ export const PatientDashboard = () => {
                   type="number"
                   min="30"
                   max="150"
-                  placeholder="Dia (80)"
+                  placeholder="Diastolic value"
                   value={demoForm.diastolicBP}
                   onChange={(e) => setDemoForm((p) => ({ ...p, diastolicBP: e.target.value }))}
                   className="w-1/2 bg-slate-900 border border-slate-700 rounded-xl px-2.5 py-2 text-xs text-white focus:border-brand-500 focus:outline-none"
@@ -589,7 +810,7 @@ export const PatientDashboard = () => {
                 step="0.1"
                 min="10"
                 max="80"
-                placeholder="e.g. 24.5 kg/m²"
+                placeholder="Enter BMI"
                 value={demoForm.bmi}
                 onChange={(e) => setDemoForm((p) => ({ ...p, bmi: e.target.value }))}
                 className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:border-brand-500 focus:outline-none"
@@ -601,7 +822,7 @@ export const PatientDashboard = () => {
                 type="number"
                 min="50"
                 max="600"
-                placeholder="e.g. 210"
+                placeholder="Enter value in mg/dL"
                 value={demoForm.totalCholesterol}
                 onChange={(e) => setDemoForm((p) => ({ ...p, totalCholesterol: e.target.value }))}
                 className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:border-brand-500 focus:outline-none"
@@ -640,37 +861,15 @@ export const PatientDashboard = () => {
       )}
 
       {/* ── Section 1: Top Header Banner & Quick Actions ── */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5 glass-card p-6 rounded-3xl border border-slate-800 shadow-xl">
-        <div className="flex items-center space-x-4">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-brand-500/20 to-cyan-500/20 border border-cyan-500/30 flex items-center justify-center text-cyan-400 font-black text-xl shadow-lg shrink-0">
-            {patient?.user?.name ? patient.user.name.charAt(0).toUpperCase() : 'P'}
-          </div>
-          <div>
+      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-5 border-b border-stone-200 pb-6">
+        <div className="min-w-0">
+          <p className="mb-1 text-[11px] font-semibold uppercase tracking-[.16em] text-violet-700">Your health space</p>
             <div className="flex items-center flex-wrap gap-2">
-              <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight">
-                Welcome, {patient?.user?.name || 'Patient'}
+              <h1 className="editorial-heading text-3xl sm:text-4xl text-stone-900">
+                Good to see you{patient?.user?.name ? `, ${patient.user.name.split(' ')[0]}` : ''}.
               </h1>
-              <span className="text-[11px] px-2.5 py-0.5 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 font-bold">
-                Patient Portal
-              </span>
             </div>
-            <p className="text-xs text-slate-400 mt-1 flex items-center flex-wrap gap-x-3 gap-y-1">
-              <span>
-                Village: <strong className="text-white">{patient?.village || 'Not specified'}</strong>
-              </span>
-              <span>•</span>
-              <span>
-                Blood Group: <strong className="text-cyan-400">{patient?.bloodGroup || 'Not recorded'}</strong>
-              </span>
-              <span>•</span>
-              <span>
-                Age/Sex:{' '}
-                <strong className="text-slate-200">
-                  {patient?.age ? `${patient.age} yrs` : 'Age needed'} / {patient?.gender || 'Sex needed'}
-                </strong>
-              </span>
-            </p>
-          </div>
+            <p className="mt-2 max-w-xl text-sm text-stone-500">Your confirmed health information and reports, together in one place.</p>
         </div>
 
         <div className="flex items-center flex-wrap gap-3">
@@ -771,7 +970,7 @@ export const PatientDashboard = () => {
                 </div>
                 <div>
                   <h3 className="text-sm font-extrabold text-white">Diabetes Risk Assessment</h3>
-                  <p className="text-[10px] text-slate-400">Model: Diabetes Risk Model v{prediction?.modelVersion || '1.0.0'}</p>
+                  <p className="text-[10px] text-slate-400">{prediction?.modelVersion ? `Model version: ${prediction.modelVersion}` : 'Estimate based on confirmed health information'}</p>
                 </div>
               </div>
               <span className="text-[10px] px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold">
@@ -970,33 +1169,6 @@ export const PatientDashboard = () => {
                   Risk engine is undergoing scheduled maintenance. Your confirmed clinical data is safely preserved.
                 </p>
               </div>
-            ) : prediction && prediction.status === 'INSUFFICIENT_DATA' ? (
-              <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-3">
-                <div className="flex items-center space-x-2 text-amber-400 text-xs font-bold">
-                  <AlertTriangle className="w-4 h-4" />
-                  <span>Clinical Data Needed for Prediction</span>
-                </div>
-                <p className="text-xs text-slate-400 leading-relaxed">
-                  The model requires demographic data (Age &amp; Sex), at least one physical vitals indicator (BMI or
-                  Blood Pressure), and routine laboratory measurements (Creatinine or Cholesterol).
-                </p>
-                <div className="flex items-center space-x-2 pt-1">
-                  <button
-                    onClick={handleOpenDemoEdit}
-                    className="flex-1 py-2 px-3 rounded-xl text-xs font-bold text-white bg-cyan-600 hover:bg-cyan-500 transition-colors flex items-center justify-center space-x-1 cursor-pointer"
-                  >
-                    <UserCog className="w-3.5 h-3.5" />
-                    <span>Enter Profile Vitals</span>
-                  </button>
-                  <button
-                    onClick={() => setUploadModalOpen(true)}
-                    className="flex-1 py-2 px-3 rounded-xl text-xs font-bold text-slate-300 hover:text-white bg-slate-900 border border-slate-700 transition-colors flex items-center justify-center space-x-1 cursor-pointer"
-                  >
-                    <Upload className="w-3.5 h-3.5 text-cyan-400" />
-                    <span>Upload Lab Report</span>
-                  </button>
-                </div>
-              </div>
             ) : (
               <div className="p-6 text-center space-y-3">
                 <Brain className="w-8 h-8 text-slate-600 mx-auto" />
@@ -1009,7 +1181,7 @@ export const PatientDashboard = () => {
                   className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-brand-500 hover:bg-brand-600 transition-all inline-flex items-center space-x-1.5 cursor-pointer"
                 >
                   <Upload className="w-3.5 h-3.5" />
-                  <span>Upload Medical Report</span>
+                  <span>Upload Lab Report</span>
                 </button>
               </div>
             )}
@@ -1024,7 +1196,7 @@ export const PatientDashboard = () => {
                 </div>
                 <div>
                   <h3 className="text-sm font-extrabold text-white">Heart Disease Risk Assessment</h3>
-                  <p className="text-[10px] text-slate-400">Model: Framingham 10-Year CHD v{heartDiseasePrediction?.modelVersion || '1.0.0'}</p>
+                  <p className="text-[10px] text-slate-400">{heartDiseasePrediction?.modelVersion ? `Model version: ${heartDiseasePrediction.modelVersion}` : 'Estimate based on confirmed health information'}</p>
                 </div>
               </div>
               <span className="text-[10px] px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold">
@@ -1252,32 +1424,6 @@ export const PatientDashboard = () => {
                   Risk engine is undergoing maintenance. Your confirmed cardiovascular records are safely stored.
                 </p>
               </div>
-            ) : heartDiseasePrediction && heartDiseasePrediction.status === 'INSUFFICIENT_DATA' ? (
-              <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-3">
-                <div className="flex items-center space-x-2 text-rose-400 text-xs font-bold">
-                  <AlertTriangle className="w-4 h-4" />
-                  <span>Cardiovascular Vitals Needed</span>
-                </div>
-                <p className="text-xs text-slate-400 leading-relaxed">
-                  Requires Age (18–100), Biological Sex, Total Cholesterol, and Blood Pressure (Systolic &amp; Diastolic).
-                </p>
-                <div className="flex items-center space-x-2 pt-1">
-                  <button
-                    onClick={handleOpenDemoEdit}
-                    className="flex-1 py-2 px-3 rounded-xl text-xs font-bold text-white bg-rose-600 hover:bg-rose-500 transition-colors flex items-center justify-center space-x-1 cursor-pointer"
-                  >
-                    <UserCog className="w-3.5 h-3.5" />
-                    <span>Update Profile</span>
-                  </button>
-                  <button
-                    onClick={() => setUploadModalOpen(true)}
-                    className="flex-1 py-2 px-3 rounded-xl text-xs font-bold text-slate-300 hover:text-white bg-slate-900 border border-slate-700 transition-colors flex items-center justify-center space-x-1 cursor-pointer"
-                  >
-                    <Upload className="w-3.5 h-3.5 text-rose-400" />
-                    <span>Upload Lipid Panel</span>
-                  </button>
-                </div>
-              </div>
             ) : (
               <div className="p-6 text-center space-y-3">
                 <HeartPulse className="w-8 h-8 text-slate-600 mx-auto" />
@@ -1295,87 +1441,499 @@ export const PatientDashboard = () => {
               </div>
             )}
           </div>
-        </div>
 
-        {/* Multi-Disease Roadmap Strip (Sleek Horizontal Card) */}
-        <div className="glass-card p-5 sm:p-6 rounded-3xl border border-slate-800 space-y-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2.5">
-              <div className="w-7 h-7 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400">
-                <Lock className="w-3.5 h-3.5" />
-              </div>
-              <div>
-                <h4 className="text-xs font-bold text-white uppercase tracking-wider">Multi-Disease Intelligence Roadmap</h4>
-                <p className="text-[11px] text-slate-400">Upcoming predictive modules pending external clinical validation</p>
-              </div>
-            </div>
-            <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-slate-900 text-slate-400 border border-slate-800 font-mono">
-              Under Development
-            </span>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-            <div className="p-3.5 rounded-2xl bg-slate-950/60 border border-slate-800/80 flex items-center justify-between opacity-85">
-              <div className="flex items-center space-x-3">
+          {/* Active Model 3: Hypertension Risk Assessment */}
+          <div id="patient-hypertension-predictions-section" className="glass-card p-6 rounded-3xl border border-slate-800 space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div className="flex items-center space-x-2.5">
                 <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
                   <Activity className="w-4 h-4" />
                 </div>
                 <div>
-                  <h5 className="text-xs font-bold text-white flex items-center space-x-1.5">
-                    <span>Hypertension Risk</span>
-                    <Lock className="w-3 h-3 text-slate-500" />
-                  </h5>
-                  <p className="text-[10px] text-slate-400">Continuous BP trajectory modeling</p>
+                  <h3 className="text-sm font-extrabold text-white">Hypertension Risk Assessment</h3>
+                  <p className="text-[10px] text-slate-400">
+                    {hypertensionPrediction?.modelVersion
+                      ? `Model version: ${hypertensionPrediction.modelVersion}`
+                      : 'Estimate based on confirmed health information'}
+                  </p>
                 </div>
               </div>
-              <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-slate-900 text-slate-400 border border-slate-800 font-bold shrink-0">
-                Coming Soon
+              <span className={`text-[10px] px-2.5 py-1 rounded-full font-bold border ${
+                ['MODEL_UNAVAILABLE', 'SERVICE_UNAVAILABLE', 'PREDICTION_SERVICE_UNAVAILABLE'].includes(hypertensionPrediction?.status)
+                  ? 'border-rose-500/20 bg-rose-500/10 text-rose-400'
+                  : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+              }`}>
+                {['MODEL_UNAVAILABLE', 'SERVICE_UNAVAILABLE', 'PREDICTION_SERVICE_UNAVAILABLE'].includes(hypertensionPrediction?.status) ? 'Unavailable' : 'Active AI'}
               </span>
             </div>
 
-            <div className="p-3.5 rounded-2xl bg-slate-950/60 border border-slate-800/80 flex items-center justify-between opacity-85">
-              <div className="flex items-center space-x-3">
+            {hypertensionPrediction && hypertensionPrediction.canCalculate && hypertensionPrediction.status === 'SUCCESS' ? (
+              <div className="space-y-4">
+                {/* Primary Probability Box */}
+                <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">
+                        Estimated Probability
+                      </span>
+                      <span className="text-3xl font-black text-white mt-1 block tracking-tight">
+                        {hypertensionPrediction.probability !== undefined && hypertensionPrediction.probability !== null
+                          ? `${(hypertensionPrediction.probability * 100).toFixed(1)}%`
+                          : `${hypertensionPrediction.overallRiskPercent}%`}
+                      </span>
+                      <span className="text-[11px] text-slate-400 block mt-0.5">Model-estimated hypertension risk</span>
+                    </div>
+
+                    <div className="text-right space-y-1.5">
+                      <span
+                        className={`inline-block text-xs px-3 py-1 rounded-full border font-bold ${
+                          hypertensionPrediction.riskCategory === 'ELEVATED_MODEL_ESTIMATED_RISK' ||
+                          hypertensionPrediction.riskCategory === 'POSITIVE_CLASSIFICATION_ESTIMATE'
+                            ? 'bg-rose-500/15 text-rose-400 border-rose-500/30'
+                            : 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
+                        }`}
+                      >
+                        {hypertensionPrediction.riskCategory === 'ELEVATED_MODEL_ESTIMATED_RISK' ||
+                        hypertensionPrediction.riskCategory === 'POSITIVE_CLASSIFICATION_ESTIMATE'
+                          ? 'Elevated model risk'
+                          : 'Lower model risk'}
+                      </span>
+
+                      <div>
+                        <span
+                          className={`inline-block text-[10px] px-2 py-0.5 rounded-full font-bold border ${
+                            hypertensionPrediction.dataCompleteness === 'PARTIAL'
+                              ? 'bg-cyan-500/15 text-cyan-400 border-cyan-500/30'
+                              : 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
+                          }`}
+                        >
+                          {hypertensionPrediction.dataCompleteness === 'PARTIAL' ? 'PARTIAL DATA' : 'FULL DATA'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Informational threshold */}
+                  <div className="pt-2 border-t border-slate-900 flex items-center justify-between text-[10px] text-slate-400">
+                    <span>
+                      Threshold:{' '}
+                      {Number.isFinite(hypertensionPrediction.threshold)
+                        ? `${(hypertensionPrediction.threshold * 100).toFixed(1)}%`
+                        : '50.0%'}
+                    </span>
+                    <span className="italic">NHANES development cohort</span>
+                  </div>
+                </div>
+
+                {/* Key Contributing Factors */}
+                {hypertensionPrediction.topContributingFactors && hypertensionPrediction.topContributingFactors.length > 0 && (
+                  <div className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs font-bold text-white">Contributing Factors</p>
+                      <span className="text-[10px] text-slate-500">Directional impact</span>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      {(expandedHypertensionDetails
+                        ? hypertensionPrediction.topContributingFactors
+                        : hypertensionPrediction.topContributingFactors.slice(0, 2)
+                      ).map((factor, idx) => {
+                        const isIncrease =
+                          factor.impact?.includes('higher') || factor.impact?.includes('increase');
+                        return (
+                          <div
+                            key={idx}
+                            className="p-2 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center justify-between gap-3 text-xs"
+                          >
+                            <span className="text-slate-300 font-medium capitalize truncate flex-1">
+                              {factor.description ||
+                                `${factor.feature?.replace(/_/g, ' ')} contributed toward ${
+                                  isIncrease ? 'higher' : 'lower'
+                                } estimated risk.`}
+                            </span>
+                            <span
+                              className={`text-[9px] px-2 py-0.5 rounded font-bold shrink-0 ${
+                                isIncrease
+                                  ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
+                                  : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                              }`}
+                            >
+                              {isIncrease ? 'higher estimated risk' : 'lower estimated risk'}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Concise Clinical Disclaimer */}
+                <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800/60 text-[10px] text-slate-400 leading-relaxed italic">
+                  Non-diagnostic risk estimation derived from routine clinical and blood pressure parameters for clinical decision
+                  support. Does not substitute for clinical laboratory testing.
+                </div>
+
+                {/* Progressive Disclosure Button */}
+                <button
+                  onClick={() => setExpandedHypertensionDetails(!expandedHypertensionDetails)}
+                  className="w-full py-2 px-3 rounded-xl bg-slate-900/90 hover:bg-slate-850 border border-slate-800 text-xs font-bold text-slate-300 hover:text-white transition-all flex items-center justify-center space-x-1.5 cursor-pointer"
+                >
+                  <span>
+                    {expandedHypertensionDetails
+                      ? 'Hide Detailed Breakdown'
+                      : `View Full Clinical Factors & Measurements (${
+                          Object.values(hypertensionPrediction.inputFeatures || {}).filter(
+                            (v) => v !== null && v !== undefined
+                          ).length
+                        }/9)`}
+                  </span>
+                  {expandedHypertensionDetails ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                </button>
+
+                {/* Expanded Detailed Analysis */}
+                {expandedHypertensionDetails && (
+                  <div className="space-y-3 pt-2 border-t border-slate-800/80">
+                    <div className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 space-y-2 text-xs">
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-white text-[11px] uppercase tracking-wider">
+                          Observed Measurements
+                        </span>
+                        <span className="text-[10px] text-slate-400">
+                          {
+                            Object.values(hypertensionPrediction.inputFeatures || {}).filter(
+                              (v) => v !== null && v !== undefined
+                            ).length
+                          }
+                          /9 observed
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
+                        {Object.entries(hypertensionPrediction.inputFeatures || {}).map(([key, val]) => {
+                          const isPresent = val !== null && val !== undefined && !Number.isNaN(val);
+                          let displayVal = val;
+                          if (key === 'sex') displayVal = val === 1 ? 'Male' : val === 0 ? 'Female' : val;
+                          if (key === 'current_smoker') displayVal = val === 1 ? 'Smoker' : val === 0 ? 'Non-smoker' : val;
+
+                          return (
+                            <div
+                              key={key}
+                              className="p-2 rounded-xl bg-slate-900/80 border border-slate-800/80 flex items-center justify-between gap-1"
+                            >
+                              <div className="flex items-center space-x-1.5 min-w-0">
+                                {isPresent ? (
+                                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                                ) : (
+                                  <XCircle className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                                )}
+                                <span className="text-slate-300 capitalize truncate font-medium">
+                                  {key.replace(/_/g, ' ')}
+                                </span>
+                              </div>
+                              <div className="flex items-center space-x-1.5 shrink-0">
+                                {isPresent ? (
+                                  <span className="font-bold text-white">{displayVal}</span>
+                                ) : (
+                                  <span className="text-[10px] text-slate-500 italic">Unobserved</span>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : hypertensionPrediction &&
+              (hypertensionPrediction.status === 'SERVICE_UNAVAILABLE' ||
+                hypertensionPrediction.status === 'MODEL_UNAVAILABLE' ||
+                hypertensionPrediction.status === 'PREDICTION_SERVICE_UNAVAILABLE') ? (
+              <div className="p-6 text-center space-y-3">
+                <ShieldCheck className="w-8 h-8 text-amber-400 mx-auto" />
+                <h4 className="text-sm font-bold text-white">Assessment Temporarily Unavailable</h4>
+                <p className="text-xs text-slate-400 max-w-sm mx-auto">
+                  Risk engine is undergoing scheduled maintenance. Your confirmed clinical data is safely preserved.
+                </p>
+              </div>
+            ) : (
+              <div className="p-6 text-center space-y-3">
+                <Activity className="w-8 h-8 text-slate-600 mx-auto" />
+                <h4 className="text-xs font-bold text-white">Awaiting Blood Pressure Reports</h4>
+                <p className="text-[11px] text-slate-400 max-w-sm mx-auto">
+                  Upload an ABPM or vitals diagnostic report to automatically calculate calibrated hypertension risk.
+                </p>
+                <button
+                  onClick={() => setUploadModalOpen(true)}
+                  className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 transition-all inline-flex items-center space-x-1.5 cursor-pointer"
+                >
+                  <Upload className="w-3.5 h-3.5" />
+                  <span>Upload Lab Report</span>
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Active Model 4: Chronic Kidney Disease Risk Assessment */}
+          <div id="patient-ckd-predictions-section" className="glass-card p-6 rounded-3xl border border-slate-800 space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div className="flex items-center space-x-2.5">
                 <div className="w-8 h-8 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400">
                   <FileText className="w-4 h-4" />
                 </div>
                 <div>
-                  <h5 className="text-xs font-bold text-white flex items-center space-x-1.5">
-                    <span>Chronic Kidney Disease (CKD)</span>
-                    <Lock className="w-3 h-3 text-slate-500" />
-                  </h5>
-                  <p className="text-[10px] text-slate-400">eGFR &amp; serum creatinine risk modeling</p>
+                  <h3 className="text-sm font-extrabold text-white">Chronic Kidney Disease Risk Assessment</h3>
+                  <p className="text-[10px] text-slate-400">
+                    {ckdPrediction?.modelVersion
+                      ? `Model version: ${ckdPrediction.modelVersion}`
+                      : 'Estimate based on confirmed health information'}
+                  </p>
                 </div>
               </div>
-              <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-slate-900 text-slate-400 border border-slate-800 font-bold shrink-0">
-                Coming Soon
+              <span className={`text-[10px] px-2.5 py-1 rounded-full font-bold border ${
+                ['MODEL_UNAVAILABLE', 'SERVICE_UNAVAILABLE', 'PREDICTION_SERVICE_UNAVAILABLE'].includes(ckdPrediction?.status)
+                  ? 'border-rose-500/20 bg-rose-500/10 text-rose-400'
+                  : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+              }`}>
+                {['MODEL_UNAVAILABLE', 'SERVICE_UNAVAILABLE', 'PREDICTION_SERVICE_UNAVAILABLE'].includes(ckdPrediction?.status) ? 'Unavailable' : 'Active AI'}
               </span>
             </div>
+
+            {ckdPrediction && ckdPrediction.canCalculate && ckdPrediction.status === 'SUCCESS' ? (
+              <div className="space-y-4">
+                {/* Primary Probability Box */}
+                <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">
+                        Estimated Probability
+                      </span>
+                      <span className="text-3xl font-black text-white mt-1 block tracking-tight">
+                        {ckdPrediction.probability !== undefined && ckdPrediction.probability !== null
+                          ? `${(ckdPrediction.probability * 100).toFixed(1)}%`
+                          : `${ckdPrediction.overallRiskPercent}%`}
+                      </span>
+                      <span className="text-[11px] text-slate-400 block mt-0.5">Model-estimated kidney disease risk</span>
+                    </div>
+
+                    <div className="text-right space-y-1.5">
+                      <span
+                        className={`inline-block text-xs px-3 py-1 rounded-full border font-bold ${
+                          ckdPrediction.riskCategory === 'ELEVATED_MODEL_ESTIMATED_RISK' ||
+                          ckdPrediction.riskCategory === 'POSITIVE_CLASSIFICATION_ESTIMATE'
+                            ? 'bg-rose-500/15 text-rose-400 border-rose-500/30'
+                            : 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
+                        }`}
+                      >
+                        {ckdPrediction.riskCategory === 'ELEVATED_MODEL_ESTIMATED_RISK' ||
+                        ckdPrediction.riskCategory === 'POSITIVE_CLASSIFICATION_ESTIMATE'
+                          ? 'Elevated model risk'
+                          : 'Lower model risk'}
+                      </span>
+
+                      <div>
+                        <span
+                          className={`inline-block text-[10px] px-2 py-0.5 rounded-full font-bold border ${
+                            ckdPrediction.dataCompleteness === 'PARTIAL'
+                              ? 'bg-cyan-500/15 text-cyan-400 border-cyan-500/30'
+                              : 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
+                          }`}
+                        >
+                          {ckdPrediction.dataCompleteness === 'PARTIAL' ? 'PARTIAL DATA' : 'FULL DATA'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Informational threshold */}
+                  <div className="pt-2 border-t border-slate-900 flex items-center justify-between text-[10px] text-slate-400">
+                    <span>
+                      Threshold:{' '}
+                      {Number.isFinite(ckdPrediction.threshold)
+                        ? `${(ckdPrediction.threshold * 100).toFixed(1)}%`
+                        : '50.0%'}
+                    </span>
+                    <span className="italic">UCI CKD development cohort</span>
+                  </div>
+                </div>
+
+                {/* Key Contributing Factors */}
+                {ckdPrediction.topContributingFactors && ckdPrediction.topContributingFactors.length > 0 && (
+                  <div className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs font-bold text-white">Contributing Factors</p>
+                      <span className="text-[10px] text-slate-500">Directional impact</span>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      {(expandedCkdDetails
+                        ? ckdPrediction.topContributingFactors
+                        : ckdPrediction.topContributingFactors.slice(0, 2)
+                      ).map((factor, idx) => {
+                        const isIncrease =
+                          factor.impact?.includes('higher') || factor.impact?.includes('increase');
+                        return (
+                          <div
+                            key={idx}
+                            className="p-2 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center justify-between gap-3 text-xs"
+                          >
+                            <span className="text-slate-300 font-medium capitalize truncate flex-1">
+                              {factor.description ||
+                                `${factor.feature?.replace(/_/g, ' ')} contributed toward ${
+                                  isIncrease ? 'higher' : 'lower'
+                                } estimated risk.`}
+                            </span>
+                            <span
+                              className={`text-[9px] px-2 py-0.5 rounded font-bold shrink-0 ${
+                                isIncrease
+                                  ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
+                                  : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                              }`}
+                            >
+                              {isIncrease ? 'higher estimated risk' : 'lower estimated risk'}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Concise Clinical Disclaimer */}
+                <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800/60 text-[10px] text-slate-400 leading-relaxed italic">
+                  Non-diagnostic risk estimation derived from routine metabolic and renal parameters for clinical decision
+                  support. Does not substitute for clinical laboratory testing.
+                </div>
+
+                {/* Progressive Disclosure Button */}
+                <button
+                  onClick={() => setExpandedCkdDetails(!expandedCkdDetails)}
+                  className="w-full py-2 px-3 rounded-xl bg-slate-900/90 hover:bg-slate-850 border border-slate-800 text-xs font-bold text-slate-300 hover:text-white transition-all flex items-center justify-center space-x-1.5 cursor-pointer"
+                >
+                  <span>
+                    {expandedCkdDetails
+                      ? 'Hide Detailed Breakdown'
+                      : `View Full Clinical Factors & Measurements (${
+                          Object.values(ckdPrediction.inputFeatures || {}).filter(
+                            (v) => v !== null && v !== undefined
+                          ).length
+                        }/6)`}
+                  </span>
+                  {expandedCkdDetails ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                </button>
+
+                {/* Expanded Detailed Analysis */}
+                {expandedCkdDetails && (
+                  <div className="space-y-3 pt-2 border-t border-slate-800/80">
+                    <div className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 space-y-2 text-xs">
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-white text-[11px] uppercase tracking-wider">
+                          Observed Measurements
+                        </span>
+                        <span className="text-[10px] text-slate-400">
+                          {
+                            Object.values(ckdPrediction.inputFeatures || {}).filter(
+                              (v) => v !== null && v !== undefined
+                            ).length
+                          }
+                          /6 observed
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
+                        {Object.entries(ckdPrediction.inputFeatures || {}).map(([key, val]) => {
+                          const isPresent = val !== null && val !== undefined && !Number.isNaN(val);
+                          return (
+                            <div
+                              key={key}
+                              className="p-2 rounded-xl bg-slate-900/80 border border-slate-800/80 flex items-center justify-between gap-1"
+                            >
+                              <div className="flex items-center space-x-1.5 min-w-0">
+                                {isPresent ? (
+                                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                                ) : (
+                                  <XCircle className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                                )}
+                                <span className="text-slate-300 capitalize truncate font-medium">
+                                  {key === 'blood_urea'
+                                    ? 'Blood Urea'
+                                    : key === 'serum_creatinine'
+                                    ? 'Serum Creatinine'
+                                    : key.replace(/_/g, ' ')}
+                                </span>
+                              </div>
+                              <div className="flex items-center space-x-1.5 shrink-0">
+                                {isPresent ? (
+                                  <span className="font-bold text-white">{val}</span>
+                                ) : (
+                                  <span className="text-[10px] text-slate-500 italic">Unobserved</span>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : ckdPrediction &&
+              (ckdPrediction.status === 'SERVICE_UNAVAILABLE' ||
+                ckdPrediction.status === 'MODEL_UNAVAILABLE' ||
+                ckdPrediction.status === 'PREDICTION_SERVICE_UNAVAILABLE') ? (
+              <div className="p-6 text-center space-y-3">
+                <ShieldCheck className="w-8 h-8 text-amber-400 mx-auto" />
+                <h4 className="text-sm font-bold text-white">Assessment Temporarily Unavailable</h4>
+                <p className="text-xs text-slate-400 max-w-sm mx-auto">
+                  Risk engine is undergoing scheduled maintenance. Your confirmed clinical data is safely preserved.
+                </p>
+              </div>
+            ) : (
+              <div className="p-6 text-center space-y-3">
+                <FileText className="w-8 h-8 text-slate-600 mx-auto" />
+                <h4 className="text-xs font-bold text-white">Awaiting Renal Function Reports</h4>
+                <p className="text-[11px] text-slate-400 max-w-sm mx-auto">
+                  Upload a comprehensive metabolic or kidney panel to automatically calculate chronic kidney disease risk.
+                </p>
+                <button
+                  onClick={() => setUploadModalOpen(true)}
+                  className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-cyan-500 to-teal-500 hover:from-cyan-600 hover:to-teal-600 transition-all inline-flex items-center space-x-1.5 cursor-pointer"
+                >
+                  <Upload className="w-3.5 h-3.5" />
+                  <span>Upload Lab Report</span>
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
 
-      {/* ── Section 4: Clinical History & Diagnostic Reports (Balanced 3-Column Grid) ── */}
-      <div id="patient-reports-section" className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-        {/* Left Column (2 Cols): Reports Stack */}
-        <div className="lg:col-span-2 space-y-6">
+
+      {/* ── Section 4: Clinical History & Diagnostic Reports ── */}
+      <div
+        id="patient-reports-section"
+        className="grid grid-cols-1 lg:grid-cols-[minmax(0,1.6fr)_minmax(320px,1fr)] gap-5 lg:gap-6 items-start"
+      >
+        {/* Keep report alerts and history together so the side column stays aligned. */}
+        <div className="min-w-0 space-y-5 lg:space-y-6">
           {/* Pending Unconfirmed Reports Alert Section (Clearly Demarcated) */}
           {pendingReports.length > 0 && (
-            <div className="glass-card p-6 rounded-3xl border border-amber-500/40 bg-amber-500/5 space-y-4 shadow-lg shadow-amber-500/5">
+            <div className="glass-card p-6 rounded-3xl border border-amber-300 bg-amber-50/40 space-y-4 shadow-sm">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center">
                     <AlertCircle className="w-5 h-5" />
                   </div>
                   <div>
-                    <h3 className="text-sm font-bold text-amber-300">
+                    <h3 className="text-sm font-extrabold text-amber-950">
                       Awaiting Patient Confirmation ({pendingReports.length})
                     </h3>
-                    <p className="text-[11px] text-slate-300 mt-0.5">
+                    <p className="text-[11px] text-stone-600 mt-0.5">
                       Unconfirmed OCR data is NOT yet integrated into your active health profile or AI risk assessments
                     </p>
                   </div>
                 </div>
-                <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold uppercase tracking-wider shrink-0">
+                <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300 font-bold uppercase tracking-wider shrink-0">
                   Needs Review
                 </span>
               </div>
@@ -1398,13 +1956,24 @@ export const PatientDashboard = () => {
                   Verified diagnostic records integrated into your clinical profile
                 </p>
               </div>
-              <button
-                onClick={() => setUploadModalOpen(true)}
-                className="text-xs font-bold text-brand-400 hover:text-brand-300 flex items-center space-x-1 cursor-pointer"
-              >
-                <Upload className="w-3.5 h-3.5" />
-                <span>Upload New</span>
-              </button>
+              <div className="flex items-center space-x-2">
+                {confirmedReports.length >= 2 && (
+                  <button
+                    onClick={() => setComparisonModalOpen(true)}
+                    className="text-xs font-bold text-teal-400 hover:text-teal-300 flex items-center space-x-1.5 cursor-pointer bg-teal-500/10 hover:bg-teal-500/20 px-2.5 py-1.5 rounded-xl border border-teal-500/20 hover:border-teal-500/40 transition-colors"
+                  >
+                    <TrendingUp className="w-3.5 h-3.5" />
+                    <span>Compare Reports</span>
+                  </button>
+                )}
+                <button
+                  onClick={() => setUploadModalOpen(true)}
+                  className="text-xs font-bold text-brand-400 hover:text-brand-300 flex items-center space-x-1 cursor-pointer"
+                >
+                  <Upload className="w-3.5 h-3.5" />
+                  <span>Upload New</span>
+                </button>
+              </div>
             </div>
 
             {confirmedReports.length === 0 && pendingReports.length === 0 ? (
@@ -1430,7 +1999,7 @@ export const PatientDashboard = () => {
             ) : confirmedReports.length === 0 ? (
               <div className="p-6 text-center rounded-2xl bg-slate-950/40 border border-slate-800/60 space-y-2">
                 <p className="text-xs text-slate-400">No confirmed reports yet.</p>
-                <p className="text-[11px] text-amber-300">
+                <p className="text-[11px] text-amber-900 font-medium">
                   Review and confirm the pending report above to activate verified records.
                 </p>
               </div>
@@ -1442,8 +2011,8 @@ export const PatientDashboard = () => {
           </div>
         </div>
 
-        {/* Right Column (1 Col): Biomarkers Snapshot & Longitudinal Intelligence */}
-        <div className="space-y-6">
+        {/* Biomarkers Snapshot & Longitudinal Intelligence */}
+        <div className="min-w-0 space-y-5 lg:space-y-6">
           {/* Confirmed Health Biomarkers Snapshot */}
           <div className="glass-card p-6 rounded-3xl border border-slate-800 space-y-4">
             <h3 className="text-sm font-extrabold text-white uppercase tracking-wider flex items-center space-x-2">
@@ -1494,41 +2063,139 @@ export const PatientDashboard = () => {
             </div>
           </div>
 
-          {/* Longitudinal Trend Foundation Preview */}
-          <div className="glass-card p-6 rounded-3xl border border-slate-800 space-y-3">
+          {/* Longitudinal Health Intelligence */}
+          <div className="glass-card p-6 rounded-3xl border border-slate-800 space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-extrabold text-white flex items-center space-x-2">
                 <TrendingUp className="w-4 h-4 text-teal-400" />
                 <span>Longitudinal Health Intelligence</span>
               </h3>
-              <span className="text-[10px] text-slate-500 uppercase font-mono">Phase 2 Foundation</span>
+              {chronologicalReports.length >= 2 && trajectoryOverview && (
+                <span className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border ${trajectoryOverview.badgeClass}`}>
+                  {trajectoryOverview.label}
+                </span>
+              )}
             </div>
 
-            {confirmedReports.length >= 2 ? (
-              <div className="space-y-3 pt-2">
+            {chronologicalReports.length >= 2 ? (
+              <div className="space-y-4">
                 <p className="text-xs text-slate-300 leading-relaxed">
-                  {confirmedReports.length} sequential confirmed reports recorded. Your longitudinal health trajectory is
-                  being established across consecutive consultations.
+                  {trajectoryOverview?.summary || `${chronologicalReports.length} sequential confirmed reports recorded across consecutive consultations.`}
                 </p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                  <div className="p-3 rounded-xl bg-slate-950 border border-slate-800">
-                    <p className="text-[10px] text-slate-500 font-bold uppercase">Chronological Baseline</p>
-                    <p className="text-xs text-white font-semibold mt-1">
-                      Initial: {new Date(confirmedReports[confirmedReports.length - 1].uploadDate).toLocaleDateString()}
-                    </p>
-                  </div>
-                  <div className="p-3 rounded-xl bg-slate-950 border border-slate-800">
-                    <p className="text-[10px] text-slate-500 font-bold uppercase">Latest Evaluation</p>
-                    <p className="text-xs text-white font-semibold mt-1">
-                      Recent: {new Date(confirmedReports[0].uploadDate).toLocaleDateString()}
-                    </p>
+
+                {/* Timeline Progress Bar / Interval Ribbon */}
+                <div className="p-3.5 rounded-2xl bg-slate-950/90 border border-slate-800/80">
+                  <div className="flex items-center justify-between text-xs">
+                    <div>
+                      <span className="text-[10px] uppercase font-bold text-slate-500 block">Baseline Consultation</span>
+                      <span className="text-white font-bold">
+                        {new Date(baselineReport.confirmedAt || baselineReport.uploadDate).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <div className="flex flex-col items-center px-2">
+                      <span className="text-[10px] font-semibold text-teal-400 bg-teal-500/10 px-2 py-0.5 rounded-full border border-teal-500/20">
+                        {daysBetweenEvaluations > 0 ? `${daysBetweenEvaluations} days interval` : 'Sequential'}
+                      </span>
+                      <div className="flex items-center space-x-1 text-slate-600 mt-1">
+                        <div className="w-8 sm:w-12 h-0.5 bg-slate-800 rounded"></div>
+                        <ArrowRight className="w-3 h-3 text-teal-400" />
+                        <div className="w-8 sm:w-12 h-0.5 bg-slate-800 rounded"></div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-[10px] uppercase font-bold text-slate-500 block">Recent Consultation</span>
+                      <span className="text-white font-bold">
+                        {new Date(latestReport.confirmedAt || latestReport.uploadDate).toLocaleDateString()}
+                      </span>
+                    </div>
                   </div>
                 </div>
+
+                {/* Biomarker Trajectory Grid */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Key Biomarker Deltas</span>
+                    <span className="text-[10px] text-slate-500 font-mono">Baseline → Latest</span>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    {keyTrajectoryBiomarkers.map((b) => (
+                      <div
+                        key={b.key}
+                        className="p-3 rounded-xl bg-slate-950/80 border border-slate-800/90 flex items-center justify-between hover:border-slate-700 transition-colors"
+                      >
+                        <div>
+                          <p className="text-[11px] font-bold text-slate-300">{b.label}</p>
+                          <p className="text-xs font-extrabold text-white mt-0.5">
+                            {b.baseline !== null ? b.baseline : '—'}{' '}
+                            <span className="text-slate-500 font-normal">→</span>{' '}
+                            {b.latest !== null ? b.latest : '—'}{' '}
+                            <span className="text-[10px] font-medium text-slate-400">{b.unit}</span>
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <span
+                            className={`inline-flex items-center space-x-1 text-[11px] font-bold px-2 py-0.5 rounded-md border ${
+                              b.tone === 'emerald'
+                                ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                                : b.tone === 'amber'
+                                ? 'bg-amber-100 text-amber-900 border-amber-300'
+                                : 'bg-slate-200 text-slate-700 border-slate-300'
+                            }`}
+                          >
+                            {b.direction === 'down' && <TrendingDown className="w-3 h-3" />}
+                            {b.direction === 'up' && <TrendingUp className="w-3 h-3" />}
+                            {b.direction === 'stable' && <Minus className="w-3 h-3" />}
+                            <span>{b.statusLabel}</span>
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Action button to open full comparative modal */}
+                <button
+                  type="button"
+                  onClick={() => setComparisonModalOpen(true)}
+                  className="w-full py-2.5 px-4 rounded-xl text-xs font-bold text-teal-800 bg-teal-100/70 hover:bg-teal-100 border border-teal-300 hover:border-teal-400 transition-all flex items-center justify-center space-x-2 cursor-pointer shadow-sm"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-teal-400" />
+                  <span>Open Full Longitudinal Comparison Matrix (10 Biomarkers)</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            ) : chronologicalReports.length === 1 ? (
+              <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800 space-y-3 text-xs text-slate-400 leading-relaxed">
+                <p>
+                  <strong className="text-slate-200">1 confirmed report on file</strong> recorded on{' '}
+                  {new Date(chronologicalReports[0].confirmedAt || chronologicalReports[0].uploadDate).toLocaleDateString()}.
+                </p>
+                <p>
+                  Upload and confirm your next follow-up lab report to automatically calculate biomarker deltas, trajectory slopes, and longitudinal risk shifts.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setUploadModalOpen(true)}
+                  className="px-3.5 py-2 rounded-xl text-xs font-bold text-brand-300 bg-brand-500/20 hover:bg-brand-500/30 border border-brand-500/30 transition-all inline-flex items-center space-x-1.5 cursor-pointer"
+                >
+                  <Upload className="w-3.5 h-3.5" />
+                  <span>Upload Follow-up Report</span>
+                </button>
               </div>
             ) : (
-              <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800 text-xs text-slate-400 leading-relaxed">
-                Upload and confirm at least two consecutive lab reports to unlock automated delta comparisons,
-                trajectory detection, and longitudinal preventive tracking.
+              <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800 text-xs text-slate-400 leading-relaxed space-y-2">
+                <p>
+                  Upload and confirm at least two consecutive lab reports to unlock automated delta comparisons,
+                  trajectory detection, and longitudinal preventive tracking.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setUploadModalOpen(true)}
+                  className="px-3.5 py-2 rounded-xl text-xs font-bold text-brand-300 bg-brand-500/20 hover:bg-brand-500/30 border border-brand-500/30 transition-all inline-flex items-center space-x-1.5 cursor-pointer"
+                >
+                  <Upload className="w-3.5 h-3.5" />
+                  <span>Upload Medical Report</span>
+                </button>
               </div>
             )}
           </div>
@@ -1553,6 +2220,13 @@ export const PatientDashboard = () => {
         onClose={() => setOcrModalOpen(false)}
         report={selectedReport}
         onReportConfirmed={fetchData}
+      />
+
+      <ReportComparisonModal
+        isOpen={comparisonModalOpen}
+        onClose={() => setComparisonModalOpen(false)}
+        reports={confirmedReports}
+        patient={patient}
       />
     </div>
   );

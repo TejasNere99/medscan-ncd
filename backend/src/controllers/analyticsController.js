@@ -1,178 +1,163 @@
 import { Patient } from '../models/Patient.js';
 import { MedicineLog } from '../models/MedicineLog.js';
 import { Prediction } from '../models/Prediction.js';
+import { Report } from '../models/Report.js';
+import { FollowUp } from '../models/FollowUp.js';
+import { Referral } from '../models/Referral.js';
+import { PatientRelationship } from '../models/PatientRelationship.js';
+import { ApiError } from '../utils/apiError.js';
 import { ApiResponse } from '../utils/apiResponse.js';
 import { asyncHandler } from '../utils/asyncWrapper.js';
 
 export const getAdherenceAnalytics = asyncHandler(async (req, res) => {
   let { patientId } = req.query;
-
-  if (req.user.role === 'Patient') {
-    const p = await Patient.findOne({ user: req.user._id });
-    if (p) patientId = p._id;
+  if (req.user.role === 'Patient') patientId = (await Patient.findOne({ user: req.user._id }))?._id;
+  const filter = patientId ? { patient: patientId } : {};
+  if (req.user.role === 'CHO') {
+    const villages = [...(req.user.communityVillages || []), req.user.village].filter(Boolean);
+    const allowedPatients = await Patient.find({ village: { $in: villages } }).distinct('_id');
+    filter.patient = { $in: allowedPatients };
   }
-
-  const filter = {};
-  if (patientId) filter.patient = patientId;
-
   const totalLogs = await MedicineLog.countDocuments(filter);
   const takenLogs = await MedicineLog.countDocuments({ ...filter, status: 'Taken' });
   const missedLogs = await MedicineLog.countDocuments({ ...filter, status: 'Missed' });
   const pendingLogs = await MedicineLog.countDocuments({ ...filter, status: 'Pending' });
-
-  const adherencePercent = totalLogs > 0 ? Math.round((takenLogs / (takenLogs + missedLogs || 1)) * 100) : 92;
-
-  // Weekly breakdown mock data generator based on real counts
-  const weeklyData = [
-    { day: 'Mon', taken: 4, missed: 0, adherence: 100 },
-    { day: 'Tue', taken: 3, missed: 1, adherence: 75 },
-    { day: 'Wed', taken: 4, missed: 0, adherence: 100 },
-    { day: 'Thu', taken: 4, missed: 0, adherence: 100 },
-    { day: 'Fri', taken: 3, missed: 1, adherence: 75 },
-    { day: 'Sat', taken: 4, missed: 0, adherence: 100 },
-    { day: 'Sun', taken: 4, missed: 0, adherence: 100 },
-  ];
-
-  return res.status(200).json(
-    new ApiResponse(
-      200,
-      {
-        adherencePercent,
-        totalLogs,
-        takenLogs,
-        missedLogs,
-        pendingLogs,
-        weeklyData,
-      },
-      'Adherence analytics calculated successfully.'
-    )
-  );
+  const denominator = takenLogs + missedLogs;
+  return res.json(new ApiResponse(200, { adherencePercent: denominator ? Math.round((takenLogs / denominator) * 100) : null, totalLogs, takenLogs, missedLogs, pendingLogs, weeklyData: [] }, 'Adherence analytics calculated from recorded dose logs.'));
 });
 
 export const getPopulationHealthStats = asyncHandler(async (req, res) => {
-  const { village, disease, riskLevel } = req.query;
-
-  const filter = {};
-  if (village && village !== 'All') filter.village = village;
-
-  const totalPatients = await Patient.countDocuments(filter);
-
-  // Compute live clinical metrics from registered patients in filter
-  const patients = await Patient.find(filter).lean();
-  let diab = 0, htn = 0, heart = 0, kidney = 0;
-
-  if (patients.length > 0) {
-    patients.forEach((p) => {
-      if ((p.fastingSugar && p.fastingSugar >= 126) || p.fastingSugar > 140) diab++;
-      if ((p.systolicBP && p.systolicBP >= 140) || (p.diastolicBP && p.diastolicBP >= 90)) htn++;
-      if (
-        (p.totalCholesterol && p.totalCholesterol >= 200) ||
-        (p.systolicBP && p.systolicBP >= 140 && p.isCurrentSmoker)
-      ) {
-        heart++;
-      }
-      if (p.serumCreatinine && p.serumCreatinine >= 1.3) kidney++;
-    });
+  if (!['CHO', 'Doctor', 'Admin'].includes(req.user.role)) throw new ApiError(403, 'Your role cannot view population analytics.');
+  const patientFilter = {};
+  if (req.user.role === 'CHO') {
+    const villages = [...new Set([...(req.user.communityVillages || []), req.user.village].map((name) => String(name || '').trim()).filter(Boolean))];
+    if (!villages.length) patientFilter._id = null;
+    else patientFilter.village = { $in: villages };
+    if (req.query.village) {
+      if (!villages.some((name) => name.toLowerCase() === String(req.query.village).trim().toLowerCase())) patientFilter._id = null;
+      else patientFilter.village = { $in: [req.query.village] };
+    }
+  } else if (req.user.role === 'Doctor') {
+    const relationships = await PatientRelationship.find({ relatedUser: req.user._id, relationshipType: 'DOCTOR', status: 'ACTIVE' }).distinct('patient');
+    patientFilter.$or = [{ assignedDoctor: req.user._id }, { _id: { $in: relationships } }];
   }
+  if (req.query.village && req.user.role !== 'CHO') patientFilter.village = req.query.village;
+  const from = req.query.from ? new Date(req.query.from) : null;
+  const to = req.query.to ? new Date(req.query.to) : null;
+  if ((from && Number.isNaN(from.getTime())) || (to && Number.isNaN(to.getTime()))) throw new ApiError(400, 'Invalid date range.');
 
-  // Cross-reference with AI predictions if available
-  const heartPreds = await Prediction.countDocuments({
-    disease: 'heart_disease',
-    riskCategory: 'ELEVATED_MODEL_ESTIMATED_RISK',
-  });
-  if (heartPreds > heart) heart = heartPreds;
-
-  const diabPreds = await Prediction.countDocuments({
-    disease: 'diabetes',
-    riskCategory: 'ELEVATED_MODEL_ESTIMATED_RISK',
-  });
-  if (diabPreds > diab) diab = diabPreds;
-
-  const hasRealCases = (diab + htn + heart + kidney) > 0;
-  const dVal = hasRealCases ? diab : 184;
-  const hVal = hasRealCases ? htn : 210;
-  const cVal = hasRealCases ? heart : 75;
-  const kVal = hasRealCases ? (kidney || 1) : 48;
-  const sumVal = dVal + hVal + cVal + kVal;
-
-  // Disease prevalence distribution (supports both .value and .count with distinct theme colors)
-  const diseaseDistribution = [
-    {
-      name: 'Diabetes',
-      value: dVal,
-      count: dVal,
-      percentage: Math.round((dVal / sumVal) * 100),
-      color: '#06b6d4',
-    },
-    {
-      name: 'Hypertension',
-      value: hVal,
-      count: hVal,
-      percentage: Math.round((hVal / sumVal) * 100),
-      color: '#10b981',
-    },
-    {
-      name: 'Heart Disease',
-      value: cVal,
-      count: cVal,
-      percentage: Math.round((cVal / sumVal) * 100),
-      color: '#f59e0b',
-    },
-    {
-      name: 'Kidney Disease',
-      value: kVal,
-      count: kVal,
-      percentage: Math.round((kVal / sumVal) * 100),
-      color: '#8b5cf6',
-    },
+  const patients = await Patient.find(patientFilter).select('village age dob gender fastingSugar systolicBP diastolicBP').lean();
+  const ids = patients.map(({ _id }) => _id);
+  const scoped = { patient: { $in: ids } };
+  const supportedDiseases = [
+    { key: 'diabetes', name: 'Diabetes' },
+    { key: 'heart_disease', name: 'Heart disease' },
+    { key: 'hypertension', name: 'Hypertension' },
+    { key: 'chronic_kidney_disease', name: 'Chronic kidney disease' },
   ];
-
-  // Village-wise distribution with dynamic live stats where registered
-  const distinctVillages = await Patient.distinct('village');
-  const defaultList = ['Green Valley', 'Sunrise Hill', 'Riverdale', 'Oakridge'];
-  const villageList = Array.from(new Set([...defaultList, ...distinctVillages])).filter(Boolean);
-  const villageFallbacks = {
-    'Green Valley': { p: 142, hr: 18, adh: 94 },
-    'Sunrise Hill': { p: 98, hr: 12, adh: 89 },
-    'Riverdale': { p: 115, hr: 22, adh: 91 },
-    'Oakridge': { p: 85, hr: 9, adh: 96 },
+  const diseaseKeys = supportedDiseases.map((d) => d.key);
+  const [reportRecords, latestPredictions, followUps, referralRecords] = await Promise.all([
+    Report.find(scoped).select('patient status confirmedAt uploadDate').lean(),
+    Prediction.find({ ...scoped, disease: { $in: diseaseKeys }, status: 'SUCCESS' }).sort({ predictionDate: -1 }).select('patient disease riskCategory probability threshold modelVersion predictionDate').lean(),
+    FollowUp.find({ ...scoped, status: 'SCHEDULED' }).select('patient dueAt').lean(),
+    Referral.find({ ...scoped, status: { $in: ['PENDING', 'ACCEPTED'] } }).select('patient status referredAt').lean(),
+  ]);
+  const confirmedReports = reportRecords.filter((r) => r.status === 'CONFIRMED' && (!from && !to || ((r.confirmedAt || r.uploadDate) && (!from || new Date(r.confirmedAt || r.uploadDate) >= from) && (!to || new Date(r.confirmedAt || r.uploadDate) <= to))));
+  const pendingReports = reportRecords.filter((r) => r.status === 'PENDING_REVIEW').length;
+  const pendingReferrals = referralRecords.length;
+  const seenAssessments = new Set();
+  const currentAssessments = latestPredictions.filter((p) => {
+    const key = `${p.patient}:${p.disease}`;
+    if (seenAssessments.has(key)) return false;
+    seenAssessments.add(key);
+    return true;
+  });
+  const screened = new Set(confirmedReports.map((r) => String(r.patient))).size;
+  const villages = new Map();
+  for (const p of patients) {
+    const key = p.village || 'Not recorded';
+    const entry = villages.get(key) || { name: key, registered: 0, screenedPatients: new Set() };
+    entry.registered += 1;
+    villages.set(key, entry);
+  }
+  for (const r of confirmedReports) {
+    const patient = patients.find((p) => String(p._id) === String(r.patient));
+    if (patient) villages.get(patient.village || 'Not recorded')?.screenedPatients.add(String(r.patient));
+  }
+  const villageStats = [...villages.values()].map((v) => ({ name: v.name, patients: v.registered, registered: v.registered, screened: v.screenedPatients.size, remaining: Math.max(0, v.registered - v.screenedPatients.size), coveragePercent: v.registered ? Math.round(v.screenedPatients.size / v.registered * 100) : null }));
+  const ageGroups = [{ name: '18–39', min: 18, max: 39 }, { name: '40–59', min: 40, max: 59 }, { name: '60+', min: 60, max: 120 }].map((g) => ({ name: g.name, value: patients.filter((p) => { const age = Number(p.age) || (p.dob ? Math.floor((Date.now() - new Date(p.dob)) / 31557600000) : null); return age !== null && age >= g.min && age <= g.max; }).length }));
+  const diseaseDistribution = supportedDiseases.map(({ key, name }) => {
+    const records = currentAssessments.filter((p) => p.disease === key);
+    return {
+      name,
+      disease: key,
+      assessed: records.length,
+      elevated: records.filter((p) => ['ELEVATED_MODEL_ESTIMATED_RISK', 'POSITIVE_CLASSIFICATION_ESTIMATE'].includes(p.riskCategory)).length,
+      lower: records.filter((p) => ['LOWER_MODEL_ESTIMATED_RISK', 'NEGATIVE_CLASSIFICATION_ESTIMATE'].includes(p.riskCategory)).length,
+      unassessed: Math.max(0, patients.length - records.length),
+    };
+  });
+  const now = new Date();
+  const dueSoon = followUps.filter((f) => f.dueAt >= now && f.dueAt <= new Date(now.getTime() + 7 * 86400000)).length;
+  const overdue = followUps.filter((f) => f.dueAt < now).length;
+  const monthly = new Map();
+  for (const report of confirmedReports) {
+    const date = report.confirmedAt || report.uploadDate;
+    if (!date) continue;
+    const key = new Date(date).toISOString().slice(0, 7);
+    monthly.set(key, (monthly.get(key) || 0) + 1);
+  }
+  const signalByPatient = new Map();
+  const signalsFor = (patientId) => {
+    const id = String(patientId);
+    if (!signalByPatient.has(id)) signalByPatient.set(id, { patientId: id, hasConfirmedReport: false, pendingReportReviews: 0, diabetesAssessment: 'Unassessed', heartDiseaseAssessment: 'Unassessed', hypertensionAssessment: 'Unassessed', ckdAssessment: 'Unassessed', nextFollowUp: null, followUpStatus: 'None scheduled', referralStatus: 'None' });
+    return signalByPatient.get(id);
   };
-
-  const villageStats = await Promise.all(
-    villageList.map(async (vName) => {
-      const pCount = await Patient.countDocuments({ village: vName });
-      const highRisk = await Patient.countDocuments({
-        village: vName,
-        $or: [{ fastingSugar: { $gte: 140 } }, { systolicBP: { $gte: 140 } }],
-      });
-      const fb = villageFallbacks[vName] || { p: pCount, hr: highRisk, adh: 90 };
-      return {
-        name: vName,
-        patients: pCount > 0 ? pCount : fb.p,
-        highRisk: pCount > 0 ? highRisk : fb.hr,
-        avgAdherence: fb.adh,
-      };
-    })
-  );
-
-  // Risk Level Distribution
-  const riskDistribution = [
-    { name: 'Low Risk', value: 245, color: '#10b981' },
-    { name: 'Moderate Risk', value: 120, color: '#f59e0b' },
-    { name: 'High Risk', value: 55, color: '#ef4444' },
-    { name: 'Critical Risk', value: 20, color: '#b91c1c' },
-  ];
-
-  return res.status(200).json(
-    new ApiResponse(
-      200,
-      {
-        totalPatients: totalPatients > 0 ? totalPatients : 440,
-        villageStats,
-        diseaseDistribution,
-        riskDistribution,
-      },
-      'Population health statistics calculated.'
-    )
-  );
+  for (const report of reportRecords) {
+    const signal = signalsFor(report.patient);
+    if (report.status === 'CONFIRMED') signal.hasConfirmedReport = true;
+    if (report.status === 'PENDING_REVIEW') signal.pendingReportReviews += 1;
+  }
+  for (const assessment of currentAssessments) signalForPatientAssessment(signalsFor, assessment);
+  for (const followUp of followUps) {
+    const signal = signalsFor(followUp.patient);
+    if (!signal.nextFollowUp || new Date(followUp.dueAt) < new Date(signal.nextFollowUp)) signal.nextFollowUp = followUp.dueAt;
+  }
+  for (const referral of referralRecords) {
+    const signal = signalsFor(referral.patient);
+    signal.referralStatus = signal.referralStatus === 'None' || referral.status === 'PENDING' ? referral.status : signal.referralStatus;
+  }
+  for (const signal of signalByPatient.values()) {
+    if (signal.pendingReportReviews) signal.reportReviewStatus = 'Pending clinician review';
+    signal.followUpStatus = signal.nextFollowUp ? (new Date(signal.nextFollowUp) < now ? 'Overdue' : 'Scheduled') : 'None scheduled';
+  }
+  return res.json(new ApiResponse(200, {
+    totalPatients: patients.length,
+    registeredPatients: patients.length,
+    eligiblePopulation: null,
+    screeningCoverage: patients.length ? Math.round(screened / patients.length * 100) : null,
+    screeningDenominator: 'Registered patients with a confirmed report; eligible population is not configured.',
+    screenedPatients: screened,
+    pendingScreenings: Math.max(0, patients.length - screened),
+    pendingReportReviews: pendingReports,
+    followUpsDueSoon: dueSoon,
+    followUpsOverdue: overdue,
+    pendingReferrals,
+    patientSignals: [...signalByPatient.values()],
+    villageStats,
+    ageDistribution: ageGroups,
+    monthlyScreenings: [...monthly.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([month, count]) => ({ month, count })),
+    diseaseDistribution,
+    recentAssessments: currentAssessments,
+    dataQuality: { missingVillage: patients.filter((p) => !p.village).length, missingAge: patients.filter((p) => !p.age && !p.dob).length, patientsWithNoConfirmedReport: Math.max(0, patients.length - screened) },
+  }, 'Community analytics calculated from authorized patient records.'));
 });
+
+function signalForPatientAssessment(signalsFor, assessment) {
+  const signal = signalsFor(assessment.patient);
+  const category = assessment.riskCategory || 'Assessment unavailable';
+  if (assessment.disease === 'diabetes') signal.diabetesAssessment = category;
+  if (assessment.disease === 'heart_disease') signal.heartDiseaseAssessment = category;
+  if (assessment.disease === 'hypertension') signal.hypertensionAssessment = category;
+  if (['chronic_kidney_disease', 'kidney_disease', 'ckd'].includes(assessment.disease)) signal.ckdAssessment = category;
+}

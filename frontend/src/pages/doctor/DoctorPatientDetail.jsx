@@ -12,7 +12,7 @@ import {
   ArrowLeft,
   Info,
   AlertTriangle,
-  Lock,
+  RefreshCw,
   CheckCircle2,
   XCircle,
   HeartPulse,
@@ -24,6 +24,7 @@ import { patientService } from '../../services/patientService';
 import { medicineService } from '../../services/medicineService';
 import { reportService } from '../../services/reportService';
 import { predictionService } from '../../services/predictionService';
+import { appointmentService } from '../../services/appointmentService';
 import { useToast } from '../../hooks/useToast';
 
 export const DoctorPatientDetail = () => {
@@ -34,8 +35,14 @@ export const DoctorPatientDetail = () => {
   const [patient, setPatient] = useState(null);
   const [medicines, setMedicines] = useState([]);
   const [reports, setReports] = useState([]);
+  const [appointments, setAppointments] = useState([]);
+  const [updatingAppointmentId, setUpdatingAppointmentId] = useState(null);
+  const [updatingMedicineId, setUpdatingMedicineId] = useState(null);
   const [prediction, setPrediction] = useState(null);
   const [heartDiseasePrediction, setHeartDiseasePrediction] = useState(null);
+  const [hypertensionPrediction, setHypertensionPrediction] = useState({ status: 'LOADING' });
+  const [ckdPrediction, setCkdPrediction] = useState({ status: 'LOADING' });
+  const [runningNewDisease, setRunningNewDisease] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -50,6 +57,10 @@ export const DoctorPatientDetail = () => {
 
         const rRes = await reportService.getReports(id);
         if (rRes.data) setReports(rRes.data);
+
+        const appointmentRes = await appointmentService.getAppointments(id);
+        const appointmentData = appointmentRes?.data || appointmentRes;
+        setAppointments(Array.isArray(appointmentData) ? appointmentData : appointmentData?.appointments || []);
 
         try {
           const predRes = await predictionService.getLatestDiabetesPrediction(id);
@@ -82,6 +93,13 @@ export const DoctorPatientDetail = () => {
         } catch {
           setHeartDiseasePrediction(null);
         }
+
+        const [hypertensionResult, ckdResult] = await Promise.allSettled([
+          predictionService.getLatestHypertensionPrediction(id),
+          predictionService.getLatestCkdPrediction(id),
+        ]);
+        setHypertensionPrediction(hypertensionResult.status === 'fulfilled' ? hypertensionResult.value?.data || null : { status: 'LOAD_ERROR' });
+        setCkdPrediction(ckdResult.status === 'fulfilled' ? ckdResult.value?.data || null : { status: 'LOAD_ERROR' });
       } catch (e) {
         addToast('Failed to load patient detail profile.', 'error');
       } finally {
@@ -90,6 +108,94 @@ export const DoctorPatientDetail = () => {
     };
     fetchData();
   }, [id]);
+
+  const updateAppointment = async (appointment, status) => {
+    setUpdatingAppointmentId(appointment._id);
+    try {
+      const response = await appointmentService.updateStatus(appointment._id, status);
+      setAppointments((current) => current.map((item) => item._id === appointment._id ? (response?.data || { ...item, status }) : item));
+      addToast(`Appointment marked ${status.toLowerCase()}.`, 'success');
+    } catch (error) {
+      addToast(error?.message || 'Could not update this appointment.', 'error');
+    } finally {
+      setUpdatingAppointmentId(null);
+    }
+  };
+
+  const discontinueMedicine = async (medicine) => {
+    setUpdatingMedicineId(medicine._id);
+    try {
+      const response = await medicineService.deleteMedicine(medicine._id);
+      setMedicines((current) => current.map((item) => item._id === medicine._id ? (response?.data || { ...item, status: 'Discontinued' }) : item));
+      addToast('Prescription discontinued. Dose history was preserved.', 'success');
+    } catch (error) {
+      addToast(error?.message || 'Could not discontinue this prescription.', 'error');
+    } finally {
+      setUpdatingMedicineId(null);
+    }
+  };
+
+  const requestNewDiseasePrediction = async (disease) => {
+    setRunningNewDisease(disease);
+    try {
+      const result = disease === 'hypertension'
+        ? await predictionService.predictHypertension({ patientId: id })
+        : await predictionService.predictCkd({ patientId: id });
+      const predictionResult = result?.data || null;
+      if (disease === 'hypertension') setHypertensionPrediction(predictionResult);
+      else setCkdPrediction(predictionResult);
+      addToast(predictionResult?.message || 'Model estimate generated.', predictionResult?.canCalculate ? 'success' : 'warning');
+    } catch (error) {
+      const errorResult = error?.data || error || {};
+      const embeddedResult = errorResult?.data?.status ? errorResult.data : (errorResult?.status ? errorResult : null);
+      const result = embeddedResult ? {
+        ...embeddedResult,
+        message: embeddedResult.message || errorResult.message || 'The model estimate is temporarily unavailable. No probability was generated.',
+      } : {
+        status: 'PREDICTION_ERROR',
+        canCalculate: false,
+        probability: null,
+        message: errorResult?.message || error?.message || 'The estimate could not be generated. Check access and retry.',
+      };
+      if (disease === 'hypertension') setHypertensionPrediction(result);
+      else setCkdPrediction(result);
+      addToast(result.message, 'error');
+    } finally {
+      setRunningNewDisease(null);
+    }
+  };
+
+  const renderResearchModelCard = (disease, title, result) => {
+    const isLoading = runningNewDisease === disease;
+    const isAvailable = result?.status === 'SUCCESS' && result?.canCalculate && Number.isFinite(result?.probability);
+    const insufficient = result?.status === 'INSUFFICIENT_DATA';
+    const unavailable = ['MODEL_UNAVAILABLE', 'SERVICE_UNAVAILABLE', 'PREDICTION_SERVICE_UNAVAILABLE'].includes(result?.status);
+    return (
+      <section key={disease} className="rounded-xl border border-slate-800 bg-slate-950/70 p-4 space-y-2" aria-label={`${title} research estimate`}>
+        <div className="flex items-center justify-between gap-2">
+          <h5 className="text-xs font-bold text-white">{title}</h5>
+          <span className="text-[9px] font-bold text-amber-300">Research estimate</span>
+        </div>
+        {isAvailable ? (
+          <div role="status">
+            <p className="text-xl font-black text-white">{(result.probability * 100).toFixed(1)}%</p>
+            <p className="text-[10px] text-slate-300">{result.riskCategory === 'POSITIVE_CLASSIFICATION_ESTIMATE' ? 'Positive classification estimate' : 'Negative classification estimate'} · {result.modelVersion || 'model version unavailable'}{result.createdAt ? ` · ${new Date(result.createdAt).toLocaleString()}` : ''}</p>
+            <p className="mt-1 text-[10px] text-slate-500">{result.explanationStatus === 'available' && result.topContributingFactors?.length ? result.topContributingFactors.map((factor) => factor.description || factor.feature).join('; ') : 'Individual contributing factors are unavailable.'}</p>
+            <p className="mt-1 text-[10px] text-slate-500">{result.taskInterpretation || result.clinicalDisclaimer || 'Not a diagnosis or clinically validated estimate.'}</p>
+          </div>
+        ) : result?.status === 'LOADING' ? (
+          <p className="text-[10px] text-slate-400" role="status">Loading the latest saved estimate…</p>
+        ) : (
+          <p className={`text-[10px] ${unavailable || result?.status === 'PREDICTION_ERROR' || result?.status === 'LOAD_ERROR' ? 'text-rose-300' : 'text-slate-400'}`} role={unavailable || result?.status === 'PREDICTION_ERROR' ? 'alert' : 'status'}>
+            {insufficient ? result.message || `Confirmed data required: ${(result.missingDomain || result.missingFeatures || []).toString().replace(/_/g, ' ')}.` : unavailable || result?.status === 'PREDICTION_ERROR' ? result.message || 'Model estimate is temporarily unavailable. No probability was generated.' : result?.status === 'LOAD_ERROR' ? 'Could not load the latest estimate.' : 'No estimate yet. Generate one using eligible profile and confirmed report information.'}
+          </p>
+        )}
+        <button type="button" disabled={isLoading || result?.status === 'LOADING' || Boolean(runningNewDisease)} onClick={() => requestNewDiseasePrediction(disease)} className="inline-flex items-center gap-1.5 rounded-lg border border-slate-700 px-2.5 py-1.5 text-[10px] font-bold text-slate-200 hover:border-cyan-500/50 disabled:opacity-60">
+          {isLoading && <RefreshCw className="h-3 w-3 animate-spin" />}{isLoading ? 'Generating…' : result?.status === 'LOADING' ? 'Loading latest estimate…' : isAvailable ? 'Refresh estimate' : 'Generate estimate'}
+        </button>
+      </section>
+    );
+  };
 
   const tabItems = [
     { id: 'personal', label: 'Personal Info', icon: User },
@@ -112,15 +218,11 @@ export const DoctorPatientDetail = () => {
 
       {/* Patient Header Card */}
       <div className="glass-card p-6 rounded-3xl border border-slate-800 flex items-center space-x-4">
-        <img
-          src={patient?.user?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=256'}
-          alt={patient?.user?.name}
-          className="w-16 h-16 rounded-2xl object-cover border-2 border-brand-500/50 shadow-xl"
-        />
+        {patient?.user?.avatar ? <img src={patient.user.avatar} alt="" className="h-14 w-14 rounded-full object-cover" /> : <span aria-hidden="true" className="flex h-14 w-14 items-center justify-center rounded-full bg-violet-100 text-lg font-semibold text-violet-800">{patient?.user?.name?.charAt(0) || 'P'}</span>}
         <div>
-          <h1 className="text-xl font-black text-white">{patient?.user?.name || 'John Doe'}</h1>
+          <h1 className="text-xl font-black text-white">{patient?.user?.name || 'Patient record'}</h1>
           <p className="text-xs text-slate-400 mt-0.5">
-            Age: <span className="text-white font-bold">{patient?.age || 52} yrs</span> • Gender: <span className="text-white font-bold">{patient?.gender || 'Male'}</span> • Village: <span className="text-brand-400 font-bold">{patient?.village}</span>
+            Age: <span className="text-white font-bold">{patient?.age ? `${patient.age} yrs` : 'Not recorded'}</span> • Gender: <span className="text-white font-bold">{patient?.gender || 'Not recorded'}</span> • Village: <span className="text-brand-400 font-bold">{patient?.village || 'Not recorded'}</span>
           </p>
         </div>
       </div>
@@ -134,19 +236,19 @@ export const DoctorPatientDetail = () => {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
             <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800">
               <p className="text-slate-500 font-bold uppercase">Blood Group</p>
-              <p className="text-lg font-black text-white mt-1">{patient?.bloodGroup || 'A+'}</p>
+              <p className="text-lg font-black text-white mt-1">{patient?.bloodGroup || 'Not recorded'}</p>
             </div>
             <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800">
               <p className="text-slate-500 font-bold uppercase">Blood Pressure</p>
-              <p className="text-lg font-black text-amber-400 mt-1">{patient?.systolicBP || 142}/{patient?.diastolicBP || 92} mmHg</p>
+              <p className="text-lg font-black text-amber-400 mt-1">{patient?.systolicBP && patient?.diastolicBP ? `${patient.systolicBP}/${patient.diastolicBP} mmHg` : 'Not recorded'}</p>
             </div>
             <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800">
               <p className="text-slate-500 font-bold uppercase">Fasting Glucose</p>
-              <p className="text-lg font-black text-rose-400 mt-1">{patient?.fastingSugar || 148} mg/dL</p>
+              <p className="text-lg font-black text-rose-400 mt-1">{patient?.fastingSugar ? `${patient.fastingSugar} mg/dL` : 'Not recorded'}</p>
             </div>
             <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800">
               <p className="text-slate-500 font-bold uppercase">BMI</p>
-              <p className="text-lg font-black text-cyan-400 mt-1">{patient?.bmi || 27.4}</p>
+              <p className="text-lg font-black text-cyan-400 mt-1">{patient?.bmi || 'Not recorded'}</p>
             </div>
           </div>
         )}
@@ -155,27 +257,32 @@ export const DoctorPatientDetail = () => {
           <div className="space-y-4 text-xs">
             <h4 className="font-bold text-white uppercase text-slate-400">Diagnosed Medical History</h4>
             <div className="flex flex-wrap gap-2">
-              {(patient?.medicalHistory || ['Stage 1 Hypertension', 'Type-2 Diabetes Risk', 'Hyperlipidemia']).map((h, i) => (
+              {(patient?.medicalHistory || []).map((h, i) => (
                 <span key={i} className="px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-200 font-bold">
                   {h}
                 </span>
               ))}
             </div>
+            {!patient?.medicalHistory?.length && <p className="text-xs text-stone-500">No confirmed history recorded.</p>}
           </div>
         )}
 
         {activeTab === 'medicines' && (
           <div className="space-y-3 text-xs">
-            <h4 className="font-bold text-white">Active Prescriptions</h4>
+            <h4 className="font-bold text-white">Prescriptions</h4>
+            {medicines.length === 0 && <p className="py-5 text-center text-slate-500">No prescriptions have been added for this patient.</p>}
             {medicines.map((m) => (
-              <div key={m._id} className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-between">
+              <div key={m._id} className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <p className="font-bold text-white text-sm">{m.name}</p>
                   <p className="text-slate-400">{m.dosage} • {m.frequency}</p>
+                  {m.instructions && <p className="mt-1 text-slate-500">{m.instructions}</p>}
+                  {m.timing?.length > 0 && <p className="mt-1 capitalize text-slate-500">{m.timing.join(', ')}</p>}
                 </div>
-                <span className="px-2.5 py-1 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 font-bold uppercase text-[10px]">
-                  {m.status}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="px-2.5 py-1 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 font-bold uppercase text-[10px]">{m.status}</span>
+                  {m.status === 'Active' && <button type="button" disabled={updatingMedicineId === m._id} onClick={() => discontinueMedicine(m)} className="rounded-lg border border-rose-200 px-3 py-2 text-[10px] font-semibold text-rose-700 disabled:opacity-50">{updatingMedicineId === m._id ? 'Saving…' : 'Discontinue'}</button>}
+                </div>
               </div>
             ))}
           </div>
@@ -212,6 +319,17 @@ export const DoctorPatientDetail = () => {
 
         {activeTab === 'ai' && (
           <div className="space-y-6">
+            <section className="space-y-3">
+              <div>
+                <h4 className="text-sm font-bold text-white">Hypertension and CKD research estimates</h4>
+                <p className="mt-1 text-[10px] text-slate-400">Uses this patient’s permitted profile and confirmed report values. Estimates are non-diagnostic and not clinically validated.</p>
+              </div>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                {renderResearchModelCard('hypertension', 'Hypertension classification', hypertensionPrediction)}
+                {renderResearchModelCard('ckd', 'Chronic kidney disease classification', ckdPrediction)}
+              </div>
+            </section>
+
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-3">
               <div>
                 <h4 className="font-extrabold text-white text-sm flex items-center space-x-2">
@@ -219,7 +337,7 @@ export const DoctorPatientDetail = () => {
                   <span>Scenario A — Model-Estimated Diabetes Risk</span>
                 </h4>
                 <p className="text-[11px] text-slate-400">
-                  Algorithm: LightGBM + 5-Fold Platt Calibration • Decision Threshold: 0.210 • Version {prediction?.modelVersion || '1.0.0'}
+                  {prediction?.modelVersion ? `Model version: ${prediction.modelVersion}` : 'Model-estimated risk based on available confirmed information'}
                 </p>
               </div>
               <span className="text-[10px] px-2.5 py-1 rounded-full bg-brand-500/10 text-brand-400 border border-brand-500/30 font-bold self-start sm:self-auto">
@@ -367,47 +485,6 @@ export const DoctorPatientDetail = () => {
                     'Model-estimated risk for clinical decision support. This tool provides non-diagnostic risk estimation derived from routine cardiometabolic parameters and does not substitute for clinical evaluation or diagnostic laboratory testing.'}
                 </div>
 
-                {/* Other Diseases Roadmap Section */}
-                <div className="pt-4 border-t border-slate-800 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <h5 className="font-bold text-white text-xs">Other Disease Risk Models (Roadmap)</h5>
-                    <span className="text-[10px] font-mono text-slate-500">Under Development</span>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div className="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800 flex items-center justify-between opacity-75">
-                      <div className="flex items-center space-x-2.5">
-                        <Activity className="w-4 h-4 text-amber-400" />
-                        <div>
-                          <p className="text-xs font-bold text-white flex items-center space-x-1">
-                            <span>Hypertension</span>
-                            <Lock className="w-3 h-3 text-slate-500" />
-                          </p>
-                          <p className="text-[10px] text-slate-500">Model under development</p>
-                        </div>
-                      </div>
-                      <span className="text-[9px] px-2 py-0.5 rounded bg-slate-900 text-slate-400 border border-slate-800 font-bold">
-                        Coming Soon
-                      </span>
-                    </div>
-
-                    <div className="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800 flex items-center justify-between opacity-75">
-                      <div className="flex items-center space-x-2.5">
-                        <FileText className="w-4 h-4 text-cyan-400" />
-                        <div>
-                          <p className="text-xs font-bold text-white flex items-center space-x-1">
-                            <span>Kidney Disease</span>
-                            <Lock className="w-3 h-3 text-slate-500" />
-                          </p>
-                          <p className="text-[10px] text-slate-500">Model under development</p>
-                        </div>
-                      </div>
-                      <span className="text-[9px] px-2 py-0.5 rounded bg-slate-900 text-slate-400 border border-slate-800 font-bold">
-                        Coming Soon
-                      </span>
-                    </div>
-                  </div>
-                </div>
               </div>
             ) : prediction && prediction.status === 'INSUFFICIENT_DATA' ? (
               <div className="p-8 text-center space-y-3">
@@ -442,7 +519,7 @@ export const DoctorPatientDetail = () => {
                   </div>
                   <div>
                     <h4 className="text-sm font-bold text-white">Framingham 10-Year CHD Risk Model</h4>
-                    <p className="text-[10px] text-slate-400">Model Version: v{heartDiseasePrediction?.modelVersion || '1.0.0'} • Platt Calibrated Logistic Regression</p>
+                    <p className="text-[10px] text-slate-400">{heartDiseasePrediction?.modelVersion ? `Model version: ${heartDiseasePrediction.modelVersion}` : 'Model-estimated risk based on available confirmed information'}</p>
                   </div>
                 </div>
                 <span className="text-[10px] px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold">
@@ -574,10 +651,7 @@ export const DoctorPatientDetail = () => {
         )}
 
         {activeTab === 'appointments' && (
-          <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 text-xs">
-            <p className="font-bold text-white">Upcoming Consultation</p>
-            <p className="text-slate-400 mt-1">Scheduled for: Thursday 10:30 AM • Reason: Diabetes Follow-up</p>
-          </div>
+          <div className="space-y-3 text-xs"><h4 className="font-semibold text-stone-900">Appointments</h4>{appointments.length ? appointments.map((appointment) => <article key={appointment._id} className="flex flex-wrap items-center justify-between gap-3 border-b border-stone-100 py-3"><div><p className="font-semibold text-stone-900">{appointment.reason || 'Appointment'}</p><p className="mt-1 text-stone-500">{appointment.date ? new Date(appointment.date).toLocaleDateString() : 'Date not provided'}{appointment.time ? ` · ${appointment.time}` : ''}</p>{appointment.notes && <p className="mt-1 text-stone-500">{appointment.notes}</p>}</div><div className="flex items-center gap-2"><span className="rounded-full bg-stone-100 px-2.5 py-1 text-[10px] text-stone-600">{appointment.status || 'Status unavailable'}</span>{appointment.status === 'Upcoming' && <><button type="button" disabled={updatingAppointmentId === appointment._id} onClick={() => updateAppointment(appointment, 'Completed')} className="rounded-lg bg-emerald-700 px-3 py-2 text-[10px] font-semibold text-white disabled:opacity-50">Complete</button><button type="button" disabled={updatingAppointmentId === appointment._id} onClick={() => updateAppointment(appointment, 'Cancelled')} className="rounded-lg border border-stone-200 px-3 py-2 text-[10px] font-semibold text-stone-600 disabled:opacity-50">Cancel</button></>}</div></article>) : <p className="py-5 text-center text-stone-500">No appointments available for this patient.</p>}</div>
         )}
       </div>
     </div>

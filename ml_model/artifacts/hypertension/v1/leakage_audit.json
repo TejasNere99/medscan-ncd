@@ -1,0 +1,29 @@
+{
+  "result": "PASS",
+  "target_fields_excluded": [
+    "BPQ020",
+    "BPQ040A",
+    "BPQ050A"
+  ],
+  "blood_pressure_predictors_excluded": [
+    "BPXSY1-4",
+    "BPXDI1-4",
+    "BPXCHR",
+    "BPXPULS",
+    "mean arterial pressure",
+    "derived BP categories"
+  ],
+  "approved_predictors": [
+    "age",
+    "sex",
+    "bmi",
+    "fasting_glucose",
+    "total_cholesterol",
+    "hdl",
+    "serum_creatinine",
+    "heart_rate",
+    "current_smoker"
+  ],
+  "allowed_pulse_variable": "BPXPLS, used only as heart_rate",
+  "assertion": "No SBP, DBP, target, treatment, or diagnosis proxy is in the trained feature frame."
+}

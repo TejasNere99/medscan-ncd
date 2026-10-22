@@ -1,0 +1,7 @@
+{
+  "disclaimer": "SYNTHETIC \u2014 FOR DEMONSTRATION ONLY",
+  "purpose": "Case F: Non-Clinical Document Ingestion Test",
+  "documentClassification": "unknown",
+  "extractedBiomarkersCount": 0,
+  "expectedOutcome": "No biomarkers extracted, zero fabrication, user prompted to upload supported clinical lab document."
+}

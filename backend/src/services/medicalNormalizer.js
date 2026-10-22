@@ -11,6 +11,8 @@ export const CANONICAL_FIELDS = {
   DIASTOLIC_BP: 'diastolicBP',
   TOTAL_CHOLESTEROL: 'totalCholesterol',
   CREATININE: 'creatinine',
+  BLOOD_UREA: 'bloodUrea',
+  BLOOD_UREA_NITROGEN: 'bloodUreaNitrogen',
   HEMOGLOBIN: 'hemoglobin',
   BMI: 'bmi',
   HEART_RATE: 'heartRate',
@@ -43,6 +45,8 @@ export const STANDARD_UNITS = {
   [CANONICAL_FIELDS.DIASTOLIC_BP]: ['mmHg'],
   [CANONICAL_FIELDS.TOTAL_CHOLESTEROL]: ['mg/dL', 'mmol/L'],
   [CANONICAL_FIELDS.CREATININE]: ['mg/dL', 'µmol/L', 'umol/L'],
+  [CANONICAL_FIELDS.BLOOD_UREA]: ['mg/dL', 'mmol/L'],
+  [CANONICAL_FIELDS.BLOOD_UREA_NITROGEN]: ['mg/dL', 'mmol/L'],
   [CANONICAL_FIELDS.HEMOGLOBIN]: ['g/dL', 'gm/dL', 'g/L'],
   [CANONICAL_FIELDS.BMI]: ['kg/m²'],
   [CANONICAL_FIELDS.HEART_RATE]: ['BPM'],
@@ -183,6 +187,18 @@ export const convertUnitSafely = (parameter, value, sourceUnit) => {
         normalizedUnit: 'mg/dL',
         conversionApplied: false,
       };
+    }
+  }
+
+  // Urea (not BUN): mmol/L -> mg/dL using urea molecular mass 60.06 g/mol.
+  // BUN is a distinct canonical analyte and is deliberately not converted here.
+  if (parameter === CANONICAL_FIELDS.BLOOD_UREA) {
+    if (normalizedSource === 'mmol/L') {
+      const converted = Math.round(num * 6.006 * 100) / 100;
+      return { value: num, unit: 'mmol/L', normalizedValue: converted, normalizedUnit: 'mg/dL', conversionApplied: true };
+    }
+    if (normalizedSource === 'mg/dL') {
+      return { value: num, unit: 'mg/dL', normalizedValue: num, normalizedUnit: 'mg/dL', conversionApplied: false };
     }
   }
 

@@ -4,12 +4,28 @@ import { PatientRelationship } from '../models/PatientRelationship.js';
 import { Report } from '../models/Report.js';
 import { buildDiabetesFeatures } from '../services/diabetesFeatureBuilder.js';
 import { callDiabetesPredictionService } from '../services/diabetesPredictionService.js';
-import { triggerDiabetesRecalculation, triggerHeartDiseaseRecalculation } from './patientController.js';
+import {
+  triggerDiabetesRecalculation,
+  triggerHeartDiseaseRecalculation,
+  triggerHypertensionRecalculation,
+  triggerCkdRecalculation,
+} from './patientController.js';
 import { buildHeartDiseaseFeatures } from '../services/heartDiseaseFeatureBuilder.js';
 import { callHeartDiseasePredictionService } from '../services/heartDiseasePredictionService.js';
+import { buildCkdFeatures, buildHypertensionFeatures } from '../services/newDiseaseFeatureBuilder.js';
+import { callNewDiseasePredictionService } from '../services/newDiseasePredictionService.js';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import path from 'node:path';
 import { ApiError } from '../utils/apiError.js';
 import { ApiResponse } from '../utils/apiResponse.js';
 import { asyncHandler } from '../utils/asyncWrapper.js';
+
+const currentDirectory = path.dirname(fileURLToPath(import.meta.url));
+const researchModelSchemas = JSON.parse(readFileSync(
+  path.resolve(currentDirectory, '../config/researchModelSchemas.json'),
+  'utf8',
+));
 
 /**
  * Phase P1: Helper to verify that requester has legitimate access to target patient for predictions.
@@ -41,30 +57,12 @@ const verifyPatientAccessForPrediction = async (req, patientId, isTrigger = fals
     if (!isAssigned && !hasActiveRel) {
       throw new ApiError(403, 'Unauthorized. You are not assigned to this patient.');
     }
-  } else if (req.user.role === 'Nurse') {
-    if (isTrigger) {
-      throw new ApiError(403, 'Your role is not authorized to trigger disease predictions.');
-    }
-    const nurseId = patient.assignedNurse?._id || patient.assignedNurse;
-    if (!nurseId || String(nurseId) !== String(req.user._id)) {
-      throw new ApiError(403, 'Unauthorized. You are not assigned to this patient.');
-    }
-  } else if (req.user.role === 'Family') {
-    if (isTrigger) {
-      throw new ApiError(403, 'Your role is not authorized to trigger disease predictions.');
-    }
-    const isLinked = patient.linkedFamilyMembers?.some((f) => String(f._id || f) === String(req.user._id));
-    const hasActiveRel = await PatientRelationship.exists({
-      patient: patient._id,
-      relatedUser: req.user._id,
-      relationshipType: 'FAMILY',
-      status: 'ACTIVE',
-    });
-    if (!isLinked && !hasActiveRel) {
-      throw new ApiError(403, 'Unauthorized. You are not linked to this patient.');
-    }
   } else if (req.user.role === 'CHO') {
-    // CHO is authorized to view and trigger community patient predictions
+    const choVillage = String(req.user.village || '').trim().toLowerCase();
+    const patientVillage = String(patient.village || '').trim().toLowerCase();
+    if (!choVillage || !patientVillage || choVillage !== patientVillage) {
+      throw new ApiError(403, 'Unauthorized. This patient is outside your assigned community.');
+    }
   } else if (req.user.role === 'Admin') {
     throw new ApiError(403, 'Administrative accounts cannot access clinical prediction records.');
   } else {
@@ -574,3 +572,173 @@ export const getHeartDiseasePredictionHistory = asyncHandler(async (req, res) =>
     new ApiResponse(200, history, 'Historical heart disease predictions retrieved.')
   );
 });
+
+const runNewDiseasePrediction = async (req, res, disease) => {
+  const { reportId, patientId } = req.body || {};
+  if (req.body?.features) {
+    throw new ApiError(400, 'Direct feature payloads are not accepted; prediction inputs come from confirmed records.');
+  }
+  if (['Nurse', 'Family', 'Admin'].includes(req.user.role)) {
+    throw new ApiError(403, 'Your role is not authorized to trigger disease predictions.');
+  }
+
+  let targetPatientId = patientId;
+  let referencedReport = null;
+  if (reportId) {
+    referencedReport = await Report.findById(reportId);
+    if (!referencedReport) throw new ApiError(404, 'Referenced medical report not found.');
+    if (referencedReport.status !== 'CONFIRMED') {
+      throw new ApiError(400, 'Prediction inputs must come from confirmed medical records.');
+    }
+    if (patientId && String(patientId) !== String(referencedReport.patient)) {
+      throw new ApiError(403, 'The report does not belong to the requested patient.');
+    }
+    targetPatientId = referencedReport.patient;
+  }
+
+  if (req.user.role === 'Patient') {
+    const ownPatient = await Patient.findOne({ user: req.user._id });
+    if (!ownPatient) throw new ApiError(404, 'Patient profile record not found.');
+    if (targetPatientId && String(targetPatientId) !== String(ownPatient._id)) {
+      throw new ApiError(403, 'You may only request predictions for your own profile.');
+    }
+    targetPatientId = ownPatient._id;
+  }
+  if (!targetPatientId) throw new ApiError(400, 'A patientId or confirmed reportId is required.');
+
+  const patient = await verifyPatientAccessForPrediction(req, targetPatientId, true);
+  const confirmedReports = await Report.find({ patient: targetPatientId, status: 'CONFIRMED' })
+    .sort({ confirmedAt: -1, createdAt: -1 })
+    .limit(100);
+  const extraction = disease === 'hypertension'
+    ? buildHypertensionFeatures(confirmedReports, patient)
+    : buildCkdFeatures(confirmedReports, patient, researchModelSchemas.chronic_kidney_disease.ordered_features);
+
+  let modelResult;
+  if (!extraction.canCalculate) {
+    modelResult = {
+      success: false,
+      status: 'INSUFFICIENT_DATA',
+      canCalculate: false,
+      probability: null,
+      threshold: null,
+      missingFeatures: extraction.missingRequired,
+      message: `Required confirmed information is missing: ${extraction.missingRequired.join(', ')}.`,
+    };
+  } else {
+    modelResult = await callNewDiseasePredictionService(disease, extraction.featureVector);
+  }
+
+  if (modelResult.canCalculate && (
+    typeof modelResult.probability !== 'number'
+    || !Number.isFinite(modelResult.probability)
+    || modelResult.probability < 0
+    || modelResult.probability > 1
+    || !['POSITIVE_CLASSIFICATION_ESTIMATE', 'NEGATIVE_CLASSIFICATION_ESTIMATE'].includes(modelResult.riskCategory)
+  )) {
+    modelResult = {
+      ...modelResult,
+      success: false,
+      status: 'PREDICTION_SERVICE_UNAVAILABLE',
+      canCalculate: false,
+      probability: null,
+      riskCategory: null,
+      message: 'The model service returned an invalid prediction response. No probability was stored.',
+    };
+  }
+
+  const statusValue = modelResult.canCalculate
+    ? 'SUCCESS'
+    : modelResult.status === 'INSUFFICIENT_DATA'
+    ? 'INSUFFICIENT_DATA'
+    : 'SERVICE_UNAVAILABLE';
+  const prediction = await Prediction.create({
+    patient: targetPatientId,
+    report: referencedReport?._id || null,
+    calculatedBy: req.user._id,
+    disease,
+    modelVersion: modelResult.modelVersion || null,
+    featureSchemaVersion: modelResult.featureSchemaVersion || null,
+    probability: modelResult.canCalculate ? modelResult.probability : null,
+    threshold: typeof modelResult.threshold === 'number' ? modelResult.threshold : null,
+    riskCategory: modelResult.canCalculate ? modelResult.riskCategory : (statusValue === 'INSUFFICIENT_DATA' ? 'INSUFFICIENT_DATA' : 'FAILED'),
+    status: statusValue,
+    canCalculate: Boolean(modelResult.canCalculate),
+    dataCompleteness: modelResult.canCalculate ? (modelResult.dataCompleteness || extraction.dataCompleteness) : 'INSUFFICIENT',
+    missingDomain: modelResult.canCalculate ? null : (modelResult.message || extraction.missingRequired.join(', ')),
+    inputFeatures: extraction.featureVector,
+    featureAvailability: {
+      availableFeatures: Object.keys(extraction.featureVector).filter((key) => extraction.featureVector[key] !== null),
+      missingFeatures: Object.keys(extraction.featureVector).filter((key) => extraction.featureVector[key] === null),
+      provenance: extraction.provenance,
+    },
+    featureProvenance: extraction.provenance,
+    topContributingFactors: modelResult.topContributingFactors || [],
+    explanationStatus: modelResult.explanationStatus || 'unavailable',
+    taskInterpretation: modelResult.taskInterpretation || (disease === 'hypertension'
+      ? 'Classification of current diagnosed/treated hypertension; not future-onset prediction.'
+      : 'Classification of the UCI CKD dataset label; not future-onset prediction.'),
+    clinicalDisclaimer: modelResult.clinicalDisclaimer || 'Statistical model estimate only. Not a diagnosis and not clinically validated.',
+    overallRiskPercent: modelResult.canCalculate ? Math.round(modelResult.probability * 100) : null,
+    riskLevel: modelResult.canCalculate
+      ? (['ELEVATED_MODEL_ESTIMATED_RISK', 'POSITIVE_CLASSIFICATION_ESTIMATE'].includes(modelResult.riskCategory) ? 'Elevated model estimate' : 'Lower model estimate')
+      : 'Unknown',
+    confidenceScore: null,
+    diseaseBreakdown: { Diabetes: null, Hypertension: null, HeartDisease: null, KidneyDisease: null },
+    algorithmVersion: modelResult.modelVersion || `${disease}_unavailable`,
+    predictionDate: new Date(),
+  });
+
+  if (statusValue === 'SERVICE_UNAVAILABLE') {
+    return res.status(503).json(new ApiResponse(503, prediction, modelResult.message || 'Disease model is unavailable. No probability was generated.'));
+  }
+  return res.status(200).json(new ApiResponse(200, prediction, modelResult.message || `${disease} model estimate generated.`));
+};
+
+export const predictHypertension = asyncHandler((req, res) => runNewDiseasePrediction(req, res, 'hypertension'));
+export const predictCkd = asyncHandler((req, res) => runNewDiseasePrediction(req, res, 'chronic_kidney_disease'));
+
+const getLatestNewDiseasePrediction = (disease) => asyncHandler(async (req, res) => {
+  let { patientId } = req.query;
+  if (req.user.role === 'Patient') {
+    const ownPatient = await Patient.findOne({ user: req.user._id });
+    if (!ownPatient) throw new ApiError(404, 'Patient profile not found.');
+    if (patientId && String(patientId) !== String(ownPatient._id)) throw new ApiError(403, 'You may only access your own prediction.');
+    patientId = ownPatient._id;
+  }
+  if (!patientId) throw new ApiError(400, 'Patient ID is required.');
+  await verifyPatientAccessForPrediction(req, patientId, false);
+  let latest = await Prediction.findOne({ patient: patientId, disease }).sort({ createdAt: -1 });
+
+  // Self-healing synchronization: if latest prediction is missing or INSUFFICIENT_DATA / canCalculate === false,
+  // check if patient profile vitals or confirmed reports satisfy model requirements.
+  if (!latest || latest.status === 'INSUFFICIENT_DATA' || !latest.canCalculate) {
+    if (disease === 'hypertension') {
+      await triggerHypertensionRecalculation(patientId, req.user._id);
+    } else if (disease === 'chronic_kidney_disease') {
+      await triggerCkdRecalculation(patientId, req.user._id);
+    }
+    latest = await Prediction.findOne({ patient: patientId, disease }).sort({ createdAt: -1 });
+  }
+
+  return res.status(200).json(new ApiResponse(200, latest, `Latest ${disease} model estimate retrieved.`));
+});
+
+const getNewDiseasePredictionHistory = (disease) => asyncHandler(async (req, res) => {
+  let { patientId } = req.query;
+  if (req.user.role === 'Patient') {
+    const ownPatient = await Patient.findOne({ user: req.user._id });
+    if (!ownPatient) throw new ApiError(404, 'Patient profile not found.');
+    if (patientId && String(patientId) !== String(ownPatient._id)) throw new ApiError(403, 'You may only access your own prediction history.');
+    patientId = ownPatient._id;
+  }
+  if (!patientId) throw new ApiError(400, 'Patient ID is required.');
+  await verifyPatientAccessForPrediction(req, patientId, false);
+  const history = await Prediction.find({ patient: patientId, disease }).sort({ createdAt: -1 }).limit(30);
+  return res.status(200).json(new ApiResponse(200, history, `${disease} model estimate history retrieved.`));
+});
+
+export const getLatestHypertensionPrediction = getLatestNewDiseasePrediction('hypertension');
+export const getHypertensionPredictionHistory = getNewDiseasePredictionHistory('hypertension');
+export const getLatestCkdPrediction = getLatestNewDiseasePrediction('chronic_kidney_disease');
+export const getCkdPredictionHistory = getNewDiseasePredictionHistory('chronic_kidney_disease');

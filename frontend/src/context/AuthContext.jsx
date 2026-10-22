@@ -23,13 +23,17 @@ export const AuthProvider = ({ children }) => {
       const userData = res?.data?.user || res?.user;
       const patientData = res?.data?.patient || res?.patient;
 
-      if (userData) {
+      if (userData && userData.isEmailVerified !== false) {
         setUser(userData);
         localStorage.setItem('user', JSON.stringify(userData));
         if (patientData) setPatient(patientData);
+      } else {
+        setUser(null);
+        setPatient(null);
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('user');
       }
     } catch (err) {
-      console.error('Session verify failed:', err);
       setUser(null);
       setPatient(null);
       localStorage.removeItem('accessToken');
@@ -66,13 +70,7 @@ export const AuthProvider = ({ children }) => {
   const register = async (userData) => {
     setLoading(true);
     try {
-      const res = await authService.register(userData);
-      const userRes = res?.data?.user || res?.user;
-      if (userRes) {
-        setUser(userRes);
-      }
-      await fetchCurrentUser();
-      return res;
+      return await authService.register(userData);
     } finally {
       setLoading(false);
     }

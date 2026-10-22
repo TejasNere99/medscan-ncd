@@ -1,0 +1,12 @@
+{
+  "disclaimer": "SYNTHETIC \u2014 FOR DEMONSTRATION ONLY",
+  "scenario": "Patient B Elevated Cardiometabolic Report",
+  "reportId": "SYN-REP-B-001",
+  "pdfFilename": "report_elevated_glucose.pdf",
+  "imageFilename": "report_elevated_glucose.png",
+  "title": "Comprehensive Metabolic & Lipid Panel",
+  "uploadDate": "2026-10-10T11:15:00.000Z",
+  "reportType": "General Laboratory Report",
+  "documentType": "general_lab_report",
+  "status": "CONFIRMED"
+}

@@ -2,9 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import {
   Users,
-  AlertTriangle,
-  CheckCircle2,
-  Pill,
   Search,
   Plus,
   Eye,
@@ -17,10 +14,10 @@ import {
   X,
   ShieldCheck,
 } from 'lucide-react';
-import { StatCard } from '../../components/common/StatCard';
 import { PrescribeModal } from '../../components/medicine/PrescribeModal';
 import { patientService } from '../../services/patientService';
 import { relationshipService } from '../../services/relationshipService';
+import { appointmentService } from '../../services/appointmentService';
 import { useDebounce } from '../../hooks/useDebounce';
 import { useToast } from '../../hooks/useToast';
 
@@ -37,6 +34,8 @@ export const DoctorDashboard = () => {
 
   // Relationship & Pending Requests state
   const [pendingRequests, setPendingRequests] = useState([]);
+  const [appointments, setAppointments] = useState([]);
+  const [updatingAppointmentId, setUpdatingAppointmentId] = useState(null);
   const [claimModalOpen, setClaimModalOpen] = useState(false);
   const [claimCode, setClaimCode] = useState('');
   const [claiming, setClaiming] = useState(false);
@@ -70,10 +69,35 @@ export const DoctorDashboard = () => {
     }
   };
 
+  const fetchAppointments = async () => {
+    try {
+      const res = await appointmentService.getAppointments();
+      const data = res?.data || res;
+      setAppointments(Array.isArray(data) ? data : data?.appointments || []);
+    } catch (e) {
+      addToast('Could not load appointments.', 'error');
+    }
+  };
+
+  const updateAppointment = async (appointment, status) => {
+    setUpdatingAppointmentId(appointment._id);
+    try {
+      await appointmentService.updateStatus(appointment._id, status);
+      addToast(`Appointment marked ${status.toLowerCase()}.`, 'success');
+      await fetchAppointments();
+    } catch (error) {
+      addToast(error?.message || 'Could not update this appointment.', 'error');
+    } finally {
+      setUpdatingAppointmentId(null);
+    }
+  };
+
   useEffect(() => {
     fetchPatients();
     fetchPendingRequests();
   }, [debouncedSearch, page]);
+
+  useEffect(() => { fetchAppointments(); }, []);
 
   const handleAcceptRequest = async (id) => {
     try {
@@ -136,13 +160,10 @@ export const DoctorDashboard = () => {
   return (
     <div className="space-y-8">
       {/* Top Stat Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        <StatCard title="Total Patients" value={patients.length || 28} icon={Users} color="cyan" />
-        <StatCard title="High Risk Patients" value="6" icon={AlertTriangle} color="rose" description="Needs review" />
-        <StatCard title="Compliance Rate" value="92.4%" icon={CheckCircle2} color="emerald" trend="+1.2%" />
-        <StatCard title="Prescriptions" value="45" icon={Pill} color="purple" />
-        <StatCard title="Consultations" value="8" icon={Users} color="amber" description="Scheduled today" />
-      </div>
+      <header className="flex flex-wrap items-end justify-between gap-3 border-b border-stone-200 pb-5">
+        <div><p className="text-[11px] font-semibold uppercase tracking-[.16em] text-violet-700">Clinical workspace</p><h1 className="editorial-heading mt-1 text-3xl text-stone-900">Patient directory</h1><p className="mt-1 text-sm text-stone-500">Review records shared with you by your patients.</p></div>
+        <p className="text-xs text-stone-500">{loading ? 'Loading records…' : `${patients.length} records on this page`}</p>
+      </header>
 
       {/* Pending Consultation Requests */}
       {pendingRequests.length > 0 && (
@@ -165,9 +186,7 @@ export const DoctorDashboard = () => {
                   <div className="space-y-1">
                     <div className="flex items-center space-x-2">
                       <span className="font-bold text-white text-xs">{user.name || 'Patient'}</span>
-                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-900 text-slate-400 border border-slate-800">
-                        {user.village || 'Green Valley'}
-                      </span>
+                      {user.village && <span className="text-[10px] px-2 py-0.5 rounded-full bg-stone-100 text-stone-600 border border-stone-200">{user.village}</span>}
                     </div>
                     <p className="text-[11px] text-slate-400">
                       Requested as:{' '}
@@ -251,7 +270,9 @@ export const DoctorDashboard = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/60">
-              {patients.length === 0 ? (
+              {loading ? (
+                <tr><td colSpan="7" className="py-8 text-center text-slate-500">Loading patient records…</td></tr>
+              ) : patients.length === 0 ? (
                 <tr>
                   <td colSpan="7" className="py-8 text-center text-slate-500">
                     No matching patient records found.
@@ -261,26 +282,22 @@ export const DoctorDashboard = () => {
                 patients.map((p) => (
                   <tr key={p._id} className="hover:bg-slate-800/40 transition-colors">
                     <td className="py-3.5 px-4 font-bold text-white flex items-center space-x-3">
-                      <img
-                        src={p.user?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=256'}
-                        alt={p.user?.name}
-                        className="w-8 h-8 rounded-lg object-cover border border-slate-700"
-                      />
+                      {p.user?.avatar ? <img src={p.user.avatar} alt="" className="h-8 w-8 rounded-full object-cover" /> : <span aria-hidden="true" className="flex h-8 w-8 items-center justify-center rounded-full bg-violet-100 text-[10px] font-semibold text-violet-800">{p.user?.name?.charAt(0) || 'P'}</span>}
                       <span>{p.user?.name || 'Patient'}</span>
                     </td>
                     <td className="py-3.5 px-4 text-slate-300">{p.age} yrs / {p.gender}</td>
                     <td className="py-3.5 px-4 text-slate-300">{p.village}</td>
                     <td className="py-3.5 px-4">
                       <span className={`px-2 py-0.5 rounded font-bold ${p.fastingSugar >= 140 ? 'text-rose-400 bg-rose-500/10' : 'text-slate-300'}`}>
-                        {p.fastingSugar || 120} mg/dL
+                        {p.fastingSugar ? `${p.fastingSugar} mg/dL` : 'Not recorded'}
                       </span>
                     </td>
                     <td className="py-3.5 px-4">
                       <span className={`px-2 py-0.5 rounded font-bold ${p.systolicBP >= 140 ? 'text-amber-400 bg-amber-500/10' : 'text-slate-300'}`}>
-                        {p.systolicBP || 120}/{p.diastolicBP || 80}
+                        {p.systolicBP && p.diastolicBP ? `${p.systolicBP}/${p.diastolicBP}` : 'Not recorded'}
                       </span>
                     </td>
-                    <td className="py-3.5 px-4 text-slate-300">{p.bmi || 24.5}</td>
+                    <td className="py-3.5 px-4 text-slate-300">{p.bmi || 'Not recorded'}</td>
                     <td className="py-3.5 px-4 text-right space-x-2">
                       <button
                         onClick={() => {
@@ -330,32 +347,16 @@ export const DoctorDashboard = () => {
       </div>
 
       {/* Appointments Section */}
-      <div id="doctor-appointments-section" className="glass-card p-6 rounded-3xl border border-slate-800 space-y-4">
-        <div className="flex items-center space-x-2">
-          <Calendar className="w-5 h-5 text-brand-400" />
-          <h3 className="text-sm font-extrabold text-white">Doctor Today's Appointments & Consultations</h3>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-          <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-between">
-            <div>
-              <p className="font-bold text-white">John Doe</p>
-              <p className="text-slate-400 mt-0.5">Reason: Routine Diabetes & BP Review</p>
-              <span className="text-[10px] text-cyan-400 font-semibold">10:30 AM</span>
-            </div>
-            <button
-              onClick={() => addToast('Patient consultation initiated.', 'info')}
-              className="px-3 py-1.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-bold"
-            >
-              Start Session
-            </button>
-          </div>
-        </div>
+      <div id="doctor-appointments-section" className="surface space-y-4 p-4 sm:p-6">
+        <div className="flex items-center justify-between"><div className="flex items-center gap-2"><Calendar className="h-4 w-4 text-violet-700"/><h2 className="text-sm font-semibold text-stone-900">Appointments</h2></div><span className="text-xs text-stone-500">{appointments.length} scheduled</span></div>
+        {appointments.length ? <div className="divide-y divide-stone-100">{appointments.map((appointment) => <div key={appointment._id} className="flex flex-wrap items-center justify-between gap-3 py-3"><div><p className="text-xs font-semibold text-stone-900">{appointment.patient?.user?.name || 'Patient'}</p><p className="mt-1 text-[11px] text-stone-500">{appointment.reason || 'Appointment'} · {appointment.date ? new Date(appointment.date).toLocaleDateString() : 'Date not provided'}{appointment.time ? ` · ${appointment.time}` : ''}</p>{appointment.notes && <p className="mt-1 text-[11px] text-stone-500">{appointment.notes}</p>}</div><div className="flex items-center gap-2"><span className={`rounded-full px-2.5 py-1 text-[10px] font-medium ${appointment.status === 'Completed' ? 'bg-emerald-50 text-emerald-700' : appointment.status === 'Cancelled' ? 'bg-stone-100 text-stone-500' : 'bg-violet-50 text-violet-700'}`}>{appointment.status || 'Status unavailable'}</span>{appointment.status === 'Upcoming' && <><button type="button" disabled={updatingAppointmentId === appointment._id} onClick={() => updateAppointment(appointment, 'Completed')} className="rounded-lg bg-emerald-700 px-3 py-2 text-[10px] font-semibold text-white disabled:opacity-50">Complete</button><button type="button" disabled={updatingAppointmentId === appointment._id} onClick={() => updateAppointment(appointment, 'Cancelled')} className="rounded-lg border border-stone-200 px-3 py-2 text-[10px] font-semibold text-stone-600 disabled:opacity-50">Cancel</button></>}</div></div>)}</div> : <p className="py-5 text-center text-xs text-stone-500">No appointments available.</p>}
       </div>
 
       <PrescribeModal
         isOpen={prescribeModalOpen}
         onClose={() => setPrescribeModalOpen(false)}
         patientId={selectedPatientId}
+        patients={patients}
         onMedicineAdded={fetchPatients}
       />
 

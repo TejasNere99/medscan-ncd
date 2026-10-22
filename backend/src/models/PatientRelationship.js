@@ -16,7 +16,7 @@ const patientRelationshipSchema = new mongoose.Schema(
     },
     relationshipType: {
       type: String,
-      enum: ['DOCTOR', 'FAMILY'], // Phase P1 strictly enforces DOCTOR and FAMILY
+      enum: ['DOCTOR'], // Final 4-role architecture strictly supports DOCTOR relationships
       required: true,
       index: true,
     },

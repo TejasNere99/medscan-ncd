@@ -1,0 +1,48 @@
+{
+  "disclaimer": "SYNTHETIC \u2014 FOR DEMONSTRATION ONLY",
+  "baselineDate": "2026-01-15T09:00:00.000Z",
+  "followupDate": "2026-06-20T10:30:00.000Z",
+  "deltas": {
+    "fastingSugar": {
+      "baseline": 88,
+      "followup": 90,
+      "delta": "+2 mg/dL"
+    },
+    "systolicBP": {
+      "baseline": 116,
+      "followup": 114,
+      "delta": "-2 mmHg"
+    },
+    "diastolicBP": {
+      "baseline": 76,
+      "followup": 74,
+      "delta": "-2 mmHg"
+    },
+    "totalCholesterol": {
+      "baseline": 165,
+      "followup": 160,
+      "delta": "-5 mg/dL"
+    },
+    "hdl": {
+      "baseline": 58,
+      "followup": 60,
+      "delta": "+2 mg/dL"
+    },
+    "serumCreatinine": {
+      "baseline": 0.8,
+      "followup": 0.82,
+      "delta": "+0.02 mg/dL"
+    },
+    "bloodUrea": {
+      "baseline": 24,
+      "followup": 22,
+      "delta": "-2 mg/dL"
+    },
+    "bmi": {
+      "baseline": 22.4,
+      "followup": 22.1,
+      "delta": "-0.3 kg/m2"
+    }
+  },
+  "clinicalNote": "Observed deltas are synthetic demonstration values illustrating chronological tracking. Not clinical evidence of treatment efficacy."
+}

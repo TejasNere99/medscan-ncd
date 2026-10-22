@@ -1,0 +1,10 @@
+{
+  "disclaimer": "SYNTHETIC \u2014 FOR DEMONSTRATION ONLY",
+  "purpose": "Case D: Missing Optional Feature Test",
+  "missingFeatures": [
+    "bmi",
+    "hdl"
+  ],
+  "expectedDataCompleteness": "PARTIAL",
+  "zeroFabricationGuarantee": "Missing features remain null; median imputation handled by model preprocessor without fabrication in API."
+}

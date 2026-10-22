@@ -10,16 +10,9 @@ const DISEASE_COLOR_MAP = {
 
 const PALETTE = ['#06b6d4', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#3b82f6'];
 
-const DEFAULT_FALLBACK = [
-  { name: 'Diabetes', value: 184, count: 184, percentage: 36, color: '#06b6d4' },
-  { name: 'Hypertension', value: 210, count: 210, percentage: 41, color: '#10b981' },
-  { name: 'Heart Disease', value: 75, count: 75, percentage: 15, color: '#f59e0b' },
-  { name: 'Kidney Disease', value: 48, count: 48, percentage: 9, color: '#8b5cf6' },
-];
-
 export const DiseaseDistributionChart = ({ data = [] }) => {
-  // Normalize incoming data to ensure numeric 'value' and distinct 'color' are ALWAYS present
-  const source = Array.isArray(data) && data.length > 0 ? data : DEFAULT_FALLBACK;
+  if (!Array.isArray(data) || data.length === 0) return <p className="py-8 text-center text-xs text-stone-500">Population data is not available.</p>;
+  const source = data;
 
   const normalized = source.map((item, index) => {
     const rawVal = item.value !== undefined ? item.value : (item.count !== undefined ? item.count : (item.cases !== undefined ? item.cases : 0));
@@ -35,8 +28,8 @@ export const DiseaseDistributionChart = ({ data = [] }) => {
   });
 
   const totalCases = normalized.reduce((acc, curr) => acc + curr.value, 0);
-  const chartData = totalCases > 0 ? normalized : DEFAULT_FALLBACK;
-  const displayTotal = totalCases > 0 ? totalCases : DEFAULT_FALLBACK.reduce((a, c) => a + c.value, 0);
+  const chartData = normalized;
+  const displayTotal = totalCases;
 
   const CustomTooltip = ({ active, payload }) => {
     if (active && payload && payload.length) {

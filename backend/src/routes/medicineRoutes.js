@@ -15,8 +15,8 @@ router.use(verifyJWT);
 
 router.get('/', getMedicines);
 router.get('/logs', getMedicineLogs);
-router.post('/', authorizeRoles('Doctor', 'Patient', 'Admin'), addMedicine);
-router.post('/:id/status', updateMedicineStatus);
+router.post('/', authorizeRoles('Doctor', 'Admin'), addMedicine);
+router.post('/:id/status', authorizeRoles('Patient', 'Doctor', 'Admin'), updateMedicineStatus);
 router.delete('/:id', authorizeRoles('Doctor', 'Admin'), deleteMedicine);
 
 export default router;

@@ -1,0 +1,71 @@
+{
+  "dataset": "NHANES 2017-2018",
+  "source": "CDC/NCHS public-use files",
+  "license_note": "U.S. federal government public-use data; retain CDC/NCHS attribution and follow NHANES analytic guidance.",
+  "retrieved_at_utc": "2026-10-18T10:50:18.527854+00:00",
+  "files": [
+    {
+      "filename": "DEMO_J.XPT",
+      "url": "https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2017/DataFiles/DEMO_J.XPT",
+      "bytes": 3412720,
+      "sha256": "c0b46e0345ea19404928656277c8b0d10b0cca348a9b2fe4fc3c67e8b7ee73ec",
+      "downloaded_now": true
+    },
+    {
+      "filename": "BPQ_J.XPT",
+      "url": "https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2017/DataFiles/BPQ_J.XPT",
+      "bytes": 544560,
+      "sha256": "63cfe1c331a1e7d3534328ac86312a21ffee3e01aa189bc1f74d06855239e5aa",
+      "downloaded_now": true
+    },
+    {
+      "filename": "BPX_J.XPT",
+      "url": "https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2017/DataFiles/BPX_J.XPT",
+      "bytes": 1466000,
+      "sha256": "f98f1d9a4c18173e715c749b4294f6f1525140d5ad5751316bb17cc038fb3423",
+      "downloaded_now": true
+    },
+    {
+      "filename": "BMX_J.XPT",
+      "url": "https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2017/DataFiles/BMX_J.XPT",
+      "bytes": 1466000,
+      "sha256": "8d675e42d8826ac98714b2c3dd4c5138a5e353fb4424f7eff5e6db4a01ce838a",
+      "downloaded_now": true
+    },
+    {
+      "filename": "TCHOL_J.XPT",
+      "url": "https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2017/DataFiles/TCHOL_J.XPT",
+      "bytes": 179680,
+      "sha256": "0291a6a4f6d82dac8392c8c992b519946824dfeda01647935520cf506ed9f4ab",
+      "downloaded_now": true
+    },
+    {
+      "filename": "HDL_J.XPT",
+      "url": "https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2017/DataFiles/HDL_J.XPT",
+      "bytes": 179680,
+      "sha256": "9f4eb41b89f0c9f3d6262f873e671eeb2f2eb40581a8426b2a3c8fd4fc19439e",
+      "downloaded_now": true
+    },
+    {
+      "filename": "BIOPRO_J.XPT",
+      "url": "https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2017/DataFiles/BIOPRO_J.XPT",
+      "bytes": 2106080,
+      "sha256": "5bcd5722c1892883b96a9d7fed0befadabacae313f800fadc0133cd5dd00c4c6",
+      "downloaded_now": true
+    },
+    {
+      "filename": "SMQ_J.XPT",
+      "url": "https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2017/DataFiles/SMQ_J.XPT",
+      "bytes": 2305600,
+      "sha256": "73c3708e540cbf520a566508aa629c3e4ba53cad77dae9388ca36384646455f4",
+      "downloaded_now": true
+    },
+    {
+      "filename": "GLU_J.XPT",
+      "url": "https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2017/DataFiles/GLU_J.XPT",
+      "bytes": 98480,
+      "sha256": "5b38897d0d7bfbc69dd9ca74ffdaf2f6a9bed5a91d4a7bf46e07f1332cc3379e",
+      "downloaded_now": true
+    }
+  ]
+}

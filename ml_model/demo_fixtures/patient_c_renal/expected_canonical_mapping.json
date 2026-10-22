@@ -1,0 +1,53 @@
+{
+  "disclaimer": "SYNTHETIC \u2014 FOR DEMONSTRATION ONLY",
+  "diseaseFeatureVectors": {
+    "chronicKidneyDisease": {
+      "age": 62.0,
+      "serum_creatinine": 2.4
+    },
+    "diabetes": {
+      "age": 62.0,
+      "sex": 0,
+      "bmi": 26.5,
+      "systolic_bp": 148.0,
+      "diastolic_bp": 92.0,
+      "total_cholesterol": 195.0,
+      "hdl": 42.0,
+      "creatinine": 2.4
+    },
+    "heartDisease": {
+      "age": 62.0,
+      "sex": 0,
+      "totChol": 195.0,
+      "sysBP": 148.0,
+      "diaBP": 92.0,
+      "BMI": 26.5,
+      "glucose": 112.0,
+      "currentSmoker": 0
+    },
+    "hypertension": {
+      "age": 62.0,
+      "sex": 0,
+      "bmi": 26.5,
+      "fasting_glucose": 112.0,
+      "total_cholesterol": 195.0,
+      "hdl": 42.0,
+      "serum_creatinine": 2.4,
+      "heart_rate": 76.0,
+      "current_smoker": 0
+    }
+  },
+  "ckdSchemaEnforcement": {
+    "utilizedFeatures": [
+      "age",
+      "serum_creatinine"
+    ],
+    "excludedFromModel": [
+      "blood_urea",
+      "blood_pressure",
+      "hemoglobin",
+      "blood_glucose"
+    ],
+    "rationale": "CKD v1 production model schema is locked to approved features (Age, Serum Creatinine). Blood urea is safely stored in patient profile but never passed to model."
+  }
+}

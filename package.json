@@ -13,7 +13,10 @@
     "seed": "cd backend && npm run seed",
     "test": "npm run test:backend && npm run test:frontend",
     "test:backend": "cd backend && npm test",
-    "test:frontend": "cd frontend && npm test"
+    "test:frontend": "cd frontend && npm test",
+    "seed:demo": "npm run seed:demo --prefix backend",
+    "seed:faculty-demo": "npm run seed:faculty-demo --prefix backend",
+    "build:frontend": "npm run build --prefix frontend"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"

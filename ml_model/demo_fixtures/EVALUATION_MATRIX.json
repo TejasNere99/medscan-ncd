@@ -1,0 +1,91 @@
+{
+  "disclaimer": "SYNTHETIC \u2014 FOR DEMONSTRATION ONLY",
+  "evaluationType": "Real Serialized Model Inference",
+  "evaluatedAt": "2026-10-21T15:20:00Z",
+  "matrix": [
+    {
+      "scenario": "Patient A",
+      "patientName": "Aarav Sharma (Lower-Risk Demonstration Profile)",
+      "diabetes": {
+        "probability": 0.0139,
+        "threshold": 0.21,
+        "category": "LOWER_MODEL_ESTIMATED_RISK",
+        "status": "Prediction generated"
+      },
+      "heartDisease": {
+        "probability": 0.0225,
+        "threshold": 0.11,
+        "category": "LOWER_MODEL_ESTIMATED_RISK",
+        "status": "Prediction generated"
+      },
+      "hypertension": {
+        "probability": 0.0646,
+        "threshold": 0.3307,
+        "category": "NEGATIVE_CLASSIFICATION_ESTIMATE",
+        "status": "Prediction generated"
+      },
+      "ckd": {
+        "probability": 0.2364,
+        "threshold": 0.9672,
+        "category": "NEGATIVE_CLASSIFICATION_ESTIMATE",
+        "status": "Prediction generated"
+      }
+    },
+    {
+      "scenario": "Patient B",
+      "patientName": "Rajesh Patel (Elevated Glucose / Cardiometabolic Profile)",
+      "diabetes": {
+        "probability": 0.2968,
+        "threshold": 0.21,
+        "category": "ELEVATED_MODEL_ESTIMATED_RISK",
+        "status": "Prediction generated"
+      },
+      "heartDisease": {
+        "probability": 0.3353,
+        "threshold": 0.11,
+        "category": "ELEVATED_MODEL_ESTIMATED_RISK",
+        "status": "Prediction generated"
+      },
+      "hypertension": {
+        "probability": 0.5699,
+        "threshold": 0.3307,
+        "category": "POSITIVE_CLASSIFICATION_ESTIMATE",
+        "status": "Prediction generated"
+      },
+      "ckd": {
+        "probability": 0.2931,
+        "threshold": 0.9672,
+        "category": "NEGATIVE_CLASSIFICATION_ESTIMATE",
+        "status": "Prediction generated"
+      }
+    },
+    {
+      "scenario": "Patient C",
+      "patientName": "Sunita Rao (Renal-Function / CKD Profile)",
+      "diabetes": {
+        "probability": 0.4032,
+        "threshold": 0.21,
+        "category": "ELEVATED_MODEL_ESTIMATED_RISK",
+        "status": "Prediction generated"
+      },
+      "heartDisease": {
+        "probability": 0.2405,
+        "threshold": 0.11,
+        "category": "ELEVATED_MODEL_ESTIMATED_RISK",
+        "status": "Prediction generated"
+      },
+      "hypertension": {
+        "probability": 0.8997,
+        "threshold": 0.3307,
+        "category": "POSITIVE_CLASSIFICATION_ESTIMATE",
+        "status": "Prediction generated"
+      },
+      "ckd": {
+        "probability": 1.0,
+        "threshold": 0.9672,
+        "category": "POSITIVE_CLASSIFICATION_ESTIMATE",
+        "status": "Prediction generated"
+      }
+    }
+  ]
+}

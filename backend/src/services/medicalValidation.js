@@ -129,6 +129,24 @@ export const validateBiomarkerRange = (field, value, unit) => {
       }
       return { status: VALIDATION_STATUS.VALID, message: 'Within expected physiological range.' };
 
+    case 'bloodUrea':
+      if (unit === 'mmol/L') {
+        if (num > 50) return { status: VALIDATION_STATUS.WARNING, message: 'Unusually high blood urea (>50 mmol/L). Verify the original report.' };
+        if (num < 1) return { status: VALIDATION_STATUS.WARNING, message: 'Unusually low blood urea (<1 mmol/L). Verify the original report.' };
+        return { status: VALIDATION_STATUS.VALID, message: 'Blood urea recorded in mmol/L.' };
+      }
+      if (num > 300) return { status: VALIDATION_STATUS.WARNING, message: 'Unusually high blood urea (>300 mg/dL). Verify the original report.' };
+      if (num < 5) return { status: VALIDATION_STATUS.WARNING, message: 'Unusually low blood urea (<5 mg/dL). Verify the original report.' };
+      return { status: VALIDATION_STATUS.VALID, message: 'Blood urea recorded in mg/dL.' };
+
+    case 'bloodUreaNitrogen':
+      if (unit === 'mmol/L') {
+        if (num > 50) return { status: VALIDATION_STATUS.WARNING, message: 'Unusually high BUN. Verify the original report.' };
+        return { status: VALIDATION_STATUS.VALID, message: 'BUN remains distinct from total blood urea.' };
+      }
+      if (num > 150) return { status: VALIDATION_STATUS.WARNING, message: 'Unusually high BUN (>150 mg/dL). Verify the original report.' };
+      return { status: VALIDATION_STATUS.VALID, message: 'BUN remains distinct from total blood urea.' };
+
     case 'bmi':
       if (num > 60) {
         return { status: VALIDATION_STATUS.WARNING, message: 'BMI > 60 is extreme. Please verify against report.' };

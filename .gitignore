@@ -2,3 +2,16 @@ node_modules/
 .env
 *.env
 dist/
+__pycache__/
+
+# Public research datasets are reproducible from ml_model/training/download_authoritative_datasets.py.
+# Keep provenance manifests, but do not commit raw participant-level source files.
+/ml_model/datasets/hypertension/raw/nhanes_2017_2018/*.XPT
+/ml_model/datasets/ckd/raw/uci_chronic_kidney_disease.csv
+
+# Local credentials and private administrator delivery files (never commit)
+*.local
+*.local.json
+.demo_credentials.local.json
+backend/.demo_credentials.local.json
+.admin_credential.local

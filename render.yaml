@@ -1,0 +1,73 @@
+services:
+  # 1. Python FastAPI ML Microservice (Diabetes, Heart Disease, Hypertension, CKD)
+  - type: web
+    name: medscan-ml-service
+    env: python
+    region: oregon
+    plan: free
+    rootDir: ml_model
+    buildCommand: pip install -r service/requirements.txt
+    startCommand: cd service && uvicorn app:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: PORT
+        value: 8000
+      - key: LOG_LEVEL
+        value: INFO
+      - key: ML_INTERNAL_API_KEY
+        generateValue: true
+
+  # 2. Node.js Express Backend API (Auth, RBAC, OCR, HITL, Predictions)
+  - type: web
+    name: medscan-backend-api
+    env: node
+    region: oregon
+    plan: free
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_ACCESS_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      - key: JWT_ACCESS_EXPIRE
+        value: 1d
+      - key: JWT_REFRESH_EXPIRE
+        value: 7d
+      - key: CLIENT_URL
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
+      - key: ML_SERVICE_URL
+        fromService:
+          type: web
+          name: medscan-ml-service
+          property: host
+      - key: DIABETES_ML_SERVICE_URL
+        fromService:
+          type: web
+          name: medscan-ml-service
+          property: host
+      - key: ML_INTERNAL_API_KEY
+        fromService:
+          type: web
+          name: medscan-ml-service
+          envVarKey: ML_INTERNAL_API_KEY
+      - key: LOCAL_STORAGE_FALLBACK
+        value: "false"
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+      - key: DEMO_USER_PASSWORD
+        value: "MedScanDemo!2026"

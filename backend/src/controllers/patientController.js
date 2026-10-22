@@ -7,6 +7,8 @@ import { buildDiabetesFeatures } from '../services/diabetesFeatureBuilder.js';
 import { callDiabetesPredictionService } from '../services/diabetesPredictionService.js';
 import { buildHeartDiseaseFeatures } from '../services/heartDiseaseFeatureBuilder.js';
 import { callHeartDiseasePredictionService } from '../services/heartDiseasePredictionService.js';
+import { buildCkdFeatures, buildHypertensionFeatures } from '../services/newDiseaseFeatureBuilder.js';
+import { callNewDiseasePredictionService } from '../services/newDiseasePredictionService.js';
 import { ApiError } from '../utils/apiError.js';
 import { ApiResponse } from '../utils/apiResponse.js';
 import { asyncHandler } from '../utils/asyncWrapper.js';
@@ -194,12 +196,120 @@ export async function triggerHeartDiseaseRecalculation(patientId, userId) {
   }
 }
 
+export async function triggerHypertensionRecalculation(patientId, userId) {
+  try {
+    const patient = await Patient.findById(patientId);
+    if (!patient) return;
+
+    const confirmedReports = await Report.find({
+      patient: patientId,
+      status: 'CONFIRMED',
+    }).sort({ confirmedAt: -1, createdAt: -1 }).limit(100);
+
+    const extraction = buildHypertensionFeatures(confirmedReports, patient);
+    if (extraction.canCalculate) {
+      const mlResult = await callNewDiseasePredictionService('hypertension', extraction.featureVector);
+      if (mlResult.success && mlResult.canCalculate) {
+        await Prediction.create({
+          patient: patientId,
+          report: confirmedReports[0]?._id || null,
+          calculatedBy: userId,
+          disease: 'hypertension',
+          modelVersion: mlResult.modelVersion || '1.0.0-research',
+          featureSchemaVersion: mlResult.featureSchemaVersion || 'hypertension.v1',
+          probability: mlResult.probability,
+          threshold: typeof mlResult.threshold === 'number' ? mlResult.threshold : 0.33,
+          riskCategory: mlResult.riskCategory,
+          status: 'SUCCESS',
+          canCalculate: true,
+          dataCompleteness: mlResult.dataCompleteness || extraction.dataCompleteness,
+          missingDomain: null,
+          inputFeatures: extraction.featureVector,
+          featureAvailability: {
+            availableFeatures: Object.keys(extraction.featureVector).filter((k) => extraction.featureVector[k] !== null),
+            missingFeatures: Object.keys(extraction.featureVector).filter((k) => extraction.featureVector[k] === null),
+            provenance: extraction.provenance,
+          },
+          featureProvenance: extraction.provenance,
+          topContributingFactors: mlResult.topContributingFactors || [],
+          explanationStatus: mlResult.explanationStatus || 'unavailable',
+          taskInterpretation: mlResult.taskInterpretation || 'Classification of current diagnosed/treated hypertension; not future-onset prediction.',
+          clinicalDisclaimer: mlResult.clinicalDisclaimer || 'Statistical model estimate only. Not a diagnosis and not clinically validated.',
+          overallRiskPercent: Math.round(mlResult.probability * 100),
+          riskLevel: ['ELEVATED_MODEL_ESTIMATED_RISK', 'POSITIVE_CLASSIFICATION_ESTIMATE'].includes(mlResult.riskCategory)
+            ? 'Elevated model estimate'
+            : 'Lower model estimate',
+          confidenceScore: null,
+          diseaseBreakdown: { Diabetes: null, Hypertension: null, HeartDisease: null, KidneyDisease: null },
+          algorithmVersion: mlResult.modelVersion || 'hypertension_v1.0.0',
+          predictionDate: new Date(),
+        });
+      }
+    }
+  } catch (err) {
+    console.warn('Recalculation of hypertension prediction skipped:', err?.message || err);
+  }
+}
+
+export async function triggerCkdRecalculation(patientId, userId) {
+  try {
+    const patient = await Patient.findById(patientId);
+    if (!patient) return;
+
+    const confirmedReports = await Report.find({
+      patient: patientId,
+      status: 'CONFIRMED',
+    }).sort({ confirmedAt: -1, createdAt: -1 }).limit(100);
+
+    const extraction = buildCkdFeatures(confirmedReports, patient, ['age', 'serum_creatinine']);
+    if (extraction.canCalculate) {
+      const mlResult = await callNewDiseasePredictionService('chronic_kidney_disease', extraction.featureVector);
+      if (mlResult.success && mlResult.canCalculate) {
+        await Prediction.create({
+          patient: patientId,
+          report: confirmedReports[0]?._id || null,
+          calculatedBy: userId,
+          disease: 'chronic_kidney_disease',
+          modelVersion: mlResult.modelVersion || '1.0.0-research',
+          featureSchemaVersion: mlResult.featureSchemaVersion || 'ckd.a_minimal.v1',
+          probability: mlResult.probability,
+          threshold: typeof mlResult.threshold === 'number' ? mlResult.threshold : 0.967,
+          riskCategory: mlResult.riskCategory,
+          status: 'SUCCESS',
+          canCalculate: true,
+          dataCompleteness: mlResult.dataCompleteness || extraction.dataCompleteness,
+          missingDomain: null,
+          inputFeatures: extraction.featureVector,
+          featureAvailability: {
+            availableFeatures: Object.keys(extraction.featureVector).filter((k) => extraction.featureVector[k] !== null),
+            missingFeatures: Object.keys(extraction.featureVector).filter((k) => extraction.featureVector[k] === null),
+            provenance: extraction.provenance,
+          },
+          featureProvenance: extraction.provenance,
+          topContributingFactors: mlResult.topContributingFactors || [],
+          explanationStatus: mlResult.explanationStatus || 'unavailable',
+          taskInterpretation: mlResult.taskInterpretation || 'Classification of the UCI CKD dataset label; not future-onset prediction.',
+          clinicalDisclaimer: mlResult.clinicalDisclaimer || 'Statistical model estimate only. Not a diagnosis and not clinically validated.',
+          overallRiskPercent: Math.round(mlResult.probability * 100),
+          riskLevel: ['ELEVATED_MODEL_ESTIMATED_RISK', 'POSITIVE_CLASSIFICATION_ESTIMATE'].includes(mlResult.riskCategory)
+            ? 'Elevated model estimate'
+            : 'Lower model estimate',
+          confidenceScore: null,
+          diseaseBreakdown: { Diabetes: null, Hypertension: null, HeartDisease: null, KidneyDisease: null },
+          algorithmVersion: mlResult.modelVersion || 'ckd_v1.0.0',
+          predictionDate: new Date(),
+        });
+      }
+    }
+  } catch (err) {
+    console.warn('Recalculation of CKD prediction skipped:', err?.message || err);
+  }
+}
+
 export const getMyPatientProfile = asyncHandler(async (req, res) => {
   let patient = await Patient.findOne({ user: req.user._id })
     .populate('user', 'name email phone village avatar')
-    .populate('assignedDoctor', 'name email phone')
-    .populate('assignedNurse', 'name email')
-    .populate('linkedFamilyMembers', 'name email phone');
+    .populate('assignedDoctor', 'name email phone');
 
   if (!patient) {
     // If patient document doesn't exist yet for this user, create default demo patient profile
@@ -225,7 +335,7 @@ export const getPatients = asyncHandler(async (req, res) => {
   const { search, village, gender, page = 1, limit = 10 } = req.query;
   const filter = {};
 
-  // Phase P1: Active PatientRelationship queries with legacy fallback
+  // Active PatientRelationship queries with legacy fallback for Doctor; community view for CHO
   if (req.user.role === 'Doctor') {
     const rels = await PatientRelationship.find({
       relatedUser: req.user._id,
@@ -234,21 +344,12 @@ export const getPatients = asyncHandler(async (req, res) => {
     }).select('patient');
     const relPatientIds = rels.map((r) => r.patient);
     filter.$or = [{ assignedDoctor: req.user._id }, { _id: { $in: relPatientIds } }];
-  } else if (req.user.role === 'Nurse') {
-    filter.assignedNurse = req.user._id;
-  } else if (req.user.role === 'Family') {
-    const rels = await PatientRelationship.find({
-      relatedUser: req.user._id,
-      relationshipType: 'FAMILY',
-      status: 'ACTIVE',
-    }).select('patient');
-    const relPatientIds = rels.map((r) => r.patient);
-    filter.$or = [{ linkedFamilyMembers: req.user._id }, { _id: { $in: relPatientIds } }];
   } else if (req.user.role === 'CHO') {
-    // CHO community view: filter by requested village if specified, otherwise include all community patients
-    if (village && village !== 'All') {
-      filter.village = village;
-    }
+    const catchment = [...(req.user.communityVillages || []), req.user.village].map((name) => String(name || '').trim()).filter(Boolean);
+    if (!catchment.length) filter._id = null;
+    else filter.village = { $in: catchment };
+    if (village && village !== 'All' && !catchment.some((name) => name.toLowerCase() === String(village).trim().toLowerCase())) filter._id = null;
+    else if (village && village !== 'All') filter.village = { $in: [village] };
   } else {
     // Admins, Patients, or unrecognized roles cannot list clinical patient records
     filter._id = null;
@@ -260,14 +361,18 @@ export const getPatients = asyncHandler(async (req, res) => {
   if (search) {
     const matchingUsers = await User.find({ name: { $regex: search, $options: 'i' } }).select('_id');
     const userIds = matchingUsers.map((u) => u._id);
-    filter.$or = [...(filter.$or || []), { user: { $in: userIds } }];
+    const nameFilter = { user: { $in: userIds } };
+    if (filter.$or) {
+      filter.$and = [{ $or: filter.$or }, nameFilter];
+      delete filter.$or;
+    }
+    else filter.$or = [nameFilter];
   }
 
   const count = await Patient.countDocuments(filter);
   const patients = await Patient.find(filter)
     .populate('user', 'name email phone village avatar')
     .populate('assignedDoctor', 'name email')
-    .populate('assignedNurse', 'name email')
     .skip((page - 1) * limit)
     .limit(parseInt(limit));
 
@@ -289,15 +394,13 @@ export const getPatientById = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const patient = await Patient.findById(id)
     .populate('user', 'name email phone village avatar')
-    .populate('assignedDoctor', 'name email phone')
-    .populate('assignedNurse', 'name email phone')
-    .populate('linkedFamilyMembers', 'name email phone');
+    .populate('assignedDoctor', 'name email phone');
 
   if (!patient) {
     throw new ApiError(404, 'Patient record not found.');
   }
 
-  // Phase P1: Dual-layer authorization (Active PatientRelationship or legacy bridge)
+  // Strict 4-role authorization check
   if (req.user.role === 'Patient') {
     const patientUserId = patient.user?._id || patient.user;
     if (String(patientUserId) !== String(req.user._id)) {
@@ -315,24 +418,9 @@ export const getPatientById = asyncHandler(async (req, res) => {
     if (!isAssigned && !hasActiveRel) {
       throw new ApiError(403, 'Unauthorized. You are not assigned to this patient.');
     }
-  } else if (req.user.role === 'Nurse') {
-    const nurseId = patient.assignedNurse?._id || patient.assignedNurse;
-    if (!nurseId || String(nurseId) !== String(req.user._id)) {
-      throw new ApiError(403, 'Unauthorized. You are not assigned to this patient.');
-    }
-  } else if (req.user.role === 'Family') {
-    const isLinked = patient.linkedFamilyMembers?.some((f) => String(f._id || f) === String(req.user._id));
-    const hasActiveRel = await PatientRelationship.exists({
-      patient: patient._id,
-      relatedUser: req.user._id,
-      relationshipType: 'FAMILY',
-      status: 'ACTIVE',
-    });
-    if (!isLinked && !hasActiveRel) {
-      throw new ApiError(403, 'Unauthorized. You are not linked to this patient.');
-    }
   } else if (req.user.role === 'CHO') {
-    // CHO is authorized to view community patient health profiles
+    const catchment = [...(req.user.communityVillages || []), req.user.village].map((name) => String(name || '').trim().toLowerCase()).filter(Boolean);
+    if (!catchment.includes(String(patient.village || '').trim().toLowerCase())) throw new ApiError(403, 'Access forbidden. This patient is outside your assigned community.');
   } else if (req.user.role === 'Admin') {
     throw new ApiError(403, 'Administrative accounts cannot access clinical patient profiles.');
   } else {
@@ -445,6 +533,8 @@ export const updateMyDemographics = asyncHandler(async (req, res) => {
   ) {
     await triggerDiabetesRecalculation(patient._id, req.user._id);
     await triggerHeartDiseaseRecalculation(patient._id, req.user._id);
+    await triggerHypertensionRecalculation(patient._id, req.user._id);
+    await triggerCkdRecalculation(patient._id, req.user._id);
   }
 
   return res.status(200).json(new ApiResponse(200, patient, 'Patient health profile updated successfully.'));
@@ -500,6 +590,8 @@ export const updatePatient = asyncHandler(async (req, res) => {
     ) {
       await triggerDiabetesRecalculation(patient._id, req.user._id);
       await triggerHeartDiseaseRecalculation(patient._id, req.user._id);
+      await triggerHypertensionRecalculation(patient._id, req.user._id);
+      await triggerCkdRecalculation(patient._id, req.user._id);
     }
 
     return res.status(200).json(new ApiResponse(200, patient, 'Patient profile updated successfully.'));
@@ -520,14 +612,10 @@ export const updatePatient = asyncHandler(async (req, res) => {
     if (!isAssigned && !hasActiveRel) {
       throw new ApiError(403, 'Access forbidden. You are not assigned to this patient.');
     }
-  } else if (req.user.role === 'Nurse') {
-    if (!existing.assignedNurse || String(existing.assignedNurse) !== String(req.user._id)) {
-      throw new ApiError(403, 'Access forbidden. You are not assigned to this patient.');
-    }
   } else if (req.user.role === 'Admin') {
     throw new ApiError(403, 'Administrative accounts cannot access or modify clinical patient profiles.');
   } else {
-    // Family, CHO or other roles fail closed
+    // CHO or other roles fail closed
     throw new ApiError(403, 'Access forbidden. Your role is not authorized to modify patient records.');
   }
 
@@ -548,6 +636,8 @@ export const updatePatient = asyncHandler(async (req, res) => {
   ) {
     await triggerDiabetesRecalculation(patient._id, req.user._id);
     await triggerHeartDiseaseRecalculation(patient._id, req.user._id);
+    await triggerHypertensionRecalculation(patient._id, req.user._id);
+    await triggerCkdRecalculation(patient._id, req.user._id);
   }
 
   return res.status(200).json(new ApiResponse(200, patient, 'Patient record updated successfully.'));
@@ -558,8 +648,8 @@ export const deletePatient = asyncHandler(async (req, res) => {
   const patient = await Patient.findById(id);
   if (!patient) throw new ApiError(404, 'Patient not found.');
 
-  if (req.user.role === 'Doctor' || req.user.role === 'Nurse' || req.user.role === 'CHO' || req.user.role === 'Family') {
-    throw new ApiError(403, 'Clinicians and caregivers are not authorized to delete patient accounts.');
+  if (req.user.role === 'Doctor' || req.user.role === 'CHO') {
+    throw new ApiError(403, 'Clinicians and community health officers are not authorized to delete patient accounts.');
   }
 
   if (req.user.role === 'Patient') {
@@ -572,12 +662,4 @@ export const deletePatient = asyncHandler(async (req, res) => {
   await User.findByIdAndDelete(patient.user);
 
   return res.status(200).json(new ApiResponse(200, {}, 'Patient and associated user account deleted.'));
-});
-
-export const getLinkedFamilyPatients = asyncHandler(async (req, res) => {
-  let patients = await Patient.find({ linkedFamilyMembers: req.user._id })
-    .populate('user', 'name email phone village avatar')
-    .populate('assignedDoctor', 'name email phone');
-
-  return res.status(200).json(new ApiResponse(200, patients, 'Linked family patient accounts fetched successfully.'));
 });

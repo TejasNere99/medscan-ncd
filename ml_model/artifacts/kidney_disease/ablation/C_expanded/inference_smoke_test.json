@@ -1,0 +1,9 @@
+{
+  "model_loaded": true,
+  "feature_count": 6,
+  "feature_order_matches": true,
+  "test_probability_finite_and_in_range": true,
+  "threshold": 1.0,
+  "calibration_method": "isotonic",
+  "explainability": "feature-level global report generated from selected estimator; local explanation added by inference service where supported"
+}

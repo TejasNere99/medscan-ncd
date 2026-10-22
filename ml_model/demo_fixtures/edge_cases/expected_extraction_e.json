@@ -1,0 +1,21 @@
+{
+  "disclaimer": "SYNTHETIC \u2014 FOR DEMONSTRATION ONLY",
+  "purpose": "Case E: Missing Required Feature Test",
+  "presentFeatures": [
+    "fastingSugar",
+    "bmi"
+  ],
+  "missingRequired": {
+    "heartDisease": [
+      "totChol",
+      "sysBP",
+      "diaBP"
+    ],
+    "chronicKidneyDisease": [
+      "serum_creatinine"
+    ]
+  },
+  "expectedModelStatus": "INSUFFICIENT_DATA",
+  "expectedCanCalculate": false,
+  "zeroFabricationGuarantee": "No fake probabilities or default guesses are generated."
+}

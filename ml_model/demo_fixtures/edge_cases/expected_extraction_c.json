@@ -1,0 +1,17 @@
+{
+  "disclaimer": "SYNTHETIC \u2014 FOR DEMONSTRATION ONLY",
+  "purpose": "Case C: HITL Manual Correction Test",
+  "initialExtraction": {
+    "fastingSugar": 108,
+    "systolicBP": 120,
+    "diastolicBP": 80,
+    "totalCholesterol": 185,
+    "serumCreatinine": 0.9
+  },
+  "demonstrationEdit": {
+    "field": "fastingSugar",
+    "editedValue": 112,
+    "expectedProvenanceSource": "manual_correction"
+  },
+  "invariants": "rawOcrText and initialExtraction remain unchanged; verified flag set to true on confirmation."
+}

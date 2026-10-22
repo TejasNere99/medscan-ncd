@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Users, ShieldCheck, Settings, Trash2, Cpu, Search, Plus, Save, Filter, CheckCircle2 } from 'lucide-react';
-import { StatCard } from '../../components/common/StatCard';
+import { Users, Settings, Trash2, Search, Plus, Save, Filter, CheckCircle2 } from 'lucide-react';
 import { Modal } from '../../components/common/Modal';
 import { userService } from '../../services/userService';
 import { settingService } from '../../services/settingService';
@@ -19,13 +18,7 @@ export const AdminDashboard = () => {
   const debouncedSearch = useDebounce(search, 300);
 
   // Settings State
-  const [settings, setSettings] = useState({
-    systemName: 'Smart Medicine Reminder & AI Disease Prediction System',
-    iotSyncIntervalSeconds: 15,
-    emailNotificationsEnabled: true,
-    ocrAutoTrigger: true,
-    aiModelVersion: 'v1.2.4-rule-weighted',
-  });
+  const [settings, setSettings] = useState({});
   const [savingSettings, setSavingSettings] = useState(false);
 
   // Add User Modal
@@ -33,9 +26,9 @@ export const AdminDashboard = () => {
   const [newUser, setNewUser] = useState({
     name: '',
     email: '',
-    password: 'Password123!',
+    password: '',
     role: 'Patient',
-    village: 'Green Valley',
+    village: '',
   });
 
   const fetchUsers = async () => {
@@ -88,8 +81,8 @@ export const AdminDashboard = () => {
 
   const handleCreateUser = async (e) => {
     e.preventDefault();
-    if (!newUser.name || !newUser.email) {
-      addToast('Name and email are required.', 'warning');
+    if (!newUser.name || !newUser.email || newUser.password.length < 8) {
+      addToast('Name, email, and a password of at least 8 characters are required.', 'warning');
       return;
     }
 
@@ -97,7 +90,7 @@ export const AdminDashboard = () => {
       await userService.createUser(newUser);
       addToast(`User ${newUser.name} created!`, 'success');
       setAddUserModalOpen(false);
-      setNewUser({ name: '', email: '', password: 'Password123!', role: 'Patient', village: 'Green Valley' });
+      setNewUser({ name: '', email: '', password: '', role: 'Patient', village: '' });
       fetchUsers();
     } catch (e) {
       addToast(e.message || 'Failed to create user.', 'error');
@@ -126,12 +119,10 @@ export const AdminDashboard = () => {
   return (
     <div className="space-y-8">
       {/* Stat Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        <StatCard title="Total System Users" value={users.length || 6} icon={Users} color="rose" />
-        <StatCard title="Active User Roles" value="6 Roles" icon={ShieldCheck} color="cyan" description="RBAC Enforced" />
-        <StatCard title="IoT Devices Sync" value={`${settings.iotSyncIntervalSeconds}s`} icon={Cpu} color="emerald" description="ESP32 Telemetry interval" />
-        <StatCard title="AI Engine Version" value={settings.aiModelVersion || 'v1.2.4'} icon={Settings} color="purple" description="Rule-Weighted Engine" />
-      </div>
+      <header className="flex flex-wrap items-end justify-between gap-3 border-b border-stone-200 pb-5">
+        <div><p className="text-[11px] font-semibold uppercase tracking-[.16em] text-violet-700">Administration</p><h1 className="editorial-heading mt-1 text-3xl text-stone-900">User management</h1><p className="mt-1 text-sm text-stone-500">Manage access and review the accounts in your workspace.</p></div>
+        <p className="text-xs text-stone-500">{loadingUsers ? 'Loading accounts…' : `${users.length} accounts`}</p>
+      </header>
 
       {/* User Directory */}
       <div id="admin-user-management" className="glass-card rounded-3xl border border-slate-800 p-6 space-y-6">
@@ -161,8 +152,6 @@ export const AdminDashboard = () => {
                 <option value="All" className="bg-slate-900">All Roles</option>
                 <option value="Patient" className="bg-slate-900">Patient</option>
                 <option value="Doctor" className="bg-slate-900">Doctor</option>
-                <option value="Family" className="bg-slate-900">Family</option>
-                <option value="Nurse" className="bg-slate-900">Nurse</option>
                 <option value="CHO" className="bg-slate-900">CHO</option>
                 <option value="Admin" className="bg-slate-900">Admin</option>
               </select>
@@ -241,7 +230,7 @@ export const AdminDashboard = () => {
               <Settings className="w-5 h-5 text-brand-400" />
               <span>System Configuration & Platform Settings</span>
             </h3>
-            <p className="text-xs text-slate-400 mt-0.5">Configure live telemetry sync intervals, AI model versioning, and automated triggers</p>
+            <p className="text-xs text-slate-400 mt-0.5">Configure platform settings, AI model versioning, and automated triggers</p>
           </div>
           <span className="text-xs px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-bold">
             MongoDB Synced
@@ -254,57 +243,43 @@ export const AdminDashboard = () => {
               <label className="block font-bold text-slate-300 mb-1.5">System Title / Platform Name</label>
               <input
                 type="text"
-                value={settings.systemName}
+                value={settings.systemName || ''}
                 onChange={(e) => setSettings({ ...settings, systemName: e.target.value })}
                 className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white focus:border-brand-500 focus:outline-none"
               />
             </div>
 
             <div>
-              <label className="block font-bold text-slate-300 mb-1.5">IoT Telemetry Sync Interval (Seconds)</label>
+              <label className="block font-bold text-slate-300 mb-1.5">AI Risk Model Version</label>
               <input
-                type="number"
-                min={5}
-                max={300}
-                value={settings.iotSyncIntervalSeconds}
-                onChange={(e) => setSettings({ ...settings, iotSyncIntervalSeconds: parseInt(e.target.value) })}
+                type="text"
+                value={settings.aiModelVersion || ''}
+                onChange={(e) => setSettings({ ...settings, aiModelVersion: e.target.value })}
                 className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white focus:border-brand-500 focus:outline-none"
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block font-bold text-slate-300 mb-1.5">AI Risk Model Version</label>
+          <div className="flex items-center space-x-6 pt-2">
+            <label className="flex items-center space-x-2 cursor-pointer">
               <input
-                type="text"
-                value={settings.aiModelVersion}
-                onChange={(e) => setSettings({ ...settings, aiModelVersion: e.target.value })}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white focus:border-brand-500 focus:outline-none"
+                type="checkbox"
+                checked={settings.emailNotificationsEnabled || false}
+                onChange={(e) => setSettings({ ...settings, emailNotificationsEnabled: e.target.checked })}
+                className="rounded border-slate-800 bg-slate-950 text-brand-500 focus:ring-brand-500"
               />
-            </div>
+              <span className="font-bold text-slate-300">Enable Email Notifications</span>
+            </label>
 
-            <div className="flex items-center space-x-6 pt-5">
-              <label className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={settings.emailNotificationsEnabled}
-                  onChange={(e) => setSettings({ ...settings, emailNotificationsEnabled: e.target.checked })}
-                  className="rounded border-slate-800 bg-slate-950 text-brand-500 focus:ring-brand-500"
-                />
-                <span className="font-bold text-slate-300">Enable Email Notifications</span>
-              </label>
-
-              <label className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={settings.ocrAutoTrigger}
-                  onChange={(e) => setSettings({ ...settings, ocrAutoTrigger: e.target.checked })}
-                  className="rounded border-slate-800 bg-slate-950 text-brand-500 focus:ring-brand-500"
-                />
-                <span className="font-bold text-slate-300">Auto Trigger OCR on Report Upload</span>
-              </label>
-            </div>
+            <label className="flex items-center space-x-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={settings.ocrAutoTrigger || false}
+                onChange={(e) => setSettings({ ...settings, ocrAutoTrigger: e.target.checked })}
+                className="rounded border-slate-800 bg-slate-950 text-brand-500 focus:ring-brand-500"
+              />
+              <span className="font-bold text-slate-300">Auto Trigger OCR on Report Upload</span>
+            </label>
           </div>
 
           <div className="flex justify-end pt-4 border-t border-slate-800">
@@ -347,6 +322,19 @@ export const AdminDashboard = () => {
             />
           </div>
 
+          <div>
+            <label className="block font-bold text-slate-300 mb-1">Account Password</label>
+            <input
+              type="password"
+              required
+              minLength={8}
+              autoComplete="new-password"
+              value={newUser.password}
+              onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
+              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-white focus:border-brand-500 focus:outline-none"
+            />
+          </div>
+
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block font-bold text-slate-300 mb-1">Role</label>
@@ -357,8 +345,6 @@ export const AdminDashboard = () => {
               >
                 <option value="Patient">Patient</option>
                 <option value="Doctor">Doctor</option>
-                <option value="Family">Family</option>
-                <option value="Nurse">Nurse</option>
                 <option value="CHO">CHO</option>
                 <option value="Admin">Admin</option>
               </select>

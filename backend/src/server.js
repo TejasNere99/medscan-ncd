@@ -26,20 +26,48 @@ import iotRoutes from './routes/iotRoutes.js';
 import settingRoutes from './routes/settingRoutes.js';
 import relationshipRoutes from './routes/relationshipRoutes.js';
 import invitationRoutes from './routes/invitationRoutes.js';
+import communityCareRoutes from './routes/communityCareRoutes.js';
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Connect Database
-connectDB();
+app.set('trust proxy', 1);
+
+const sanitizeOrigin = (url) => (url ? url.trim().replace(/\/+$/, '') : null);
+
+const defaultOrigins = [
+  sanitizeOrigin(process.env.CLIENT_URL),
+  sanitizeOrigin(process.env.FRONTEND_URL),
+  'http://localhost:5173',
+].filter(Boolean);
+
+const extraOrigins = (process.env.ALLOWED_ORIGINS || '')
+  .split(',')
+  .map((s) => sanitizeOrigin(s))
+  .filter(Boolean);
+
+const allowedClientOrigins = new Set([...defaultOrigins, ...extraOrigins]);
+
+if (process.env.NODE_ENV !== 'production') {
+  for (const host of ['localhost', '127.0.0.1']) {
+    for (let port = 5173; port <= 5179; port += 1) {
+      allowedClientOrigins.add(`http://${host}:${port}`);
+    }
+  }
+}
 
 // Global Middlewares
 app.use(helmet({ crossOriginResourcePolicy: false }));
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || 'http://localhost:5173',
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+      const normalized = origin.trim().replace(/\/+$/, '');
+      if (allowedClientOrigins.has(normalized)) return callback(null, true);
+      return callback(new Error(`Origin '${origin}' is not allowed by CORS`));
+    },
     credentials: true,
   })
 );
@@ -57,6 +85,8 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use('/api/', apiLimiter);
 
 // Health Check Endpoint
+app.get('/health', (req, res) => res.status(200).json({ status: 'OK', uptime: process.uptime() }));
+
 app.get('/api/health', async (req, res) => {
   const diabetesService = await checkDiabetesServiceHealth();
   res.status(200).json({
@@ -66,8 +96,10 @@ app.get('/api/health', async (req, res) => {
     database: {
       connected: mongoose.connection.readyState === 1,
       readyState: mongoose.connection.readyState,
-      host: mongoose.connection.host || null,
-      name: mongoose.connection.name || null,
+      ...(process.env.NODE_ENV === 'production' ? {} : {
+        host: mongoose.connection.host || null,
+        name: mongoose.connection.name || null,
+      }),
     },
     diabetesMLService: diabetesService,
     service: 'MedScan-NCD Backend API',
@@ -88,12 +120,40 @@ app.use('/api/iot', iotRoutes);
 app.use('/api/settings', settingRoutes);
 app.use('/api/relationships', relationshipRoutes);
 app.use('/api/invitations', invitationRoutes);
+app.use('/api/community-care', communityCareRoutes);
 
 // Global Centralized Error Handler
 app.use(errorHandler);
 
+function validateProductionEnv() {
+  if (process.env.NODE_ENV !== 'production') return;
+
+  const errors = [];
+  if (!process.env.MONGODB_URI) {
+    errors.push('MONGODB_URI is missing. Please configure your MongoDB Atlas connection string.');
+  }
+  if (!process.env.JWT_ACCESS_SECRET || process.env.JWT_ACCESS_SECRET.includes('your_super_secret')) {
+    errors.push('JWT_ACCESS_SECRET must be set to a secure custom secret in production.');
+  }
+  if (!process.env.JWT_REFRESH_SECRET || process.env.JWT_REFRESH_SECRET.includes('your_super_secret')) {
+    errors.push('JWT_REFRESH_SECRET must be set to a secure custom secret in production.');
+  }
+
+  if (errors.length > 0) {
+    console.error('\n======================================================');
+    console.error('   [FATAL] PRODUCTION CONFIGURATION VALIDATION FAILED');
+    errors.forEach((err) => console.error(`   - ${err}`));
+    console.error('   Please set these variables in your hosting dashboard.');
+    console.error('======================================================\n');
+    process.exit(1);
+  }
+}
+
 // Start Express Server only when executed directly (not when required in Jest tests)
 if (process.env.NODE_ENV !== 'test' && !process.env.JEST_WORKER_ID) {
+  validateProductionEnv();
+  // Connect only when starting the server, not when importing the Express app in tests.
+  connectDB();
   app.listen(PORT, () => {
     console.log(`\n======================================================`);
     console.log(`   AI SMART HEALTHCARE BACKEND SERVER RUNNING`);

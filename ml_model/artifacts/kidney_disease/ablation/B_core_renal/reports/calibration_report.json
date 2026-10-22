@@ -1,0 +1,72 @@
+{
+  "selected_method": "sigmoid",
+  "selected_development_cv_brier": 0.0735445004239166,
+  "uncalibrated_development_cv_brier": 0.07711488390378621,
+  "heldout_brier": 0.09275786686890727,
+  "heldout_calibration_bins": [
+    {
+      "bin_lower": 0.0,
+      "bin_upper": 0.1,
+      "n": 6,
+      "mean_predicted_probability": 0.03827591482310753,
+      "observed_positive_fraction": 0.0
+    },
+    {
+      "bin_lower": 0.1,
+      "bin_upper": 0.2,
+      "n": 7,
+      "mean_predicted_probability": 0.156183466937369,
+      "observed_positive_fraction": 0.0
+    },
+    {
+      "bin_lower": 0.2,
+      "bin_upper": 0.30000000000000004,
+      "n": 8,
+      "mean_predicted_probability": 0.24244403096635342,
+      "observed_positive_fraction": 0.375
+    },
+    {
+      "bin_lower": 0.30000000000000004,
+      "bin_upper": 0.4,
+      "n": 7,
+      "mean_predicted_probability": 0.3298743178118651,
+      "observed_positive_fraction": 0.14285714285714285
+    },
+    {
+      "bin_lower": 0.4,
+      "bin_upper": 0.5,
+      "n": 3,
+      "mean_predicted_probability": 0.46136456851018215,
+      "observed_positive_fraction": 0.6666666666666666
+    },
+    {
+      "bin_lower": 0.5,
+      "bin_upper": 0.6000000000000001,
+      "n": 4,
+      "mean_predicted_probability": 0.5390177984658302,
+      "observed_positive_fraction": 1.0
+    },
+    {
+      "bin_lower": 0.6000000000000001,
+      "bin_upper": 0.7000000000000001,
+      "n": 6,
+      "mean_predicted_probability": 0.6233801536460545,
+      "observed_positive_fraction": 0.3333333333333333
+    },
+    {
+      "bin_lower": 0.8,
+      "bin_upper": 0.9,
+      "n": 1,
+      "mean_predicted_probability": 0.8369394650834183,
+      "observed_positive_fraction": 1.0
+    },
+    {
+      "bin_lower": 0.9,
+      "bin_upper": 1.0,
+      "n": 33,
+      "mean_predicted_probability": 0.9725605367335844,
+      "observed_positive_fraction": 1.0
+    }
+  ],
+  "limitations": "Calibration estimates are uncertain for small samples; calibration is statistical and not clinical validation."
+}

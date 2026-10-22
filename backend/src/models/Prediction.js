@@ -30,6 +30,18 @@ const predictionSchema = new mongoose.Schema(
       type: String,
       default: '1.0.0',
     },
+    featureSchemaVersion: {
+      type: String,
+      default: null,
+    },
+    taskInterpretation: {
+      type: String,
+      default: null,
+    },
+    featureProvenance: {
+      type: mongoose.Schema.Types.Mixed,
+      default: {},
+    },
     probability: {
       type: Number,
     },
@@ -39,7 +51,7 @@ const predictionSchema = new mongoose.Schema(
     },
     riskCategory: {
       type: String,
-      enum: ['ELEVATED_MODEL_ESTIMATED_RISK', 'LOWER_MODEL_ESTIMATED_RISK', 'INSUFFICIENT_DATA', 'FAILED'],
+      enum: ['ELEVATED_MODEL_ESTIMATED_RISK', 'LOWER_MODEL_ESTIMATED_RISK', 'POSITIVE_CLASSIFICATION_ESTIMATE', 'NEGATIVE_CLASSIFICATION_ESTIMATE', 'INSUFFICIENT_DATA', 'FAILED'],
       default: 'LOWER_MODEL_ESTIMATED_RISK',
       index: true,
     },
@@ -78,6 +90,11 @@ const predictionSchema = new mongoose.Schema(
         description: String,
       },
     ],
+    explanationStatus: {
+      type: String,
+      enum: ['available', 'unavailable'],
+      default: undefined,
+    },
     clinicalDisclaimer: {
       type: String,
       default:
@@ -103,7 +120,8 @@ const predictionSchema = new mongoose.Schema(
     riskLevel: {
       type: String,
       default: function () {
-        if (this.riskCategory === 'ELEVATED_MODEL_ESTIMATED_RISK') return 'High';
+        if (['ELEVATED_MODEL_ESTIMATED_RISK', 'POSITIVE_CLASSIFICATION_ESTIMATE'].includes(this.riskCategory)) return 'High';
+        if (['INSUFFICIENT_DATA', 'FAILED'].includes(this.riskCategory)) return 'Unknown';
         return 'Low';
       },
     },

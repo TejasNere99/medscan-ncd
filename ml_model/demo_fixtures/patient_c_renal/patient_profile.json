@@ -1,0 +1,23 @@
+{
+  "disclaimer": "SYNTHETIC \u2014 FOR DEMONSTRATION ONLY",
+  "patientId": "SYN-PAT-003",
+  "name": "Sunita Rao",
+  "email": "synthetic.patient.c@example.com",
+  "role": "Patient",
+  "age": 62,
+  "gender": "Female",
+  "sexEncoded": 0,
+  "isCurrentSmoker": false,
+  "village": "Demo Community East",
+  "assignedDoctor": "Dr. Demo Clinician",
+  "medicalHistory": [
+    "Synthetic renal evaluation profile for software demonstration."
+  ],
+  "scenario": "Patient C \u2014 Renal-Function / CKD Profile",
+  "expectedOutcomes": {
+    "diabetes": "ELEVATED_MODEL_ESTIMATED_RISK",
+    "heartDisease": "ELEVATED_MODEL_ESTIMATED_RISK",
+    "hypertension": "POSITIVE_CLASSIFICATION_ESTIMATE",
+    "ckd": "POSITIVE_CLASSIFICATION_ESTIMATE"
+  }
+}

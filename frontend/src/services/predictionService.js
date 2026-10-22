@@ -27,6 +27,19 @@ export const predictionService = {
     return await api.get('/predictions/heart-disease/history', { params: { patientId } });
   },
 
+  // Dataset classification estimates; the UI must retain the non-diagnostic task wording.
+  predictHypertension: async (data) => api.post('/predictions/hypertension', data),
+  getLatestHypertensionPrediction: async (patientId) =>
+    api.get('/predictions/hypertension/latest', { params: { patientId } }),
+  getHypertensionPredictionHistory: async (patientId) =>
+    api.get('/predictions/hypertension/history', { params: { patientId } }),
+
+  predictCkd: async (data) => api.post('/predictions/ckd', data),
+  getLatestCkdPrediction: async (patientId) =>
+    api.get('/predictions/ckd/latest', { params: { patientId } }),
+  getCkdPredictionHistory: async (patientId) =>
+    api.get('/predictions/ckd/history', { params: { patientId } }),
+
   getPredictionHistory: async (patientId) => {
     return await api.get('/predictions/diabetes/history', { params: { patientId } });
   },

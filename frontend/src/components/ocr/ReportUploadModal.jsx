@@ -54,9 +54,12 @@ export const ReportUploadModal = ({ isOpen, onClose, patientId, onReportUploaded
     totalCholesterol: '',
     hdl: '',
     serumCreatinine: '',
+    bloodUrea: '',
     hemoglobin: '',
     bmi: '',
   });
+  const [bloodUreaUnit, setBloodUreaUnit] = useState('');
+  const [initialOcrUnits, setInitialOcrUnits] = useState({});
 
   // Pristine machine OCR extraction snapshot for provenance tracking and comparison
   const [initialOcrValues, setInitialOcrValues] = useState({});
@@ -86,9 +89,12 @@ export const ReportUploadModal = ({ isOpen, onClose, patientId, onReportUploaded
       totalCholesterol: '',
       hdl: '',
       serumCreatinine: '',
+      bloodUrea: '',
       hemoglobin: '',
       bmi: '',
     });
+    setBloodUreaUnit('');
+    setInitialOcrUnits({});
     setInitialOcrValues({});
     setSavingField({});
     setSavedPendingField({});
@@ -188,17 +194,20 @@ export const ReportUploadModal = ({ isOpen, onClose, patientId, onReportUploaded
         totalCholesterol: safeVitalStr(canonical.totalCholesterol ?? canonical.cholesterol),
         hdl: safeVitalStr(canonical.hdl ?? canonical.hdlCholesterol),
         serumCreatinine: safeVitalStr(canonical.serumCreatinine ?? canonical.creatinine),
+        bloodUrea: safeVitalStr(canonical.bloodUrea),
         hemoglobin: safeVitalStr(canonical.hemoglobin),
         bmi: safeVitalStr(canonical.bmi),
       };
 
       setInitialOcrValues(initialSnapshot);
       setConfirmedForm(initialSnapshot);
+      const originalBloodUreaUnit = canonical.bloodUrea?.unit || doc.measurements?.bloodUrea?.unit || '';
+      setBloodUreaUnit(originalBloodUreaUnit);
+      setInitialOcrUnits({ bloodUrea: originalBloodUreaUnit });
 
       setStep('review');
       addToast('Medical document understanding complete. Please review and correct any values.', 'info');
     } catch (err) {
-      console.error(err);
       addToast(err.response?.data?.message || err.message || 'Report upload and processing failed.', 'error');
     } finally {
       setLoading(false);
@@ -215,7 +224,7 @@ export const ReportUploadModal = ({ isOpen, onClose, patientId, onReportUploaded
     if (!uploadedReport?._id) return;
     if (val === '' || val === null || val === undefined) return;
 
-    const validation = getFieldValidation(field, String(val));
+    const validation = getFieldValidation(field, String(val), unit);
     if (validation?.type === 'INVALID') {
       addToast(`Invalid value: ${validation.text}`, 'error');
       return;
@@ -235,7 +244,6 @@ export const ReportUploadModal = ({ isOpen, onClose, patientId, onReportUploaded
         setSavedPendingField((prev) => ({ ...prev, [field]: false }));
       }, 2500);
     } catch (err) {
-      console.error(err);
       addToast(err.response?.data?.message || err.message || `Failed to update ${field}.`, 'error');
     } finally {
       setSavingField((prev) => ({ ...prev, [field]: false }));
@@ -245,15 +253,17 @@ export const ReportUploadModal = ({ isOpen, onClose, patientId, onReportUploaded
   const handleRevertField = async (field, unit) => {
     const orig = initialOcrValues[field];
     const targetVal = orig !== undefined ? orig : '';
+    const revertUnit = field === 'bloodUrea' ? (initialOcrUnits.bloodUrea || '') : unit;
     setConfirmedForm((prev) => ({ ...prev, [field]: targetVal }));
+    if (field === 'bloodUrea') setBloodUreaUnit(initialOcrUnits.bloodUrea || '');
     if (uploadedReport?._id && targetVal !== '') {
-      await handleSaveFieldCorrection(field, targetVal, unit);
+      await handleSaveFieldCorrection(field, targetVal, revertUnit);
     }
     addToast(`Reverted ${field} to original OCR value (${targetVal || 'None'}).`, 'info');
   };
 
   // Value warning helper (Three-tier validation: VALID, WARNING, INVALID)
-  const getFieldValidation = (field, valStr) => {
+  const getFieldValidation = (field, valStr, unit = null) => {
     if (!valStr || String(valStr).trim() === '') return null;
     const num = Number(valStr);
     if (isNaN(num)) return { type: 'INVALID', text: 'Must be a numeric value.' };
@@ -287,6 +297,13 @@ export const ReportUploadModal = ({ isOpen, onClose, patientId, onReportUploaded
         if (num > 15) return { type: 'WARNING', text: 'Elevated creatinine (>15 mg/dL). Verify against report.' };
         if (num < 0.2) return { type: 'WARNING', text: 'Unusually low creatinine (<0.2 mg/dL). Verify against report.' };
         return null;
+      case 'bloodUrea': {
+        if (!['mg/dL', 'mmol/L'].includes(unit)) return { type: 'INVALID', text: 'Select the reported blood urea unit.' };
+        const ureaValue = unit === 'mmol/L' ? num * 6.006 : num;
+        if (ureaValue > 300) return { type: 'WARNING', text: 'Unusually high blood urea. Verify against the original report.' };
+        if (ureaValue < 5) return { type: 'WARNING', text: 'Unusually low blood urea. Verify against the original report.' };
+        return null;
+      }
       case 'hemoglobin':
         if (num > 22 || num < 4) return { type: 'WARNING', text: 'Extreme hemoglobin value. Verify against report.' };
         return null;
@@ -307,7 +324,7 @@ export const ReportUploadModal = ({ isOpen, onClose, patientId, onReportUploaded
 
     // Check for any INVALID fields
     for (const [key, val] of Object.entries(confirmedForm)) {
-      const valStatus = getFieldValidation(key, val);
+      const valStatus = getFieldValidation(key, val, key === 'bloodUrea' ? bloodUreaUnit : null);
       if (valStatus?.type === 'INVALID') {
         addToast(`Please correct invalid value for ${key}: ${valStatus.text}`, 'error');
         return;
@@ -327,8 +344,9 @@ export const ReportUploadModal = ({ isOpen, onClose, patientId, onReportUploaded
 
       Object.entries(confirmedForm).forEach(([k, v]) => {
         if (v !== '' && v !== null && v !== undefined) {
-          payload[k] = Number(v);
-          payload.canonicalVitals[k] = Number(v);
+          const value = k === 'bloodUrea' ? { value: Number(v), unit: bloodUreaUnit } : Number(v);
+          payload[k] = value;
+          payload.canonicalVitals[k] = value;
         }
       });
 
@@ -340,7 +358,6 @@ export const ReportUploadModal = ({ isOpen, onClose, patientId, onReportUploaded
       }
       handleClose();
     } catch (err) {
-      console.error(err);
       addToast(err.response?.data?.message || err.message || 'Failed to confirm report.', 'error');
     } finally {
       setConfirming(false);
@@ -430,9 +447,9 @@ export const ReportUploadModal = ({ isOpen, onClose, patientId, onReportUploaded
           </div>
 
           {loading && (
-            <div className="p-3.5 rounded-xl bg-cyan-950/30 border border-cyan-500/30 flex items-center space-x-3">
-              <div className="w-4 h-4 rounded-full border-2 border-cyan-400 border-t-transparent animate-spin shrink-0" />
-              <div className="text-xs text-cyan-300 font-semibold">{loadingStage}</div>
+            <div className="p-3.5 rounded-xl bg-cyan-50 border border-cyan-300 flex items-center space-x-3">
+              <div className="w-4 h-4 rounded-full border-2 border-cyan-700 border-t-transparent animate-spin shrink-0" />
+              <div className="text-xs text-cyan-900 font-bold">{loadingStage}</div>
             </div>
           )}
 
@@ -467,18 +484,24 @@ export const ReportUploadModal = ({ isOpen, onClose, patientId, onReportUploaded
               <div>
                 <div className="flex items-center space-x-2">
                   <h4 className="text-xs font-bold text-white">{docType}</h4>
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-300 border border-cyan-500/20 font-bold">
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-cyan-100/70 text-cyan-800 border border-cyan-300 font-bold">
                     {docConfidence}% Confidence
                   </span>
                 </div>
-                <p className="text-[11px] text-slate-400 mt-0.5">
-                  {patientContext.age || patientContext.sex ? (
-                    <span className="text-cyan-300 font-semibold mr-1.5">
-                      Patient: {patientContext.age ? `Age ${patientContext.age} ${patientContext.ageUnit || 'years'}` : ''}
-                      {patientContext.age && patientContext.sex ? ' • ' : ''}
-                      {patientContext.sex ? `Sex: ${patientContext.sex.charAt(0).toUpperCase() + patientContext.sex.slice(1)}` : ''} •
-                    </span>
-                  ) : null}
+                <p className="text-[11px] text-slate-500 mt-0.5">
+                  {(() => {
+                    const rawAge = typeof patientContext.age === 'object' && patientContext.age !== null ? patientContext.age.value : patientContext.age;
+                    const rawSex = typeof patientContext.sex === 'object' && patientContext.sex !== null ? patientContext.sex.value : patientContext.sex;
+                    const ageUnit = (typeof patientContext.age === 'object' && patientContext.age?.unit) || patientContext.ageUnit || 'years';
+                    if (!rawAge && !rawSex) return null;
+                    return (
+                      <span className="text-cyan-800 font-bold mr-1.5">
+                        Patient: {rawAge ? `Age ${rawAge} ${ageUnit}` : ''}
+                        {rawAge && rawSex ? ' • ' : ''}
+                        {rawSex ? `Sex: ${String(rawSex).charAt(0).toUpperCase() + String(rawSex).slice(1)}` : ''} •
+                      </span>
+                    );
+                  })()}
                   Extracted via Medical Intelligence Layer • Review values before confirming
                 </p>
               </div>
@@ -496,9 +519,9 @@ export const ReportUploadModal = ({ isOpen, onClose, patientId, onReportUploaded
               <button
                 type="button"
                 onClick={() => setShowDebugJson(!showDebugJson)}
-                className="px-2.5 py-1.5 rounded-lg text-[11px] font-semibold bg-slate-900 hover:bg-slate-800 text-cyan-300 border border-slate-700 flex items-center space-x-1"
+                className="px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-slate-900 hover:bg-slate-800 text-cyan-800 border border-slate-700 flex items-center space-x-1"
               >
-                <Code2 className="w-3.5 h-3.5 text-cyan-400" />
+                <Code2 className="w-3.5 h-3.5 text-cyan-700" />
                 <span>{showDebugJson ? 'Hide JSON' : 'JSON Preview'}</span>
               </button>
             </div>
@@ -524,10 +547,10 @@ export const ReportUploadModal = ({ isOpen, onClose, patientId, onReportUploaded
           {showDebugJson && (
             <div className="p-3.5 rounded-2xl bg-slate-950 border border-cyan-500/20 space-y-2">
               <div className="flex items-center justify-between text-[11px]">
-                <span className="font-bold text-cyan-300">Structured Medical JSON (Intelligence Layer Output)</span>
+                <span className="font-bold text-cyan-800">Structured Medical JSON (Intelligence Layer Output)</span>
                 <span className="text-slate-500">Technical view</span>
               </div>
-              <pre className="w-full max-h-48 overflow-auto bg-slate-900/90 border border-slate-800 rounded-xl p-3 text-[10px] font-mono text-cyan-200">
+              <pre className="w-full max-h-48 overflow-auto bg-stone-100 border border-stone-200 rounded-xl p-3 text-[11px] font-mono text-slate-900 font-medium">
                 {JSON.stringify(extractedDoc, null, 2)}
               </pre>
             </div>
@@ -823,18 +846,21 @@ export const ReportUploadModal = ({ isOpen, onClose, patientId, onReportUploaded
                 { key: 'totalCholesterol', label: 'Total Cholesterol', unit: 'mg/dL' },
                 { key: 'hdl', label: 'HDL Cholesterol', unit: 'mg/dL' },
                 { key: 'serumCreatinine', label: 'Serum Creatinine', unit: 'mg/dL' },
+                { key: 'bloodUrea', label: 'Blood Urea (not BUN)', unit: '' },
                 { key: 'hemoglobin', label: 'Hemoglobin', unit: 'g/dL' },
                 { key: 'bmi', label: 'Body Mass Index', unit: 'kg/m²' },
               ].map(({ key, label, unit }) => {
                 const val = confirmedForm[key];
+                const fieldUnit = key === 'bloodUrea' ? bloodUreaUnit : unit;
                 const initialVal = initialOcrValues[key];
-                const validation = getFieldValidation(key, val);
+                const validation = getFieldValidation(key, val, fieldUnit);
                 const hasValue = val !== '' && val !== null && val !== undefined;
                 const hasInitial = initialVal !== '' && initialVal !== null && initialVal !== undefined;
+                const bloodUreaUnitChanged = key === 'bloodUrea' && hasInitial && fieldUnit !== (initialOcrUnits.bloodUrea || '');
 
-                const isCorrected = hasInitial && hasValue && String(val).trim() !== String(initialVal).trim();
+                const isCorrected = hasInitial && hasValue && (String(val).trim() !== String(initialVal).trim() || bloodUreaUnitChanged);
                 const isAdded = !hasInitial && hasValue;
-                const isFound = hasInitial && hasValue && String(val).trim() === String(initialVal).trim();
+                const isFound = hasInitial && hasValue && String(val).trim() === String(initialVal).trim() && !bloodUreaUnitChanged;
                 const isModified = (isCorrected || isAdded) && hasValue;
 
                 return (
@@ -857,25 +883,25 @@ export const ReportUploadModal = ({ isOpen, onClose, patientId, onReportUploaded
                     <div className="flex items-center justify-between mb-1.5">
                       <span className="text-[11px] font-bold text-slate-300 truncate max-w-[120px]">{label}</span>
                       {isCorrected && (
-                        <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-amber-500/10 text-amber-300 border border-amber-500/30 font-semibold flex items-center gap-1">
-                          <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+                        <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300 font-bold flex items-center gap-1">
+                          <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
                           Corrected
                         </span>
                       )}
                       {isAdded && (
-                        <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-blue-500/10 text-blue-300 border border-blue-500/30 font-semibold flex items-center gap-1">
-                          <span className="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
+                        <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-blue-100 text-blue-900 border border-blue-300 font-bold flex items-center gap-1">
+                          <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
                           Added
                         </span>
                       )}
                       {isFound && (
-                        <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 font-semibold flex items-center gap-1">
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                        <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-900 border border-emerald-300 font-bold flex items-center gap-1">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
                           Found in report
                         </span>
                       )}
                       {!hasValue && (
-                        <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700 font-semibold">
+                        <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-slate-200 text-slate-600 border border-slate-300 font-semibold">
                           Not detected
                         </span>
                       )}
@@ -889,25 +915,36 @@ export const ReportUploadModal = ({ isOpen, onClose, patientId, onReportUploaded
                           placeholder="Not recorded"
                           value={val}
                           onChange={(e) => handleFieldChange(key, e.target.value)}
-                          onBlur={() => {
+                  onBlur={() => {
                             if (isModified && val !== '') {
-                              handleSaveFieldCorrection(key, val, unit);
+                              handleSaveFieldCorrection(key, val, fieldUnit);
                             }
                           }}
                           className={`w-full bg-slate-900 border rounded-xl px-3 py-1.5 text-xs font-bold focus:outline-none ${
                             isCorrected
-                              ? 'border-amber-500/50 text-amber-200 focus:border-amber-400'
+                              ? 'border-amber-400 bg-amber-50/50 text-amber-950 focus:border-amber-500'
                               : isAdded
-                              ? 'border-blue-500/50 text-blue-200 focus:border-blue-400'
+                              ? 'border-blue-400 bg-blue-50/50 text-blue-950 focus:border-blue-500'
                               : 'border-slate-700/80 text-white focus:border-brand-500'
                           }`}
                         />
                       </div>
-                      <span className="text-[10px] text-slate-500 font-mono shrink-0">{unit}</span>
+                      {key === 'bloodUrea' ? (
+                        <select
+                          aria-label="Blood urea unit"
+                          value={bloodUreaUnit}
+                          onChange={(e) => setBloodUreaUnit(e.target.value)}
+                          className="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-[10px] text-slate-300"
+                        >
+                          <option value="">Select unit</option>
+                          <option value="mg/dL">mg/dL</option>
+                          <option value="mmol/L">mmol/L</option>
+                        </select>
+                      ) : <span className="text-[10px] text-slate-500 font-mono shrink-0">{unit}</span>}
                       {isModified && (
                         <button
                           type="button"
-                          onClick={() => handleSaveFieldCorrection(key, val, unit)}
+                          onClick={() => handleSaveFieldCorrection(key, val, fieldUnit)}
                           disabled={savingField[key]}
                           title="Save pending correction"
                           className={`px-2 py-1 rounded-lg text-[10px] font-bold border transition-all flex items-center gap-1 shrink-0 ${
@@ -929,11 +966,11 @@ export const ReportUploadModal = ({ isOpen, onClose, patientId, onReportUploaded
 
                     {isCorrected && (
                       <div className="flex items-center justify-between mt-1.5 pt-1.5 border-t border-slate-800 text-[10px] text-slate-400">
-                        <span>Original OCR: <strong className="text-amber-200 font-mono">{initialVal}</strong> {unit}</span>
+                        <span>Original OCR: <strong className="text-amber-800 font-bold font-mono">{initialVal}</strong> {unit}</span>
                         <button
                           type="button"
                           onClick={() => handleRevertField(key, unit)}
-                          className="text-cyan-400 hover:text-cyan-300 underline font-medium cursor-pointer flex items-center gap-0.5"
+                          className="text-cyan-800 hover:text-cyan-950 underline font-bold cursor-pointer flex items-center gap-0.5"
                         >
                           <Undo2 className="w-2.5 h-2.5" /> Revert
                         </button>
@@ -941,8 +978,8 @@ export const ReportUploadModal = ({ isOpen, onClose, patientId, onReportUploaded
                     )}
 
                     {validation?.type === 'WARNING' && (
-                      <p className="text-[10px] text-amber-400 mt-1 leading-tight flex items-start space-x-1">
-                        <AlertTriangle className="w-3 h-3 shrink-0 mt-0.5 text-amber-400" />
+                      <p className="text-[10px] text-amber-800 font-medium mt-1 leading-tight flex items-start space-x-1">
+                        <AlertTriangle className="w-3 h-3 shrink-0 mt-0.5 text-amber-600" />
                         <span>{validation.text}</span>
                       </p>
                     )}

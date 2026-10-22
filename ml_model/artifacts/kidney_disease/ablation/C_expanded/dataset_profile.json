@@ -1,0 +1,103 @@
+{
+  "dataset_source": {
+    "name": "Chronic Kidney Disease",
+    "uci_id": 336,
+    "doi": "10.24432/C5G020",
+    "repository_url": "https://archive.ics.uci.edu/dataset/336/chronic+kidney+disease",
+    "data_url": "https://archive.ics.uci.edu/static/public/336/data.csv",
+    "retrieved_at_utc": "2026-10-18T10:50:18.527854+00:00",
+    "license": "CC BY 4.0 (as stated by UCI)"
+  },
+  "source_sha256": "0eeea8d17f5ad8792d854999d6ddf1602ec4e116616f6ccdfdaef0ba8109e694",
+  "source_audit": {
+    "source_rows": 400,
+    "source_class_counts_normalized": {
+      "ckd_positive": 250,
+      "notckd_negative": 150
+    },
+    "final_training_class_counts_after_required_field_filter": {
+      "ckd_positive": 230,
+      "notckd_negative": 144
+    },
+    "excluded_missing_required_age_or_creatinine": 26,
+    "final_rows": 374,
+    "positive": 230,
+    "negative": 144,
+    "prevalence": 0.6149732620320856,
+    "feature_nonmissing_coverage": {
+      "age": 1.0,
+      "blood_pressure": 0.9732620320855615,
+      "blood_glucose": 0.9171122994652406,
+      "blood_urea": 0.9919786096256684,
+      "serum_creatinine": 1.0,
+      "hemoglobin": 0.8823529411764706
+    },
+    "invalid_values_marked_missing": {
+      "age_nonfinite": 0,
+      "blood_pressure_nonfinite": 0,
+      "blood_pressure_nonpositive": 0,
+      "blood_glucose_nonfinite": 0,
+      "blood_glucose_nonpositive": 0,
+      "blood_urea_nonfinite": 0,
+      "blood_urea_nonpositive": 0,
+      "serum_creatinine_nonfinite": 0,
+      "serum_creatinine_nonpositive": 0,
+      "hemoglobin_nonfinite": 0,
+      "hemoglobin_nonpositive": 0,
+      "age_out_of_range": 0
+    },
+    "duplicate_full_feature_rows": 0,
+    "feature_groups": {
+      "A_minimal": [
+        "age",
+        "serum_creatinine"
+      ],
+      "B_core_renal": [
+        "age",
+        "serum_creatinine",
+        "blood_urea"
+      ],
+      "C_expanded": [
+        "age",
+        "serum_creatinine",
+        "blood_urea",
+        "blood_pressure",
+        "blood_glucose",
+        "hemoglobin"
+      ]
+    },
+    "approved_features_only": true,
+    "excluded_features": [
+      "egfr/derived filtration",
+      "urine albumin/protein/specific gravity/sugar/microscopy",
+      "appetite",
+      "pedal edema",
+      "anemia categorical flag",
+      "CAD categorical flag",
+      "hypertension categorical flag",
+      "diabetes categorical flag",
+      "all other non-approved fields"
+    ],
+    "target_rule": "Trim whitespace/case; ckd=1, notckd=0; all other values rejected."
+  },
+  "final_rows": 374,
+  "positive": 230,
+  "negative": 144,
+  "prevalence": 0.6149732620320856,
+  "missing_values_by_feature": {
+    "age": 0,
+    "serum_creatinine": 0,
+    "blood_urea": 3,
+    "blood_pressure": 10,
+    "blood_glucose": 31,
+    "hemoglobin": 44
+  },
+  "feature_coverage": {
+    "age": 1.0,
+    "serum_creatinine": 1.0,
+    "blood_urea": 0.9919786096256684,
+    "blood_pressure": 0.9732620320855615,
+    "blood_glucose": 0.9171122994652406,
+    "hemoglobin": 0.8823529411764706
+  }
+}

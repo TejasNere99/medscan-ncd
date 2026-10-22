@@ -1,0 +1,20 @@
+{
+  "disclaimer": "SYNTHETIC \u2014 FOR DEMONSTRATION ONLY",
+  "patientContext": {
+    "age": 28,
+    "ageUnit": "years",
+    "sex": "male"
+  },
+  "canonicalVitals": {
+    "fastingSugar": 90,
+    "systolicBP": 114,
+    "diastolicBP": 74,
+    "totalCholesterol": 160,
+    "serumCreatinine": 0.82,
+    "bloodUrea": 22,
+    "hemoglobin": 14.4,
+    "bmi": 22.1,
+    "heartRate": 70
+  },
+  "overallConfidence": 0.99
+}

@@ -4,10 +4,13 @@ import { PatientRelationship } from '../models/PatientRelationship.js';
 import { Prediction } from '../models/Prediction.js';
 import { uploadOnCloudinary } from '../config/cloudinary.js';
 import { processReportOCR, validateBiomarker } from '../services/ocrService.js';
+import { CANONICAL_FIELDS, convertUnitSafely } from '../services/medicalNormalizer.js';
 import { buildDiabetesFeatures } from '../services/diabetesFeatureBuilder.js';
 import { callDiabetesPredictionService } from '../services/diabetesPredictionService.js';
 import { buildHeartDiseaseFeatures } from '../services/heartDiseaseFeatureBuilder.js';
 import { callHeartDiseasePredictionService } from '../services/heartDiseasePredictionService.js';
+import { buildCkdFeatures, buildHypertensionFeatures } from '../services/newDiseaseFeatureBuilder.js';
+import { callNewDiseasePredictionService } from '../services/newDiseasePredictionService.js';
 import { ApiError } from '../utils/apiError.js';
 import { ApiResponse } from '../utils/apiResponse.js';
 import { asyncHandler } from '../utils/asyncWrapper.js';
@@ -20,19 +23,6 @@ const isDoctorAuthorizedForPatient = async (patientRecord, doctorUserId) => {
     patient: patientRecord._id,
     relatedUser: doctorUserId,
     relationshipType: 'DOCTOR',
-    status: 'ACTIVE',
-  });
-  return Boolean(hasActiveRel);
-};
-
-const isFamilyAuthorizedForPatient = async (patientRecord, familyUserId) => {
-  if (!patientRecord) return false;
-  const isLinked = patientRecord.linkedFamilyMembers && patientRecord.linkedFamilyMembers.some((f) => String(f._id || f) === String(familyUserId));
-  if (isLinked) return true;
-  const hasActiveRel = await PatientRelationship.exists({
-    patient: patientRecord._id,
-    relatedUser: familyUserId,
-    relationshipType: 'FAMILY',
     status: 'ACTIVE',
   });
   return Boolean(hasActiveRel);
@@ -66,20 +56,8 @@ export const uploadReport = asyncHandler(async (req, res) => {
       throw new ApiError(403, 'Unauthorized. You are not the assigned doctor for this patient.');
     }
     targetPatientId = patientRecord._id;
-  } else if (req.user.role === 'Nurse') {
-    if (!patientId) {
-      throw new ApiError(400, 'patientId parameter is required for healthcare providers.');
-    }
-    const patientRecord = await Patient.findById(patientId);
-    if (!patientRecord) {
-      throw new ApiError(404, 'Patient record not found.');
-    }
-    if (!patientRecord.assignedNurse || String(patientRecord.assignedNurse) !== String(req.user._id)) {
-      throw new ApiError(403, 'Unauthorized. You are not the assigned nurse for this patient.');
-    }
-    targetPatientId = patientRecord._id;
   } else {
-    // Family, Admin, CHO (untrusted catchment in P0) or unrecognized roles: 403
+    // Admin, CHO (untrusted catchment) or unrecognized/deprecated roles: 403
     throw new ApiError(403, 'Your role is not authorized to upload clinical laboratory reports.');
   }
 
@@ -187,6 +165,7 @@ const getInitialValueFromReport = (report, key) => {
   if (key === 'fastingSugar') candidates.push(initVitals.fastingGlucose, init.fastingGlucose, initMeasurements.fastingGlucose);
   if (key === 'fastingGlucose') candidates.push(initVitals.fastingSugar, init.fastingSugar, initMeasurements.fastingSugar);
   if (key === 'serumCreatinine') candidates.push(initVitals.creatinine, init.creatinine, initMeasurements.creatinine);
+  if (key === 'bloodUrea') candidates.push(initVitals.bloodUrea, init.bloodUrea, initMeasurements.bloodUrea);
   if (key === 'creatinine') candidates.push(initVitals.serumCreatinine, init.serumCreatinine, initMeasurements.serumCreatinine);
   if (key === 'totalCholesterol' || key === 'cholesterol') candidates.push(initVitals.totalCholesterol, initVitals.cholesterol, init.cholesterol, initMeasurements.cholesterol, initMeasurements.totalCholesterol);
   if (key === 'hdl' || key === 'hdlCholesterol') candidates.push(initVitals.hdl, init.hdl, initMeasurements.hdl, initMeasurements.hdlCholesterol);
@@ -259,6 +238,7 @@ export const updateExtractedData = asyncHandler(async (req, res) => {
     'hdlCholesterol',
     'serumCreatinine',
     'creatinine',
+    'bloodUrea',
     'hemoglobin',
     'bmi',
     'age',
@@ -297,9 +277,9 @@ export const updateExtractedData = asyncHandler(async (req, res) => {
 
     if (typeof entryVal === 'object' && entryVal !== null) {
       targetVal = entryVal.value;
-      targetUnit = entryVal.unit || getDefaultUnit(canonicalKey);
+      targetUnit = entryVal.unit || (canonicalKey === 'bloodUrea' ? null : getDefaultUnit(canonicalKey));
     } else {
-      targetUnit = getDefaultUnit(canonicalKey);
+      targetUnit = canonicalKey === 'bloodUrea' ? null : getDefaultUnit(canonicalKey);
     }
 
     if (targetVal === undefined || targetVal === null || targetVal === '') {
@@ -307,6 +287,8 @@ export const updateExtractedData = asyncHandler(async (req, res) => {
     }
 
     let parsedVal = targetVal;
+    const submittedValue = targetVal;
+    const submittedUnit = targetUnit;
     if (canonicalKey !== 'gender') {
       parsedVal = Number(targetVal);
       if (isNaN(parsedVal)) {
@@ -314,6 +296,16 @@ export const updateExtractedData = asyncHandler(async (req, res) => {
       }
       if (parsedVal < 0) {
         throw new ApiError(400, `Value cannot be negative for ${canonicalKey}.`);
+      }
+
+      if (canonicalKey === 'bloodUrea') {
+        if (!targetUnit) throw new ApiError(400, 'Select an explicit unit for blood urea (mg/dL or mmol/L).');
+        const converted = convertUnitSafely(CANONICAL_FIELDS.BLOOD_UREA, parsedVal, targetUnit);
+        if (!['mg/dL', 'mmol/L'].includes(converted.unit)) {
+          throw new ApiError(400, 'Blood urea unit must be mg/dL or mmol/L.');
+        }
+        parsedVal = converted.normalizedValue;
+        targetUnit = converted.normalizedUnit;
       }
 
       // Three-tier clinical validation using existing medicalValidation.js
@@ -345,6 +337,9 @@ export const updateExtractedData = asyncHandler(async (req, res) => {
       originalValue: originalExtractedVal,
       correctedValue: parsedVal,
       unit: targetUnit || getDefaultUnit(canonicalKey),
+      submittedValue,
+      submittedUnit,
+      conversionApplied: canonicalKey === 'bloodUrea' && submittedUnit !== targetUnit,
       source: provenanceSource,
       correctedAt: new Date(),
       correctedBy: req.user._id,
@@ -358,6 +353,7 @@ export const updateExtractedData = asyncHandler(async (req, res) => {
     report.extractedData.canonicalVitals[canonicalKey] = {
       value: parsedVal,
       unit: targetUnit || getDefaultUnit(canonicalKey),
+      originalValueUnit: submittedUnit,
       source: provenanceSource,
       originalValue: originalExtractedVal,
       verified: false,
@@ -372,6 +368,7 @@ export const updateExtractedData = asyncHandler(async (req, res) => {
       ...(report.extractedData.measurements[canonicalKey] || {}),
       value: parsedVal,
       unit: targetUnit || getDefaultUnit(canonicalKey),
+      originalValueUnit: submittedUnit,
       source: provenanceSource,
       originalValue: originalExtractedVal,
       verified: false,
@@ -456,6 +453,7 @@ export const confirmReport = asyncHandler(async (req, res) => {
     'hdlCholesterol',
     'serumCreatinine',
     'creatinine',
+    'bloodUrea',
     'hemoglobin',
     'bmi',
   ];
@@ -469,8 +467,18 @@ export const confirmReport = asyncHandler(async (req, res) => {
     for (const field of allowedFields) {
       const fieldEntry = sourceMap[field];
       if (fieldEntry !== undefined && fieldEntry !== null && fieldEntry !== '') {
-        const numVal = Number(typeof fieldEntry === 'object' ? fieldEntry.value : fieldEntry);
-        const unit = typeof fieldEntry === 'object' ? fieldEntry.unit : null;
+        let numVal = Number(typeof fieldEntry === 'object' ? fieldEntry.value : fieldEntry);
+        let unit = typeof fieldEntry === 'object' ? fieldEntry.unit : null;
+
+        if (field === 'bloodUrea') {
+          if (!unit) throw new ApiError(400, 'Select an explicit unit for blood urea (mg/dL or mmol/L).');
+          const converted = convertUnitSafely(CANONICAL_FIELDS.BLOOD_UREA, numVal, unit);
+          if (!['mg/dL', 'mmol/L'].includes(converted.unit)) {
+            throw new ApiError(400, 'Blood urea unit must be mg/dL or mmol/L.');
+          }
+          numVal = converted.normalizedValue;
+          unit = converted.normalizedUnit;
+        }
 
         if (isNaN(numVal) || numVal < 0) {
           throw new ApiError(400, `Invalid numeric value provided for ${field}.`);
@@ -536,6 +544,8 @@ export const confirmReport = asyncHandler(async (req, res) => {
           unit: unit || getDefaultUnit(canonicalKey),
           source: fieldSource,
           originalValue: originalVal,
+          originalValueUnit: correction?.submittedUnit || (typeof fieldEntry === 'object' ? fieldEntry.unit : null),
+          conversionApplied: Boolean(correction?.conversionApplied),
           verified: true,
           validationStatus: validation.status,
           warning: validation.status === 'WARNING' ? validation.message : null,
@@ -583,6 +593,9 @@ export const confirmReport = asyncHandler(async (req, res) => {
   }
 
   // 1. Update and persist report document FIRST (Strict Requirement: Decoupled Confirmation)
+  if (!report.uploader) {
+    report.uploader = report.uploadedBy || req.user._id;
+  }
   report.confirmedData = validatedConfirmed;
   report.structuredData = { ...(report.structuredData || {}), ...flatConfirmed };
   report.status = 'CONFIRMED';
@@ -603,6 +616,7 @@ export const confirmReport = asyncHandler(async (req, res) => {
   if (flatConfirmed.totalCholesterol !== undefined) patientUpdates.totalCholesterol = flatConfirmed.totalCholesterol;
   if (flatConfirmed.hdl !== undefined) patientUpdates.hdl = flatConfirmed.hdl;
   if (flatConfirmed.serumCreatinine !== undefined) patientUpdates.serumCreatinine = flatConfirmed.serumCreatinine;
+  if (flatConfirmed.bloodUrea !== undefined) patientUpdates.bloodUrea = flatConfirmed.bloodUrea;
   if (flatConfirmed.hemoglobin !== undefined) patientUpdates.hemoglobin = flatConfirmed.hemoglobin;
   if (flatConfirmed.bmi !== undefined) patientUpdates.bmi = flatConfirmed.bmi;
 
@@ -795,6 +809,250 @@ export const confirmReport = asyncHandler(async (req, res) => {
     console.error('[Report Confirmation] Heart Disease ML assessment deferred/failed:', hdErr.message);
   }
 
+  // 5. Decoupled Hypertension ML Risk Assessment
+  // Mandatory: Failure or outage of ML service MUST NEVER roll back the confirmed report!
+  let hypertensionPrediction = null;
+  try {
+    const confirmedReports = await Report.find({ patient: report.patient, status: 'CONFIRMED' })
+      .sort({ confirmedAt: -1, createdAt: -1 })
+      .limit(100);
+    const allConfirmedReports = confirmedReports.some((r) => String(r._id) === String(report._id))
+      ? confirmedReports
+      : [report, ...confirmedReports];
+
+    const hypExtraction = buildHypertensionFeatures(allConfirmedReports, updatedPatient);
+    if (hypExtraction.canCalculate) {
+      const mlResult = await callNewDiseasePredictionService('hypertension', hypExtraction.featureVector);
+      if (mlResult.success && mlResult.canCalculate) {
+        hypertensionPrediction = await Prediction.create({
+          patient: report.patient,
+          report: report._id,
+          calculatedBy: req.user._id,
+          disease: 'hypertension',
+          modelVersion: mlResult.modelVersion || '1.0.0-research',
+          featureSchemaVersion: mlResult.featureSchemaVersion || 'hypertension.v1',
+          probability: mlResult.probability,
+          threshold: typeof mlResult.threshold === 'number' ? mlResult.threshold : 0.33,
+          riskCategory: mlResult.riskCategory,
+          status: 'SUCCESS',
+          canCalculate: true,
+          dataCompleteness: mlResult.dataCompleteness || hypExtraction.dataCompleteness,
+          missingDomain: null,
+          inputFeatures: hypExtraction.featureVector,
+          featureAvailability: {
+            availableFeatures: Object.keys(hypExtraction.featureVector).filter((k) => hypExtraction.featureVector[k] !== null),
+            missingFeatures: Object.keys(hypExtraction.featureVector).filter((k) => hypExtraction.featureVector[k] === null),
+            provenance: hypExtraction.provenance,
+          },
+          featureProvenance: hypExtraction.provenance,
+          topContributingFactors: mlResult.topContributingFactors || [],
+          explanationStatus: mlResult.explanationStatus || 'unavailable',
+          taskInterpretation: mlResult.taskInterpretation || 'Classification of current diagnosed/treated hypertension; not future-onset prediction.',
+          clinicalDisclaimer: mlResult.clinicalDisclaimer || 'Statistical model estimate only. Not a diagnosis and not clinically validated.',
+          overallRiskPercent: Math.round(mlResult.probability * 100),
+          riskLevel: ['ELEVATED_MODEL_ESTIMATED_RISK', 'POSITIVE_CLASSIFICATION_ESTIMATE'].includes(mlResult.riskCategory)
+            ? 'Elevated model estimate'
+            : 'Lower model estimate',
+          confidenceScore: null,
+          diseaseBreakdown: { Diabetes: null, Hypertension: null, HeartDisease: null, KidneyDisease: null },
+          algorithmVersion: mlResult.modelVersion || 'hypertension_v1.0.0',
+          predictionDate: new Date(),
+        });
+      } else {
+        const isUnavailable = ['MODEL_UNAVAILABLE', 'SERVICE_UNAVAILABLE', 'PREDICTION_SERVICE_UNAVAILABLE'].includes(mlResult.status);
+        hypertensionPrediction = await Prediction.create({
+          patient: report.patient,
+          report: report._id,
+          calculatedBy: req.user._id,
+          disease: 'hypertension',
+          modelVersion: mlResult.modelVersion || null,
+          featureSchemaVersion: mlResult.featureSchemaVersion || null,
+          probability: null,
+          threshold: null,
+          riskCategory: isUnavailable ? 'FAILED' : 'INSUFFICIENT_DATA',
+          status: isUnavailable ? 'SERVICE_UNAVAILABLE' : (mlResult.status || 'INSUFFICIENT_DATA'),
+          canCalculate: false,
+          dataCompleteness: 'INSUFFICIENT',
+          missingDomain: mlResult.message || hypExtraction.missingRequired.join(', '),
+          inputFeatures: hypExtraction.featureVector,
+          featureAvailability: {
+            availableFeatures: Object.keys(hypExtraction.featureVector).filter((k) => hypExtraction.featureVector[k] !== null),
+            missingFeatures: Object.keys(hypExtraction.featureVector).filter((k) => hypExtraction.featureVector[k] === null),
+            provenance: hypExtraction.provenance,
+          },
+          featureProvenance: hypExtraction.provenance,
+          topContributingFactors: [],
+          explanationStatus: 'unavailable',
+          taskInterpretation: 'Classification of current diagnosed/treated hypertension; not future-onset prediction.',
+          clinicalDisclaimer: 'Statistical model estimate only. Not a diagnosis and not clinically validated.',
+          overallRiskPercent: null,
+          riskLevel: 'Unknown',
+          confidenceScore: null,
+          diseaseBreakdown: { Diabetes: null, Hypertension: null, HeartDisease: null, KidneyDisease: null },
+          algorithmVersion: 'hypertension_unavailable',
+          predictionDate: new Date(),
+        });
+      }
+    } else {
+      hypertensionPrediction = await Prediction.create({
+        patient: report.patient,
+        report: report._id,
+        calculatedBy: req.user._id,
+        disease: 'hypertension',
+        modelVersion: null,
+        featureSchemaVersion: null,
+        probability: null,
+        threshold: null,
+        riskCategory: 'INSUFFICIENT_DATA',
+        status: 'INSUFFICIENT_DATA',
+        canCalculate: false,
+        dataCompleteness: 'INSUFFICIENT',
+        missingDomain: hypExtraction.missingRequired.join(', '),
+        inputFeatures: hypExtraction.featureVector,
+        featureAvailability: {
+          availableFeatures: Object.keys(hypExtraction.featureVector).filter((k) => hypExtraction.featureVector[k] !== null),
+          missingFeatures: Object.keys(hypExtraction.featureVector).filter((k) => hypExtraction.featureVector[k] === null),
+          provenance: hypExtraction.provenance,
+        },
+        featureProvenance: hypExtraction.provenance,
+        topContributingFactors: [],
+        explanationStatus: 'unavailable',
+        taskInterpretation: 'Classification of current diagnosed/treated hypertension; not future-onset prediction.',
+        clinicalDisclaimer: 'Statistical model estimate only. Not a diagnosis and not clinically validated.',
+        overallRiskPercent: null,
+        riskLevel: 'Unknown',
+        confidenceScore: null,
+        diseaseBreakdown: { Diabetes: null, Hypertension: null, HeartDisease: null, KidneyDisease: null },
+        algorithmVersion: 'hypertension_unavailable',
+        predictionDate: new Date(),
+      });
+    }
+  } catch (hypErr) {
+    console.error('[Report Confirmation] Hypertension ML assessment deferred/failed:', hypErr.message);
+  }
+
+  // 6. Decoupled Chronic Kidney Disease ML Risk Assessment
+  // Mandatory: Failure or outage of ML service MUST NEVER roll back the confirmed report!
+  let ckdPrediction = null;
+  try {
+    const confirmedReports = await Report.find({ patient: report.patient, status: 'CONFIRMED' })
+      .sort({ confirmedAt: -1, createdAt: -1 })
+      .limit(100);
+    const allConfirmedReports = confirmedReports.some((r) => String(r._id) === String(report._id))
+      ? confirmedReports
+      : [report, ...confirmedReports];
+
+    const ckdExtraction = buildCkdFeatures(allConfirmedReports, updatedPatient, ['age', 'serum_creatinine']);
+    if (ckdExtraction.canCalculate) {
+      const mlResult = await callNewDiseasePredictionService('chronic_kidney_disease', ckdExtraction.featureVector);
+      if (mlResult.success && mlResult.canCalculate) {
+        ckdPrediction = await Prediction.create({
+          patient: report.patient,
+          report: report._id,
+          calculatedBy: req.user._id,
+          disease: 'chronic_kidney_disease',
+          modelVersion: mlResult.modelVersion || '1.0.0-research',
+          featureSchemaVersion: mlResult.featureSchemaVersion || 'ckd.a_minimal.v1',
+          probability: mlResult.probability,
+          threshold: typeof mlResult.threshold === 'number' ? mlResult.threshold : 0.967,
+          riskCategory: mlResult.riskCategory,
+          status: 'SUCCESS',
+          canCalculate: true,
+          dataCompleteness: mlResult.dataCompleteness || ckdExtraction.dataCompleteness,
+          missingDomain: null,
+          inputFeatures: ckdExtraction.featureVector,
+          featureAvailability: {
+            availableFeatures: Object.keys(ckdExtraction.featureVector).filter((k) => ckdExtraction.featureVector[k] !== null),
+            missingFeatures: Object.keys(ckdExtraction.featureVector).filter((k) => ckdExtraction.featureVector[k] === null),
+            provenance: ckdExtraction.provenance,
+          },
+          featureProvenance: ckdExtraction.provenance,
+          topContributingFactors: mlResult.topContributingFactors || [],
+          explanationStatus: mlResult.explanationStatus || 'unavailable',
+          taskInterpretation: mlResult.taskInterpretation || 'Classification of the UCI CKD dataset label; not future-onset prediction.',
+          clinicalDisclaimer: mlResult.clinicalDisclaimer || 'Statistical model estimate only. Not a diagnosis and not clinically validated.',
+          overallRiskPercent: Math.round(mlResult.probability * 100),
+          riskLevel: ['ELEVATED_MODEL_ESTIMATED_RISK', 'POSITIVE_CLASSIFICATION_ESTIMATE'].includes(mlResult.riskCategory)
+            ? 'Elevated model estimate'
+            : 'Lower model estimate',
+          confidenceScore: null,
+          diseaseBreakdown: { Diabetes: null, Hypertension: null, HeartDisease: null, KidneyDisease: null },
+          algorithmVersion: mlResult.modelVersion || 'ckd_v1.0.0',
+          predictionDate: new Date(),
+        });
+      } else {
+        const isUnavailable = ['MODEL_UNAVAILABLE', 'SERVICE_UNAVAILABLE', 'PREDICTION_SERVICE_UNAVAILABLE'].includes(mlResult.status);
+        ckdPrediction = await Prediction.create({
+          patient: report.patient,
+          report: report._id,
+          calculatedBy: req.user._id,
+          disease: 'chronic_kidney_disease',
+          modelVersion: mlResult.modelVersion || null,
+          featureSchemaVersion: mlResult.featureSchemaVersion || null,
+          probability: null,
+          threshold: null,
+          riskCategory: isUnavailable ? 'FAILED' : 'INSUFFICIENT_DATA',
+          status: isUnavailable ? 'SERVICE_UNAVAILABLE' : (mlResult.status || 'INSUFFICIENT_DATA'),
+          canCalculate: false,
+          dataCompleteness: 'INSUFFICIENT',
+          missingDomain: mlResult.message || ckdExtraction.missingRequired.join(', '),
+          inputFeatures: ckdExtraction.featureVector,
+          featureAvailability: {
+            availableFeatures: Object.keys(ckdExtraction.featureVector).filter((k) => ckdExtraction.featureVector[k] !== null),
+            missingFeatures: Object.keys(ckdExtraction.featureVector).filter((k) => ckdExtraction.featureVector[k] === null),
+            provenance: ckdExtraction.provenance,
+          },
+          featureProvenance: ckdExtraction.provenance,
+          topContributingFactors: [],
+          explanationStatus: 'unavailable',
+          taskInterpretation: 'Classification of the UCI CKD dataset label; not future-onset prediction.',
+          clinicalDisclaimer: 'Statistical model estimate only. Not a diagnosis and not clinically validated.',
+          overallRiskPercent: null,
+          riskLevel: 'Unknown',
+          confidenceScore: null,
+          diseaseBreakdown: { Diabetes: null, Hypertension: null, HeartDisease: null, KidneyDisease: null },
+          algorithmVersion: 'ckd_unavailable',
+          predictionDate: new Date(),
+        });
+      }
+    } else {
+      ckdPrediction = await Prediction.create({
+        patient: report.patient,
+        report: report._id,
+        calculatedBy: req.user._id,
+        disease: 'chronic_kidney_disease',
+        modelVersion: null,
+        featureSchemaVersion: null,
+        probability: null,
+        threshold: null,
+        riskCategory: 'INSUFFICIENT_DATA',
+        status: 'INSUFFICIENT_DATA',
+        canCalculate: false,
+        dataCompleteness: 'INSUFFICIENT',
+        missingDomain: ckdExtraction.missingRequired.join(', '),
+        inputFeatures: ckdExtraction.featureVector,
+        featureAvailability: {
+          availableFeatures: Object.keys(ckdExtraction.featureVector).filter((k) => ckdExtraction.featureVector[k] !== null),
+          missingFeatures: Object.keys(ckdExtraction.featureVector).filter((k) => ckdExtraction.featureVector[k] === null),
+          provenance: ckdExtraction.provenance,
+        },
+        featureProvenance: ckdExtraction.provenance,
+        topContributingFactors: [],
+        explanationStatus: 'unavailable',
+        taskInterpretation: 'Classification of the UCI CKD dataset label; not future-onset prediction.',
+        clinicalDisclaimer: 'Statistical model estimate only. Not a diagnosis and not clinically validated.',
+        overallRiskPercent: null,
+        riskLevel: 'Unknown',
+        confidenceScore: null,
+        diseaseBreakdown: { Diabetes: null, Hypertension: null, HeartDisease: null, KidneyDisease: null },
+        algorithmVersion: 'ckd_unavailable',
+        predictionDate: new Date(),
+      });
+    }
+  } catch (ckdErr) {
+    console.error('[Report Confirmation] CKD ML assessment deferred/failed:', ckdErr.message);
+  }
+
   return res.status(200).json(
     new ApiResponse(
       200,
@@ -804,6 +1062,8 @@ export const confirmReport = asyncHandler(async (req, res) => {
         warnings,
         diabetesPrediction,
         heartDiseasePrediction,
+        hypertensionPrediction,
+        ckdPrediction,
       },
       'Medical report confirmed and saved to patient health profile.'
     )
@@ -833,30 +1093,16 @@ export const getReports = asyncHandler(async (req, res) => {
     if (!isAuthorized) {
       throw new ApiError(403, 'Unauthorized. You are not assigned to this patient.');
     }
-  } else if (req.user.role === 'Nurse') {
-    if (!patientId) {
-      throw new ApiError(400, 'patientId parameter is required');
-    }
-    const p = await Patient.findById(patientId);
-    if (!p || !p.assignedNurse || String(p.assignedNurse) !== String(req.user._id)) {
-      throw new ApiError(403, 'Unauthorized. You are not assigned to this patient.');
-    }
-  } else if (req.user.role === 'Family') {
-    if (!patientId) {
-      throw new ApiError(400, 'patientId parameter is required');
-    }
-    const p = await Patient.findById(patientId);
-    if (!p) throw new ApiError(404, 'Patient record not found.');
-    const isAuthorized = await isFamilyAuthorizedForPatient(p, req.user._id);
-    if (!isAuthorized) {
-      throw new ApiError(403, 'Unauthorized. You are not linked to this patient.');
-    }
   } else if (req.user.role === 'CHO') {
     if (!patientId) {
       throw new ApiError(400, 'patientId parameter is required');
     }
     const p = await Patient.findById(patientId);
     if (!p) throw new ApiError(404, 'Patient record not found.');
+    const allowedVillages = [...(req.user.communityVillages || []), req.user.village].map((village) => String(village || '').trim().toLowerCase()).filter(Boolean);
+    if (!allowedVillages.includes(String(p.village || '').trim().toLowerCase())) {
+      throw new ApiError(403, 'Unauthorized. This patient is outside your assigned community.');
+    }
   } else if (req.user.role === 'Admin') {
     throw new ApiError(403, 'Administrative access to clinical reports is prohibited.');
   } else {
@@ -903,17 +1149,11 @@ export const getReportById = asyncHandler(async (req, res) => {
     if (!isAuthorized) {
       throw new ApiError(403, 'Unauthorized. You are not assigned to this patient.');
     }
-  } else if (req.user.role === 'Nurse') {
-    if (!patientRecord.assignedNurse || String(patientRecord.assignedNurse) !== String(req.user._id)) {
-      throw new ApiError(403, 'Unauthorized. You are not assigned to this patient.');
-    }
-  } else if (req.user.role === 'Family') {
-    const isAuthorized = await isFamilyAuthorizedForPatient(patientRecord, req.user._id);
-    if (!isAuthorized) {
-      throw new ApiError(403, 'Unauthorized. You are not linked to this patient.');
-    }
   } else if (req.user.role === 'CHO') {
-    // CHO is authorized to view community patient diagnostic reports
+    const allowedVillages = [...(req.user.communityVillages || []), req.user.village].map((village) => String(village || '').trim().toLowerCase()).filter(Boolean);
+    if (!allowedVillages.includes(String(patientRecord.village || '').trim().toLowerCase())) {
+      throw new ApiError(403, 'Unauthorized. This patient is outside your assigned community.');
+    }
   } else if (req.user.role === 'Admin') {
     throw new ApiError(403, 'Administrative access to clinical reports is prohibited.');
   } else {
@@ -987,6 +1227,7 @@ const getDefaultUnit = (field) => {
     case 'hdlCholesterol': return 'mg/dL';
     case 'serumCreatinine':
     case 'creatinine': return 'mg/dL';
+    case 'bloodUrea': return 'mg/dL';
     case 'hemoglobin': return 'g/dL';
     case 'bmi': return 'kg/m²';
     default: return '';

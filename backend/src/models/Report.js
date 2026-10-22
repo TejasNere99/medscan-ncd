@@ -13,6 +13,10 @@ const reportSchema = new mongoose.Schema(
       ref: 'User',
       required: true,
     },
+    uploadedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+    },
     title: {
       type: String,
       required: true,
@@ -94,5 +98,15 @@ const reportSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+
+reportSchema.pre('validate', function (next) {
+  if (!this.uploader && this.uploadedBy) {
+    this.uploader = this.uploadedBy;
+  }
+  if (!this.uploadedBy && this.uploader) {
+    this.uploadedBy = this.uploader;
+  }
+  next();
+});
 
 export const Report = mongoose.model('Report', reportSchema);

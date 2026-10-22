@@ -1,0 +1,19 @@
+{
+  "dataset": "Chronic Kidney Disease",
+  "uci_id": 336,
+  "doi": "10.24432/C5G020",
+  "repository_url": "https://archive.ics.uci.edu/dataset/336/chronic+kidney+disease",
+  "data_url": "https://archive.ics.uci.edu/static/public/336/data.csv",
+  "license": "CC BY 4.0 (as stated by UCI)",
+  "retrieved_at_utc": "2026-10-18T10:50:18.527854+00:00",
+  "filename": "uci_chronic_kidney_disease.csv",
+  "bytes": 45092,
+  "sha256": "0eeea8d17f5ad8792d854999d6ddf1602ec4e116616f6ccdfdaef0ba8109e694",
+  "downloaded_now": true,
+  "rows": 400,
+  "target_counts_raw": {
+    "ckd": 248,
+    "notckd": 150,
+    "ckd\t": 2
+  }
+}

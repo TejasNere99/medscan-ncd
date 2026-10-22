@@ -3,7 +3,7 @@ import { Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 
 export const ProtectedRoute = () => {
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, user, loading } = useAuth();
 
   if (loading) {
     return (
@@ -14,6 +14,11 @@ export const ProtectedRoute = () => {
         </div>
       </div>
     );
+  }
+
+  // Block unverified users from accessing protected dashboards
+  if (user && user.isEmailVerified === false && user.isVerified === false) {
+    return <Navigate to="/login" replace />;
   }
 
   return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />;

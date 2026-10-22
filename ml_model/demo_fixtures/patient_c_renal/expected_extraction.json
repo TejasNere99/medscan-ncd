@@ -1,0 +1,20 @@
+{
+  "disclaimer": "SYNTHETIC \u2014 FOR DEMONSTRATION ONLY",
+  "patientContext": {
+    "age": 62,
+    "ageUnit": "years",
+    "sex": "female"
+  },
+  "canonicalVitals": {
+    "serumCreatinine": 2.4,
+    "bloodUrea": 65,
+    "fastingSugar": 112,
+    "totalCholesterol": 195,
+    "systolicBP": 148,
+    "diastolicBP": 92,
+    "hemoglobin": 10.2,
+    "bmi": 26.5,
+    "heartRate": 76
+  },
+  "overallConfidence": 0.99
+}

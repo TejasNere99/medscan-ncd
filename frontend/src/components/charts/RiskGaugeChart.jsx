@@ -7,10 +7,10 @@ export const RiskGaugeChart = ({ riskPercent = 0, riskLevel = 'Low', diseaseBrea
   const strokeDashoffset = circumference - (riskPercent / 100) * circumference;
 
   const getColor = (pct) => {
-    if (pct >= 75) return { stroke: '#ef4444', bg: 'bg-rose-500/10 text-rose-400 border-rose-500/30' };
-    if (pct >= 55) return { stroke: '#f59e0b', bg: 'bg-amber-500/10 text-amber-400 border-amber-500/30' };
-    if (pct >= 35) return { stroke: '#eab308', bg: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/30' };
-    return { stroke: '#10b981', bg: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' };
+    if (pct >= 75) return { stroke: '#e11d48', bg: 'bg-rose-100 text-rose-800 border-rose-300' };
+    if (pct >= 55) return { stroke: '#ea580c', bg: 'bg-orange-100 text-orange-800 border-orange-300' };
+    if (pct >= 35) return { stroke: '#d97706', bg: 'bg-amber-100 text-amber-900 border-amber-300' };
+    return { stroke: '#059669', bg: 'bg-emerald-100 text-emerald-800 border-emerald-300' };
   };
 
   const theme = getColor(riskPercent);
@@ -24,7 +24,7 @@ export const RiskGaugeChart = ({ riskPercent = 0, riskLevel = 'Low', diseaseBrea
             cx="90"
             cy="90"
             r={radius}
-            className="stroke-slate-800"
+            className="stroke-stone-200"
             strokeWidth="14"
             fill="transparent"
           />

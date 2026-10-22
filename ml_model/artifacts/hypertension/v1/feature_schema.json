@@ -1,0 +1,111 @@
+{
+  "schema_version": "hypertension.v1",
+  "disease": "hypertension",
+  "task": "current diagnosed/treated hypertension classification",
+  "task_interpretation": "Model-estimated probability of diagnosed/treated hypertension based on available non-blood-pressure cardiometabolic information. Not future onset prediction and not a diagnosis.",
+  "ordered_features": [
+    "age",
+    "sex",
+    "bmi",
+    "fasting_glucose",
+    "total_cholesterol",
+    "hdl",
+    "serum_creatinine",
+    "heart_rate",
+    "current_smoker"
+  ],
+  "fields": {
+    "age": {
+      "type": "number",
+      "unit": "years",
+      "required": true,
+      "nhanes": "DEMO_J.RIDAGEYR",
+      "valid_range": [
+        16,
+        130
+      ]
+    },
+    "sex": {
+      "type": "binary",
+      "unit": "0=female,1=male",
+      "required": true,
+      "nhanes": "DEMO_J.RIAGENDR",
+      "valid_values": [
+        0,
+        1
+      ]
+    },
+    "bmi": {
+      "type": "number",
+      "unit": "kg/m2",
+      "required": false,
+      "nhanes": "BMX_J.BMXBMI"
+    },
+    "fasting_glucose": {
+      "type": "number",
+      "unit": "mg/dL",
+      "required": false,
+      "nhanes": "GLU_J.LBXGLU",
+      "context": "Fasting subsample glucose; not generalized to all participants."
+    },
+    "total_cholesterol": {
+      "type": "number",
+      "unit": "mg/dL",
+      "required": false,
+      "nhanes": "TCHOL_J.LBXTC"
+    },
+    "hdl": {
+      "type": "number",
+      "unit": "mg/dL",
+      "required": false,
+      "nhanes": "HDL_J.LBDHDD"
+    },
+    "serum_creatinine": {
+      "type": "number",
+      "unit": "mg/dL",
+      "required": false,
+      "nhanes": "BIOPRO_J.LBXSCR"
+    },
+    "heart_rate": {
+      "type": "number",
+      "unit": "beats/min",
+      "required": false,
+      "nhanes": "BPX_J.BPXPLS",
+      "context": "Pulse rate only; measured systolic/diastolic BP is excluded."
+    },
+    "current_smoker": {
+      "type": "binary",
+      "unit": "0=no,1=yes",
+      "required": false,
+      "nhanes": "SMQ_J.SMQ020 + SMQ_J.SMQ040",
+      "missing_policy": "Unknown/refused/age-ineligible responses remain missing."
+    }
+  },
+  "target_definition": "Positive when BPQ020=Yes, or BPQ050A=Yes; negative only when BPQ020=No and medication items BPQ040A/BPQ050A are structural blanks according to the official skip; otherwise exclude unresolved/contradictory labels.",
+  "excluded_features": [
+    "BPQ020",
+    "BPQ040A",
+    "BPQ050A",
+    "BPXSY1",
+    "BPXDI1",
+    "BPXSY2",
+    "BPXDI2",
+    "BPXSY3",
+    "BPXDI3",
+    "BPXSY4",
+    "BPXDI4",
+    "BPXPLS is allowed only as heart_rate",
+    "all measured systolic/diastolic BP and BP-derived features"
+  ],
+  "missingness_policy": "Required age and sex missing/invalid rows excluded in training and return insufficient data in inference. Optional fields remain missing and are imputed by the training-fitted pipeline, with missingness indicators.",
+  "training_preprocessing": "Median imputation and missingness indicators fit inside each CV fold; standard scaling only for logistic regression.",
+  "units": "NHANES: age years; BMI kg/m2; cholesterol mg/dL; creatinine mg/dL; pulse beats/min; fasting plasma glucose mg/dL.",
+  "limitations": [
+    "Target is self-reported current diagnosis/treatment, not future-onset hypertension.",
+    "Diagnosis awareness can reflect healthcare access and screening history.",
+    "Measured SBP/DBP and BP-derived values are strictly excluded; discrimination may be limited.",
+    "NHANES is a complex, oversampled survey; fitted model is unweighted, not a population-prevalence estimator.",
+    "Fasting glucose is available only in an eligible subsample; survey weighting and coverage limit interpretation.",
+    "No clinical or prospective validation is established."
+  ]
+}

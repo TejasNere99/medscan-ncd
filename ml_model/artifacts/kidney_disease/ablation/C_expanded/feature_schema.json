@@ -1,0 +1,88 @@
+{
+  "schema_version": "ckd.c_expanded.v1",
+  "disease": "chronic_kidney_disease",
+  "task": "CKD status classification",
+  "task_interpretation": "Model-estimated probability of the original UCI dataset CKD status from approved clinical/laboratory features. Not future-onset prediction and not a diagnosis.",
+  "ordered_features": [
+    "age",
+    "serum_creatinine",
+    "blood_urea",
+    "blood_pressure",
+    "blood_glucose",
+    "hemoglobin"
+  ],
+  "required_features": [
+    "age",
+    "serum_creatinine"
+  ],
+  "fields": {
+    "age": {
+      "type": "number",
+      "unit": "years",
+      "required": true,
+      "uci_field": "age",
+      "valid_range": [
+        0,
+        130
+      ]
+    },
+    "serum_creatinine": {
+      "type": "number",
+      "unit": "mg/dL",
+      "required": true,
+      "uci_field": "sc",
+      "valid_range": ">0; retain clinically extreme positive values"
+    },
+    "blood_urea": {
+      "type": "number",
+      "unit": "mg/dL",
+      "required": false,
+      "uci_field": "bu",
+      "source_definition": "Blood urea (not BUN)",
+      "valid_range": ">0; retain clinically extreme positive values"
+    },
+    "blood_pressure": {
+      "type": "number",
+      "unit": "mm/Hg",
+      "required": false,
+      "uci_field": "bp",
+      "production_mapping": "UCI documentation does not specify systolic versus diastolic; no mapping from patient systolic/diastolic values is enabled."
+    },
+    "blood_glucose": {
+      "type": "number",
+      "unit": "mg/dL",
+      "required": false,
+      "uci_field": "bgr",
+      "context": "Random blood glucose, not assumed fasting."
+    },
+    "hemoglobin": {
+      "type": "number",
+      "unit": "gms (UCI documentation; denominator unspecified)",
+      "required": false,
+      "uci_field": "hemo",
+      "production_mapping": "UCI unit documentation is insufficient to safely equate with canonical g/dL; group C cannot be enabled for clinical production until verified."
+    }
+  },
+  "target_definition": "Trim whitespace/case from UCI class; ckd=1, notckd=0; unknown target labels rejected.",
+  "excluded_features": [
+    "egfr/derived filtration",
+    "urine albumin/protein/specific gravity/sugar/microscopy",
+    "appetite",
+    "pedal edema",
+    "anemia categorical flag",
+    "CAD categorical flag",
+    "hypertension categorical flag",
+    "diabetes categorical flag",
+    "all other non-approved fields"
+  ],
+  "missingness_policy": "Age and serum creatinine are required. Optional selected model fields may be absent; training-fitted median imputation and indicators handle their absence. No inference-time feature schema fallback.",
+  "training_preprocessing": "Numeric median imputation and missingness indicators fitted inside each CV fold; no clipping/winsorization or global imputation.",
+  "limitations": [
+    "UCI CKD data has 400 records from a single hospital and short collection period; only records with age and creatinine remain for training.",
+    "Small sample size makes discrimination and especially calibration/threshold estimates uncertain.",
+    "Dataset label classification is not a future onset prediction, diagnosis, or clinical validation.",
+    "Population, clinical origin, feature missingness, and measurement processes limit generalization.",
+    "UCI documents blood pressure as mm/Hg but does not specify systolic/diastolic semantics; production mapping is disabled.",
+    "UCI documents hemoglobin units as gms without denominator; production mapping to g/dL is disabled pending source verification."
+  ]
+}

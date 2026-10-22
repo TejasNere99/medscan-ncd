@@ -23,7 +23,7 @@ export const createNotification = async ({ recipientId, type, title, message, da
  */
 export const routeMissedMedicineAlert = async ({ patientId, medicineName, scheduledTime }) => {
   try {
-    const patientDoc = await Patient.findById(patientId).populate('user assignedDoctor linkedFamilyMembers');
+    const patientDoc = await Patient.findById(patientId).populate('user assignedDoctor');
     if (!patientDoc) return;
 
     const timeStr = new Date(scheduledTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -50,19 +50,6 @@ export const routeMissedMedicineAlert = async ({ patientId, medicineName, schedu
         message: `${patientDoc.user?.name || 'Patient'} missed scheduled dose of ${medicineName} at ${timeStr}.`,
         priority: 'High',
       });
-    }
-
-    // 3. Notify Linked Family Members
-    if (patientDoc.linkedFamilyMembers && patientDoc.linkedFamilyMembers.length > 0) {
-      for (const familyUser of patientDoc.linkedFamilyMembers) {
-        await createNotification({
-          recipientId: familyUser._id,
-          type: 'MissedMedicineAlert',
-          title: `Family Member Missed Dose`,
-          message: `${patientDoc.user?.name || 'Your relative'} missed their ${medicineName} at ${timeStr}.`,
-          priority: 'High',
-        });
-      }
     }
   } catch (error) {
     console.error('[Notification Routing] Error handling missed medicine alert:', error);

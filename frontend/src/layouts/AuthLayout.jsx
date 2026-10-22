@@ -1,33 +1,22 @@
 import React from 'react';
 import { Outlet, Link } from 'react-router-dom';
-import { Activity } from 'lucide-react';
+import { Activity, ArrowLeft } from 'lucide-react';
 
-export const AuthLayout = () => {
-  return (
-    <div className="min-h-screen bg-[#0b1329] flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Background ambient lighting */}
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-brand-500/10 blur-[120px] pointer-events-none rounded-full" />
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-cyan-500/10 blur-[120px] pointer-events-none rounded-full" />
-
-      <div className="w-full max-w-md relative z-10">
-        <div className="text-center mb-8">
-          <Link to="/" className="inline-flex items-center space-x-3 group">
-            <div className="p-3 rounded-2xl bg-gradient-to-tr from-brand-600 to-cyan-400 text-white shadow-xl shadow-cyan-500/20 group-hover:scale-105 transition-transform">
-              <Activity className="w-8 h-8" />
-            </div>
-            <div className="text-left">
-              <span className="text-xl font-extrabold text-white tracking-tight block leading-none">
-                MedScan<span className="text-brand-400">-NCD</span>
-              </span>
-              <span className="text-xs text-slate-400 font-semibold tracking-wider uppercase">AI Preventive Health Platform</span>
-            </div>
-          </Link>
-        </div>
-
-        <div className="glass-card p-8 rounded-3xl border border-slate-800 shadow-2xl">
-          <Outlet />
-        </div>
+export const AuthLayout = () => <main className="min-h-screen bg-[#fafaf9] p-4 sm:p-6">
+  <div className="mx-auto grid min-h-[calc(100vh-2rem)] max-w-6xl overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm md:min-h-[calc(100vh-3rem)] md:grid-cols-[.9fr_1.1fr]">
+    <section className="relative hidden flex-col justify-between overflow-hidden bg-[#f2eee7] p-10 md:flex lg:p-14">
+      <div className="absolute -right-24 top-1/4 h-80 w-80 rounded-full border border-stone-300/70" /><div className="absolute -right-12 top-[30%] h-56 w-56 rounded-full border border-stone-300/70" />
+      <Link to="/" className="relative z-10 inline-flex w-fit items-center gap-2.5 text-sm font-semibold text-stone-900"><span className="flex h-9 w-9 items-center justify-center rounded-lg bg-white text-violet-700"><Activity size={18}/></span>MedScan</Link>
+      <div className="relative z-10 max-w-sm pb-7"><p className="mb-4 text-[11px] font-semibold uppercase tracking-[.18em] text-violet-800">A clearer view of your health</p><h1 className="editorial-heading text-4xl leading-[1.12] text-stone-900 lg:text-[46px]">Your health information, made easier to understand.</h1><p className="mt-5 max-w-xs text-sm leading-6 text-stone-600">Keep your reports and health information together in one thoughtful space.</p></div>
+      <p className="relative z-10 text-xs text-stone-500">Private by design. Built around your care.</p>
+    </section>
+    <section className="flex min-h-[calc(100vh-2rem)] flex-col justify-center px-4 py-8 sm:px-10 md:min-h-0 md:px-12 lg:px-20">
+      <div className="mx-auto w-full max-w-[420px]">
+        <Link to="/" className="mb-8 inline-flex items-center gap-1.5 text-xs text-stone-500 hover:text-stone-900 md:hidden"><ArrowLeft size={14}/> MedScan home</Link>
+        <div className="mb-8 md:hidden"><p className="text-sm font-semibold text-stone-900">MedScan</p></div>
+        <Outlet />
+        <p className="mt-10 text-center text-[11px] text-stone-400">Your information is handled with care.</p>
       </div>
-    </div>
-  );
-};
+    </section>
+  </div>
+</main>;

@@ -10,6 +10,7 @@ dotenv.config({ path: path.join(__dirname, '../../.env') });
 import { User } from '../models/User.js';
 import { Patient } from '../models/Patient.js';
 import { Doctor } from '../models/Doctor.js';
+import { PatientRelationship } from '../models/PatientRelationship.js';
 import { Medicine } from '../models/Medicine.js';
 import { MedicineLog } from '../models/MedicineLog.js';
 import { Report } from '../models/Report.js';
@@ -28,6 +29,7 @@ const seedDatabase = async () => {
     await User.deleteMany({});
     await Patient.deleteMany({});
     await Doctor.deleteMany({});
+    await PatientRelationship.deleteMany({});
     await Medicine.deleteMany({});
     await MedicineLog.deleteMany({});
     await Report.deleteMany({});
@@ -36,9 +38,9 @@ const seedDatabase = async () => {
     await Appointment.deleteMany({});
     await Setting.deleteMany({});
 
-    console.log('[Seed Script] Seeding Demo User Accounts (password: Password123!)...');
+    console.log('[Seed Script] Seeding Final 4 Canonical Roles Demo Accounts (password: Password123!)...');
 
-    // 1. Create Users
+    // 1. Create Users (Strictly 4 Roles: Patient, Doctor, CHO, Admin)
     const patientUser = await User.create({
       name: 'John Doe',
       email: 'patient@example.com',
@@ -46,6 +48,8 @@ const seedDatabase = async () => {
       role: 'Patient',
       phone: '+1 555-0101',
       village: 'Green Valley',
+      isEmailVerified: true,
+      isVerified: true,
       avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=256',
     });
 
@@ -56,27 +60,9 @@ const seedDatabase = async () => {
       role: 'Doctor',
       phone: '+1 555-0102',
       village: 'Green Valley',
+      isEmailVerified: true,
+      isVerified: true,
       avatar: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&q=80&w=256',
-    });
-
-    const familyUser = await User.create({
-      name: 'Mary Doe',
-      email: 'family@example.com',
-      passwordHash: 'Password123!',
-      role: 'Family',
-      phone: '+1 555-0103',
-      village: 'Green Valley',
-      avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=256',
-    });
-
-    const nurseUser = await User.create({
-      name: 'Nurse Emily Johnson',
-      email: 'nurse@example.com',
-      passwordHash: 'Password123!',
-      role: 'Nurse',
-      phone: '+1 555-0104',
-      village: 'Green Valley',
-      avatar: 'https://images.unsplash.com/photo-1582750433449-648ed127bb54?auto=format&fit=crop&q=80&w=256',
     });
 
     const choUser = await User.create({
@@ -86,6 +72,8 @@ const seedDatabase = async () => {
       role: 'CHO',
       phone: '+1 555-0105',
       village: 'Green Valley',
+      isEmailVerified: true,
+      isVerified: true,
       avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=256',
     });
 
@@ -96,6 +84,8 @@ const seedDatabase = async () => {
       role: 'Admin',
       phone: '+1 555-0106',
       village: 'Green Valley',
+      isEmailVerified: true,
+      isVerified: true,
       avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=256',
     });
 
@@ -122,14 +112,24 @@ const seedDatabase = async () => {
       address: '42 Pine Crest Road, Green Valley',
       village: 'Green Valley',
       assignedDoctor: doctorUser._id,
-      assignedNurse: nurseUser._id,
-      linkedFamilyMembers: [familyUser._id],
       emergencyContact: {
-        name: 'Mary Doe',
-        relation: 'Wife',
+        name: 'Emergency Contact',
+        relation: 'Spouse',
         phone: '+1 555-0103',
       },
       medicalHistory: ['Type-2 Diabetes Risk', 'Stage 1 Hypertension', 'Mild Hyperlipidemia'],
+    });
+
+    // 2b. Establish Active Doctor-Patient Relationship
+    await PatientRelationship.create({
+      patient: patientDoc._id,
+      relatedUser: doctorUser._id,
+      relationshipType: 'DOCTOR',
+      status: 'ACTIVE',
+      initiatedBy: 'PATIENT',
+      isPrimaryDoctor: true,
+      relationshipLabel: 'Primary Attending Physician',
+      activatedAt: new Date(),
     });
 
     // 3. Create Medicines
@@ -294,12 +294,10 @@ Serum Creatinine: 1.1 mg/dL`,
     });
 
     console.log('======================================================');
-    console.log('   DATABASE SEEDED SUCCESSFULLY WITH DEMO ACCOUNTS');
+    console.log('   DATABASE SEEDED SUCCESSFULLY WITH 4 CANONICAL ROLES');
     console.log('======================================================');
     console.log(' Patient:  patient@example.com  | Password123!');
     console.log(' Doctor:   doctor@example.com   | Password123!');
-    console.log(' Family:   family@example.com   | Password123!');
-    console.log(' Nurse:    nurse@example.com    | Password123!');
     console.log(' CHO:      cho@example.com      | Password123!');
     console.log(' Admin:    admin@example.com    | Password123!');
     console.log('======================================================\n');

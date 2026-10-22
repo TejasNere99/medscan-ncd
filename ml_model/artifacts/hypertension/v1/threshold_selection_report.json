@@ -1,0 +1,28 @@
+{
+  "threshold": 0.3306787875730824,
+  "criterion": "Maximum specificity among cross-fitted development thresholds with sensitivity >= 0.80",
+  "target_sensitivity_engineering_target": 0.8,
+  "development_crossfit_metrics": {
+    "n": 4920,
+    "positive_count": 1709,
+    "negative_count": 3211,
+    "prediction_coverage": 1.0,
+    "roc_auc": 0.8089311919475166,
+    "pr_auc": 0.6613705571201876,
+    "sensitivity": 0.8004681100058514,
+    "specificity": 0.6758019308626596,
+    "precision": 0.5678704856787049,
+    "f1": 0.6644001942690626,
+    "accuracy": 0.7191056910569106,
+    "brier_score": 0.16688053601106242,
+    "ece_10_bins": 0.008671108387756808,
+    "threshold": 0.3306787875730824,
+    "confusion_matrix": {
+      "true_negative": 2170,
+      "false_positive": 1041,
+      "false_negative": 341,
+      "true_positive": 1368
+    }
+  },
+  "threshold_is_not_a_clinical_guideline": true
+}

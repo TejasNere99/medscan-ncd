@@ -1,0 +1,14 @@
+{
+  "method": "mean absolute logistic-regression coefficient or tree feature importance across calibrated estimator folds",
+  "global_feature_importance": [
+    {
+      "feature": "serum_creatinine",
+      "mean_absolute_model_weight": 0.7486742158992722
+    },
+    {
+      "feature": "age",
+      "mean_absolute_model_weight": 0.25132578410072787
+    }
+  ],
+  "interpretation": "Global model associations only; not causal and not a patient-specific effect. Inference service returns local explanations when supported."
+}

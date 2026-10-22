@@ -6,7 +6,11 @@ import { Doctor } from '../models/Doctor.js';
 import { ApiError } from '../utils/apiError.js';
 import { ApiResponse } from '../utils/apiResponse.js';
 import { asyncHandler } from '../utils/asyncWrapper.js';
-import { sendEmail } from '../config/email.js';
+import {
+  sendVerificationEmail,
+  sendPasswordResetEmail,
+  sendWelcomeEmail,
+} from '../services/emailService.js';
 
 export const generateAccessAndRefreshTokens = async (userId) => {
   const user = await User.findById(userId);
@@ -26,11 +30,18 @@ export const generateAccessAndRefreshTokens = async (userId) => {
   return { accessToken, refreshToken };
 };
 
+/**
+ * Register a new user in UNVERIFIED state and dispatch verification email
+ */
 export const register = asyncHandler(async (req, res) => {
   const { name, email, password, role = 'Patient', phone, village = 'Green Valley' } = req.body;
 
   if (!name || !email || !password) {
     throw new ApiError(400, 'Name, email, and password are required fields.');
+  }
+
+  if (typeof password !== 'string' || password.length < 8) {
+    throw new ApiError(400, 'Password must be at least 8 characters long.');
   }
 
   // Phase P0: Public self-registration is restricted strictly to Patient accounts
@@ -41,45 +52,172 @@ export const register = asyncHandler(async (req, res) => {
     );
   }
 
-  const existingUser = await User.findOne({ email });
+  const normalizedEmail = String(email).trim().toLowerCase();
+
+  const existingUser = await User.findOne({ email: normalizedEmail });
   if (existingUser) {
     throw new ApiError(400, 'A user account with this email already exists.');
   }
 
+  // Generate cryptographically secure single-use verification token
+  const rawVerificationToken = crypto.randomBytes(32).toString('hex');
+  const tokenHash = crypto.createHash('sha256').update(rawVerificationToken).digest('hex');
+  const expiryMinutes = parseInt(process.env.EMAIL_VERIFICATION_EXPIRY_MINUTES || '30', 10);
+  const tokenExpire = new Date(Date.now() + expiryMinutes * 60 * 1000);
+
   const user = await User.create({
-    name,
-    email,
+    name: name.trim(),
+    email: normalizedEmail,
     passwordHash: password,
-    role,
-    phone,
+    role: 'Patient',
+    phone: phone?.trim(),
     village,
+    isEmailVerified: false,
+    isVerified: false,
+    emailVerificationToken: tokenHash,
+    emailVerificationExpire: tokenExpire,
   });
 
-  // Automatically create linked Patient or Doctor document based on role
-  if (role === 'Patient') {
-    await Patient.create({
-      user: user._id,
-      village: user.village,
-    });
-  } else if (role === 'Doctor') {
-    await Doctor.create({
-      user: user._id,
-    });
-  }
+  // Automatically create linked Patient document
+  await Patient.create({
+    user: user._id,
+    village: user.village,
+  });
 
-  const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(user._id);
+  // Dispatch email verification link
+  const emailResult = await sendVerificationEmail({
+    to: user.email,
+    name: user.name,
+    token: rawVerificationToken,
+    expiryMinutes,
+  });
 
-  const createdUser = await User.findById(user._id);
+  const emailDelivered = emailResult?.success ?? false;
 
   return res.status(201).json(
     new ApiResponse(
       201,
-      { user: createdUser, accessToken, refreshToken },
-      'User registered successfully'
+      {
+        user: {
+          _id: user._id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          isEmailVerified: false,
+        },
+        emailDelivered,
+        // In test mode, expose verification token to allow automated test validation
+        verificationToken: process.env.NODE_ENV === 'test' ? rawVerificationToken : undefined,
+      },
+      emailDelivered
+        ? 'Registration successful. Please check your email to verify your account.'
+        : 'Account created, but verification email could not be delivered. Please use "Resend Verification" to try again.'
     )
   );
 });
 
+/**
+ * Verify an email address using single-use verification token
+ */
+export const verifyEmail = asyncHandler(async (req, res) => {
+  const token = req.body?.token || req.query?.token || req.params?.token;
+
+  if (!token || typeof token !== 'string') {
+    throw new ApiError(400, 'A valid verification token is required.');
+  }
+
+  const tokenHash = crypto.createHash('sha256').update(token.trim()).digest('hex');
+
+  const user = await User.findOne({
+    emailVerificationToken: tokenHash,
+    emailVerificationExpire: { $gt: Date.now() },
+  });
+
+  if (!user) {
+    throw new ApiError(400, 'Invalid or expired email verification link. Please request a new verification email.');
+  }
+
+  // Atomically mark verified and invalidate single-use token
+  user.isEmailVerified = true;
+  user.isVerified = true;
+  user.emailVerificationToken = undefined;
+  user.emailVerificationExpire = undefined;
+  await user.save();
+
+  // Send optional welcome email
+  sendWelcomeEmail({ to: user.email, name: user.name }).catch(() => {});
+
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        email: user.email,
+        isEmailVerified: true,
+      },
+      'Email address verified successfully. You may now sign in.'
+    )
+  );
+});
+
+/**
+ * Resend email verification link with rate limit / cooldown protection
+ */
+export const resendVerification = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    throw new ApiError(400, 'Please enter your registered email address.');
+  }
+
+  const normalizedEmail = String(email).trim().toLowerCase();
+  const genericResponse = 'If an unverified account matches that email address, a verification link has been sent.';
+
+  const user = await User.findOne({ email: normalizedEmail }).select('+emailVerificationToken +emailVerificationExpire');
+
+  // Generic response if user does not exist or is already verified (prevent email enumeration)
+  if (!user || user.isEmailVerified) {
+    return res.status(200).json(new ApiResponse(200, {}, genericResponse));
+  }
+
+  // Enforce 60-second cooldown between resend requests
+  const expiryMinutes = parseInt(process.env.EMAIL_VERIFICATION_EXPIRY_MINUTES || '30', 10);
+  if (user.emailVerificationExpire) {
+    const issuedAt = user.emailVerificationExpire.getTime() - expiryMinutes * 60 * 1000;
+    const elapsedSeconds = (Date.now() - issuedAt) / 1000;
+    if (elapsedSeconds < 60) {
+      const waitSeconds = Math.ceil(60 - elapsedSeconds);
+      throw new ApiError(429, `Please wait ${waitSeconds} second${waitSeconds === 1 ? '' : 's'} before requesting another verification email.`);
+    }
+  }
+
+  // Generate fresh token and invalidate prior token
+  const rawVerificationToken = crypto.randomBytes(32).toString('hex');
+  const tokenHash = crypto.createHash('sha256').update(rawVerificationToken).digest('hex');
+  user.emailVerificationToken = tokenHash;
+  user.emailVerificationExpire = new Date(Date.now() + expiryMinutes * 60 * 1000);
+  await user.save({ validateBeforeSave: false });
+
+  await sendVerificationEmail({
+    to: user.email,
+    name: user.name,
+    token: rawVerificationToken,
+    expiryMinutes,
+  });
+
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        verificationToken: process.env.NODE_ENV === 'test' ? rawVerificationToken : undefined,
+      },
+      genericResponse
+    )
+  );
+});
+
+/**
+ * Login: Authenticate only eligible, VERIFIED accounts
+ */
 export const login = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
@@ -87,7 +225,9 @@ export const login = asyncHandler(async (req, res) => {
     throw new ApiError(400, 'Please provide both email and password.');
   }
 
-  const user = await User.findOne({ email }).select('+passwordHash');
+  const normalizedEmail = String(email).trim().toLowerCase();
+
+  const user = await User.findOne({ email: normalizedEmail }).select('+passwordHash');
   if (!user) {
     throw new ApiError(401, 'Invalid email or password credentials.');
   }
@@ -97,6 +237,25 @@ export const login = asyncHandler(async (req, res) => {
     throw new ApiError(401, 'Invalid email or password credentials.');
   }
 
+  const CANONICAL_ROLES = ['Patient', 'Doctor', 'CHO', 'Admin'];
+  if (!CANONICAL_ROLES.includes(user.role)) {
+    throw new ApiError(403, `Login forbidden. Account role '${user.role}' is deprecated and no longer supported.`);
+  }
+
+  // Enforce email verification
+  if (user.isEmailVerified === false && user.isVerified === false) {
+    return res.status(403).json({
+      success: false,
+      statusCode: 403,
+      message: 'Please verify your email address before signing in. Check your inbox for the activation link.',
+      data: {
+        email: user.email,
+        isEmailVerified: false,
+        code: 'EMAIL_NOT_VERIFIED',
+      },
+    });
+  }
+
   const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(user._id);
 
   // Fetch patientId or doctorId if exists
@@ -104,6 +263,9 @@ export const login = asyncHandler(async (req, res) => {
   if (user.role === 'Patient') {
     const patientDoc = await Patient.findOne({ user: user._id });
     if (patientDoc) extraInfo.patientId = patientDoc._id;
+  } else if (user.role === 'Doctor') {
+    const doctorDoc = await Doctor.findOne({ user: user._id });
+    if (doctorDoc) extraInfo.doctorId = doctorDoc._id;
   }
 
   const loggedInUser = await User.findById(user._id);
@@ -128,60 +290,78 @@ export const logout = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, {}, 'User logged out successfully. Session invalidated.'));
 });
 
+/**
+ * Forgot password: Request a secure password reset link
+ */
 export const forgotPassword = asyncHandler(async (req, res) => {
   const { email } = req.body;
   if (!email) {
     throw new ApiError(400, 'Please enter your registered email address.');
   }
 
-  const user = await User.findOne({ email });
+  const normalizedEmail = String(email).trim().toLowerCase();
+  const genericResponse = 'If that email address is registered, password reset instructions have been sent.';
+
+  const user = await User.findOne({ email: normalizedEmail }).select('+resetPasswordToken +resetPasswordExpire');
   if (!user) {
-    // Return success to avoid email enumeration
-    return res
-      .status(200)
-      .json(new ApiResponse(200, {}, 'If that email is registered, a password reset link has been sent.'));
+    // Return generic success to prevent email enumeration
+    return res.status(200).json(new ApiResponse(200, {}, genericResponse));
+  }
+
+  // Enforce 60-second cooldown between reset requests
+  const expiryMinutes = parseInt(process.env.PASSWORD_RESET_EXPIRY_MINUTES || '15', 10);
+  if (user.resetPasswordExpire) {
+    const issuedAt = user.resetPasswordExpire.getTime() - expiryMinutes * 60 * 1000;
+    const elapsedSeconds = (Date.now() - issuedAt) / 1000;
+    if (elapsedSeconds < 60) {
+      const waitSeconds = Math.ceil(60 - elapsedSeconds);
+      throw new ApiError(429, `Please wait ${waitSeconds} second${waitSeconds === 1 ? '' : 's'} before requesting another password reset.`);
+    }
   }
 
   const resetToken = crypto.randomBytes(32).toString('hex');
   const resetTokenHash = crypto.createHash('sha256').update(resetToken).digest('hex');
 
   user.resetPasswordToken = resetTokenHash;
-  user.resetPasswordExpire = Date.now() + 30 * 60 * 1000; // 30 mins
+  user.resetPasswordExpire = new Date(Date.now() + expiryMinutes * 60 * 1000);
   await user.save({ validateBeforeSave: false });
 
-  const resetUrl = `${process.env.CLIENT_URL || 'http://localhost:5173'}/reset-password/${resetToken}`;
-
-  const emailResult = await sendEmail({
+  await sendPasswordResetEmail({
     to: user.email,
-    subject: 'Password Reset Request — Smart Healthcare Platform',
-    text: `You requested a password reset. Please click on the following link: ${resetUrl}`,
-    html: `<div style="font-family: Arial, sans-serif; padding: 20px;">
-      <h2>Password Reset Request</h2>
-      <p>Hello ${user.name},</p>
-      <p>Click the link below to set a new password for your account. This link will expire in 30 minutes.</p>
-      <a href="${resetUrl}" style="display: inline-block; background: #06b6d4; color: #fff; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Reset Password</a>
-      <p style="margin-top: 15px; font-size: 12px; color: #888;">If you did not request this, please ignore this email.</p>
-    </div>`,
+    name: user.name,
+    token: resetToken,
+    expiryMinutes,
   });
 
   return res.status(200).json(
     new ApiResponse(
       200,
-      { resetToken: process.env.NODE_ENV !== 'production' ? resetToken : undefined },
-      'If that email is registered, a password reset link has been sent.'
+      { resetToken: process.env.NODE_ENV === 'test' ? resetToken : undefined },
+      genericResponse
     )
   );
 });
 
+/**
+ * Reset password: Validates token and securely updates password
+ */
 export const resetPassword = asyncHandler(async (req, res) => {
-  const { token } = req.params;
-  const { newPassword } = req.body;
+  const token = req.body?.token || req.params?.token || req.query?.token;
+  const { newPassword, confirmPassword } = req.body;
 
-  if (!newPassword || newPassword.length < 6) {
-    throw new ApiError(400, 'Password must be at least 6 characters long.');
+  if (!token || typeof token !== 'string') {
+    throw new ApiError(400, 'Password reset token is missing or invalid.');
   }
 
-  const resetTokenHash = crypto.createHash('sha256').update(token).digest('hex');
+  if (!newPassword || typeof newPassword !== 'string' || newPassword.length < 8) {
+    throw new ApiError(400, 'Password must be at least 8 characters long.');
+  }
+
+  if (confirmPassword !== undefined && newPassword !== confirmPassword) {
+    throw new ApiError(400, 'Password and confirmation password do not match.');
+  }
+
+  const resetTokenHash = crypto.createHash('sha256').update(token.trim()).digest('hex');
 
   const user = await User.findOne({
     resetPasswordToken: resetTokenHash,
@@ -189,9 +369,10 @@ export const resetPassword = asyncHandler(async (req, res) => {
   });
 
   if (!user) {
-    throw new ApiError(400, 'Invalid or expired password reset token.');
+    throw new ApiError(400, 'Invalid or expired password reset link. Please submit a new request.');
   }
 
+  // Atomically update password and consume single-use reset token
   user.passwordHash = newPassword;
   user.resetPasswordToken = undefined;
   user.resetPasswordExpire = undefined;

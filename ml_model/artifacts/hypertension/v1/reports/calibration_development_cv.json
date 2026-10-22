@@ -1,0 +1,24 @@
+{
+  "method_selection": "Lowest Brier score on cross-fitted development predictions; sigmoid/isotonic are compared. No held-out test observations used.",
+  "selected_method": "sigmoid",
+  "cross_fitted_scores": {
+    "uncalibrated": {
+      "roc_auc": 0.807583608058825,
+      "pr_auc": 0.658405581436456,
+      "brier": 0.16774960605796604
+    },
+    "sigmoid": {
+      "roc_auc": 0.8089311919475166,
+      "pr_auc": 0.6613705571201876,
+      "brier": 0.16688053601106242
+    },
+    "isotonic": {
+      "roc_auc": 0.8091213479702143,
+      "pr_auc": 0.6603844045947782,
+      "brier": 0.16703356287084045
+    }
+  },
+  "folds": 5,
+  "selected_model_family": "hist_gradient_boosting",
+  "note": "Calibration/threshold CV is conditional on model family selected by the full development CV comparison; model-selection uncertainty can make these estimates optimistic. Held-out test remains untouched."
+}

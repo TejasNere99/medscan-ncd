@@ -8,7 +8,9 @@
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
     "seed": "node src/seed/seed.js",
-    "test": "node -r dotenv/config --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand --forceExit"
+    "seed:demo": "node scripts/seed-demo.js",
+    "seed:faculty-demo": "node scripts/seed-faculty-demo.js",
+    "test": "node scripts/run-tests.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

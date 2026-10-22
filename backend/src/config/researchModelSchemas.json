@@ -1,0 +1,25 @@
+{
+  "hypertension": {
+    "model_version": "1.0.0-research",
+    "schema_version": "hypertension.v1",
+    "ordered_features": [
+      "age",
+      "sex",
+      "bmi",
+      "fasting_glucose",
+      "total_cholesterol",
+      "hdl",
+      "serum_creatinine",
+      "heart_rate",
+      "current_smoker"
+    ]
+  },
+  "chronic_kidney_disease": {
+    "model_version": "1.0.0-research",
+    "schema_version": "ckd.a_minimal.v1",
+    "ordered_features": [
+      "age",
+      "serum_creatinine"
+    ]
+  }
+}

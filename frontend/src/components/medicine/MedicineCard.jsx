@@ -28,10 +28,10 @@ export const MedicineCard = ({ medicine, onStatusChanged }) => {
   };
 
   const statusColors = {
-    Taken: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
-    Missed: 'bg-rose-500/10 text-rose-400 border-rose-500/30',
-    Pending: 'bg-amber-500/10 text-amber-400 border-amber-500/30',
-    Active: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30',
+    Taken: 'bg-emerald-100 text-emerald-800 border-emerald-300 font-bold',
+    Missed: 'bg-rose-100 text-rose-800 border-rose-300 font-bold',
+    Pending: 'bg-amber-100 text-amber-900 border-amber-300 font-bold',
+    Active: 'bg-cyan-100 text-cyan-800 border-cyan-300 font-bold',
   };
 
   return (

@@ -6,6 +6,12 @@ import {
   predictHeartDisease,
   getLatestHeartDiseasePrediction,
   getHeartDiseasePredictionHistory,
+  predictHypertension,
+  getLatestHypertensionPrediction,
+  getHypertensionPredictionHistory,
+  predictCkd,
+  getLatestCkdPrediction,
+  getCkdPredictionHistory,
 } from '../controllers/predictionController.js';
 import { verifyJWT } from '../middleware/auth.js';
 
@@ -26,5 +32,13 @@ router.get('/diabetes/history', getDiabetesPredictionHistory);
 router.post('/heart-disease', predictHeartDisease);
 router.get('/heart-disease/latest', getLatestHeartDiseasePrediction);
 router.get('/heart-disease/history', getHeartDiseasePredictionHistory);
+
+// New trained research models. Inputs are always built server-side from confirmed data.
+router.post('/hypertension', predictHypertension);
+router.get('/hypertension/latest', getLatestHypertensionPrediction);
+router.get('/hypertension/history', getHypertensionPredictionHistory);
+router.post('/ckd', predictCkd);
+router.get('/ckd/latest', getLatestCkdPrediction);
+router.get('/ckd/history', getCkdPredictionHistory);
 
 export default router;

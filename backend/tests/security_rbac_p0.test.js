@@ -1,11 +1,11 @@
 import request from 'supertest';
 import mongoose from 'mongoose';
 import jwt from 'jsonwebtoken';
-import app from '../src/server.js';
 import { User } from '../src/models/User.js';
 import { Patient } from '../src/models/Patient.js';
 import { Report } from '../src/models/Report.js';
 import { Prediction } from '../src/models/Prediction.js';
+import { connectToIsolatedTestDatabase } from './helpers/isolatedDatabase.js';
 
 const JWT_SECRET = process.env.JWT_ACCESS_SECRET || 'your_super_secret_access_key_12345!';
 
@@ -19,16 +19,18 @@ const createAuthHeader = (user) => {
 };
 
 describe('Phase P0: Critical RBAC & IDOR Security Test Suite', () => {
+  let app;
   let patientAUser, patientBUser, doctorUser, unassignedDoctorUser;
-  let nurseUser, choUser, familyUser, adminUser;
+  let choUser, adminUser;
   let patientADoc, patientBDoc, unassignedPatientDoc;
   let reportADoc;
+  let isolatedDatabaseReady = false;
 
   beforeAll(async () => {
-    const mongoUri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/ai-smart-healthcare-test';
-    if (mongoose.connection.readyState === 0) {
-      await mongoose.connect(mongoUri);
-    }
+    await connectToIsolatedTestDatabase();
+    isolatedDatabaseReady = true;
+    const { default: appModule } = await import('../src/server.js');
+    app = appModule;
 
     // Clean test artifacts
     await User.deleteMany({ email: { $regex: /@p0test\.com$/ } });
@@ -41,7 +43,7 @@ describe('Phase P0: Critical RBAC & IDOR Security Test Suite', () => {
       name: 'Patient A',
       email: 'patient_a@p0test.com',
       passwordHash: 'hashed123',
-      role: 'Patient',
+      role: 'Patient', isEmailVerified: true, isVerified: true,
       village: 'P0_Test_Village',
     });
 
@@ -49,7 +51,7 @@ describe('Phase P0: Critical RBAC & IDOR Security Test Suite', () => {
       name: 'Patient B',
       email: 'patient_b@p0test.com',
       passwordHash: 'hashed123',
-      role: 'Patient',
+      role: 'Patient', isEmailVerified: true, isVerified: true,
       village: 'P0_Test_Village',
     });
 
@@ -57,43 +59,29 @@ describe('Phase P0: Critical RBAC & IDOR Security Test Suite', () => {
       name: 'Doctor Assigned',
       email: 'doctor_assigned@p0test.com',
       passwordHash: 'hashed123',
-      role: 'Doctor',
+      role: 'Doctor', isEmailVerified: true, isVerified: true,
     });
 
     unassignedDoctorUser = await User.create({
       name: 'Doctor Unassigned',
       email: 'doctor_unassigned@p0test.com',
       passwordHash: 'hashed123',
-      role: 'Doctor',
-    });
-
-    nurseUser = await User.create({
-      name: 'Nurse Assigned',
-      email: 'nurse_assigned@p0test.com',
-      passwordHash: 'hashed123',
-      role: 'Nurse',
+      role: 'Doctor', isEmailVerified: true, isVerified: true,
     });
 
     choUser = await User.create({
       name: 'CHO User',
       email: 'cho_user@p0test.com',
       passwordHash: 'hashed123',
-      role: 'CHO',
+      role: 'CHO', isEmailVerified: true, isVerified: true,
       village: 'P0_Test_Village',
-    });
-
-    familyUser = await User.create({
-      name: 'Family User',
-      email: 'family_user@p0test.com',
-      passwordHash: 'hashed123',
-      role: 'Family',
     });
 
     adminUser = await User.create({
       name: 'Admin User',
       email: 'admin_user@p0test.com',
       passwordHash: 'hashed123',
-      role: 'Admin',
+      role: 'Admin', isEmailVerified: true, isVerified: true,
     });
 
     // 2. Create Patients
@@ -107,8 +95,6 @@ describe('Phase P0: Critical RBAC & IDOR Security Test Suite', () => {
       fastingSugar: 130,
       bmi: 26.5,
       assignedDoctor: doctorUser._id,
-      assignedNurse: nurseUser._id,
-      linkedFamilyMembers: [familyUser._id],
     });
 
     patientBDoc = await Patient.create({
@@ -155,9 +141,10 @@ describe('Phase P0: Critical RBAC & IDOR Security Test Suite', () => {
       },
       corrections: {},
     });
-  });
+  }, 30000);
 
   afterAll(async () => {
+    if (!isolatedDatabaseReady) return;
     await User.deleteMany({ email: { $regex: /@p0test\.com$/ } });
     await Patient.deleteMany({ village: 'P0_Test_Village' });
     await Report.deleteMany({ title: { $regex: /^P0_Test_/ } });
@@ -232,6 +219,41 @@ describe('Phase P0: Critical RBAC & IDOR Security Test Suite', () => {
     });
   });
 
+  describe('Admin user provisioning', () => {
+    it('allows Admin to create a canonical-role account with a linked patient profile', async () => {
+      const res = await request(app)
+        .post('/api/users')
+        .set('Authorization', createAuthHeader(adminUser))
+        .send({
+          name: 'Admin Provisioned Patient',
+          email: 'admin_created@p0test.com',
+          password: 'Temporary123!',
+          role: 'Patient',
+          village: 'P0_Test_Village',
+        });
+
+      expect(res.statusCode).toBe(201);
+      expect(res.body.data.role).toBe('Patient');
+      expect(res.body.data.passwordHash).toBeUndefined();
+      expect(await Patient.findOne({ user: res.body.data._id })).not.toBeNull();
+    });
+
+    it('blocks non-Admin users from provisioning accounts', async () => {
+      const res = await request(app)
+        .post('/api/users')
+        .set('Authorization', createAuthHeader(patientAUser))
+        .send({
+          name: 'Unauthorized Account',
+          email: 'unauthorized_created@p0test.com',
+          password: 'Temporary123!',
+          role: 'Doctor',
+        });
+
+      expect(res.statusCode).toBe(403);
+      expect(await User.findOne({ email: 'unauthorized_created@p0test.com' })).toBeNull();
+    });
+  });
+
   // ==========================================
   // 2. PATIENT PROFILE IDOR
   // ==========================================
@@ -266,11 +288,11 @@ describe('Phase P0: Critical RBAC & IDOR Security Test Suite', () => {
       expect(res.statusCode).toBe(403);
     });
 
-    it('11. Unassigned Nurse -> patient is blocked (403)', async () => {
+    it('11. CHO can read a patient profile in the community', async () => {
       const res = await request(app)
         .get(`/api/patients/${patientBDoc._id}`)
-        .set('Authorization', createAuthHeader(nurseUser));
-      expect(res.statusCode).toBe(403);
+        .set('Authorization', createAuthHeader(choUser));
+      expect(res.statusCode).toBe(200);
     });
   });
 
@@ -307,18 +329,16 @@ describe('Phase P0: Critical RBAC & IDOR Security Test Suite', () => {
       expect(res.statusCode).toBe(403);
     });
 
-    it('16. Family with no link returns empty array [] on GET /api/patients/linked', async () => {
-      const unlinkedFamily = await User.create({
-        name: 'Unlinked Family',
-        email: 'unlinked_fam@p0test.com',
-        passwordHash: 'hash',
-        role: 'Family',
-      });
-      const res = await request(app)
-        .get('/api/patients/linked')
-        .set('Authorization', createAuthHeader(unlinkedFamily));
-      expect(res.statusCode).toBe(200);
-      expect(res.body.data).toEqual([]);
+    it('16. Nurse and Family are rejected by the current User schema', () => {
+      for (const role of ['Nurse', 'Family']) {
+        const invalidUser = new User({
+          name: 'Deprecated Role',
+          email: `${role.toLowerCase()}_schema@p0test.com`,
+          passwordHash: 'hash',
+          role,
+        });
+        expect(invalidUser.validateSync()?.errors.role).toBeDefined();
+      }
     });
   });
 
@@ -336,29 +356,13 @@ describe('Phase P0: Critical RBAC & IDOR Security Test Suite', () => {
       expect(returnedIds).not.toContain(patientBDoc._id.toString());
     });
 
-    it('18. Nurse does not receive unassigned patients in GET /api/patients', async () => {
+    it('18. CHO can query the community patient directory', async () => {
       const res = await request(app)
-        .get('/api/patients')
-        .set('Authorization', createAuthHeader(nurseUser));
+        .get('/api/patients?village=P0_Test_Village')
+        .set('Authorization', createAuthHeader(choUser));
       expect(res.statusCode).toBe(200);
       const returnedIds = res.body.data.patients.map((p) => p._id.toString());
-      expect(returnedIds).not.toContain(unassignedPatientDoc._id.toString());
-      expect(returnedIds).not.toContain(patientBDoc._id.toString());
-    });
-
-    it('19. Family does not receive arbitrary patients in GET /api/patients or /api/patients/linked', async () => {
-      const res1 = await request(app)
-        .get('/api/patients')
-        .set('Authorization', createAuthHeader(familyUser));
-      expect(res1.statusCode).toBe(403);
-
-      const res2 = await request(app)
-        .get('/api/patients/linked')
-        .set('Authorization', createAuthHeader(familyUser));
-      expect(res2.statusCode).toBe(200);
-      const returnedIds = res2.body.data.map((p) => p._id.toString());
-      expect(returnedIds).not.toContain(patientBDoc._id.toString());
-      expect(returnedIds).not.toContain(unassignedPatientDoc._id.toString());
+      expect(returnedIds).toContain(patientBDoc._id.toString());
     });
   });
 
@@ -395,30 +399,6 @@ describe('Phase P0: Critical RBAC & IDOR Security Test Suite', () => {
       const res = await request(app)
         .patch(`/api/reports/${reportADoc._id}/extracted-data`)
         .set('Authorization', createAuthHeader(unassignedDoctorUser))
-        .send({
-          field: 'fastingSugar',
-          value: 150,
-          unit: 'mg/dL',
-        });
-      expect(res.statusCode).toBe(403);
-    });
-
-    it('23. Nurse edits OCR extraction is blocked (403)', async () => {
-      const res = await request(app)
-        .patch(`/api/reports/${reportADoc._id}/extracted-data`)
-        .set('Authorization', createAuthHeader(nurseUser))
-        .send({
-          field: 'fastingSugar',
-          value: 150,
-          unit: 'mg/dL',
-        });
-      expect(res.statusCode).toBe(403);
-    });
-
-    it('24. Family edits OCR extraction is blocked (403)', async () => {
-      const res = await request(app)
-        .patch(`/api/reports/${reportADoc._id}/extracted-data`)
-        .set('Authorization', createAuthHeader(familyUser))
         .send({
           field: 'fastingSugar',
           value: 150,
@@ -470,7 +450,7 @@ describe('Phase P0: Critical RBAC & IDOR Security Test Suite', () => {
         });
       expect(res.statusCode).toBe(200);
       expect(res.body.data.report.status).toBe('CONFIRMED');
-    });
+    }, 15000);
 
     it('27. Patient B confirms Patient A report is blocked (403)', async () => {
       const res = await request(app)
@@ -490,28 +470,6 @@ describe('Phase P0: Critical RBAC & IDOR Security Test Suite', () => {
           confirmedData: { canonicalVitals: { systolicBP: 132, diastolicBP: 86 } },
         });
       expect(res.statusCode).toBe(403);
-    });
-
-    it('29. Nurse confirms report is blocked (403)', async () => {
-      const res = await request(app)
-        .put(`/api/reports/${unconfirmedReport._id}/confirm`)
-        .set('Authorization', createAuthHeader(nurseUser))
-        .send({
-          confirmedData: { canonicalVitals: { systolicBP: 132, diastolicBP: 86 } },
-        });
-      expect(res.statusCode).toBe(403);
-      expect(res.body.message).toContain('User role lacks clinical confirmation authority');
-    });
-
-    it('30. Family confirms report is blocked (403)', async () => {
-      const res = await request(app)
-        .put(`/api/reports/${unconfirmedReport._id}/confirm`)
-        .set('Authorization', createAuthHeader(familyUser))
-        .send({
-          confirmedData: { canonicalVitals: { systolicBP: 132, diastolicBP: 86 } },
-        });
-      expect(res.statusCode).toBe(403);
-      expect(res.body.message).toContain('User role lacks clinical confirmation authority');
     });
 
     it('31. Admin confirms report is blocked (403)', async () => {
@@ -559,18 +517,6 @@ describe('Phase P0: Critical RBAC & IDOR Security Test Suite', () => {
       expect(res.statusCode).toBe(403);
     });
 
-    it('35. Nurse triggers prediction is blocked (403)', async () => {
-      const res = await request(app)
-        .post('/api/predictions/diabetes')
-        .set('Authorization', createAuthHeader(nurseUser))
-        .send({
-          patientId: patientADoc._id,
-          features: { fastingSugar: 130 },
-        });
-      expect(res.statusCode).toBe(403);
-      expect(res.body.message).toContain('Your role is not authorized to trigger disease predictions');
-    });
-
     it('36. Admin reads prediction history is blocked (403)', async () => {
       const res = await request(app)
         .get(`/api/predictions/diabetes/history?patientId=${patientADoc._id}`)
@@ -590,24 +536,10 @@ describe('Phase P0: Critical RBAC & IDOR Security Test Suite', () => {
       expect(res.statusCode).toBe(403);
     });
 
-    it('38. Nurse deletes patient is blocked (403)', async () => {
-      const res = await request(app)
-        .delete(`/api/patients/${patientADoc._id}`)
-        .set('Authorization', createAuthHeader(nurseUser));
-      expect(res.statusCode).toBe(403);
-    });
-
     it('39. CHO deletes patient is blocked (403)', async () => {
       const res = await request(app)
         .delete(`/api/patients/${patientADoc._id}`)
         .set('Authorization', createAuthHeader(choUser));
-      expect(res.statusCode).toBe(403);
-    });
-
-    it('40. Family deletes patient is blocked (403)', async () => {
-      const res = await request(app)
-        .delete(`/api/patients/${patientADoc._id}`)
-        .set('Authorization', createAuthHeader(familyUser));
       expect(res.statusCode).toBe(403);
     });
 
@@ -617,7 +549,7 @@ describe('Phase P0: Critical RBAC & IDOR Security Test Suite', () => {
         name: 'Temp Patient',
         email: 'temp_del@p0test.com',
         passwordHash: 'hash',
-        role: 'Patient',
+        role: 'Patient', isEmailVerified: true, isVerified: true,
       });
       const tempPatient = await Patient.create({
         user: tempUser._id,

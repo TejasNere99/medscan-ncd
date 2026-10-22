@@ -24,9 +24,20 @@ export const verifyJWT = asyncHandler(async (req, res, next) => {
       throw new ApiError(401, 'Invalid Access Token. User no longer exists.');
     }
 
+    const CANONICAL_ROLES = ['Patient', 'Doctor', 'CHO', 'Admin'];
+    if (!CANONICAL_ROLES.includes(user.role)) {
+      throw new ApiError(403, `Access forbidden. Account role '${user.role}' is deprecated and no longer supported.`);
+    }
+
+    // Enforce email verification on all protected endpoints
+    if (user.isEmailVerified === false && user.isVerified === false) {
+      throw new ApiError(403, 'Email verification required. Please verify your email address to access your account.');
+    }
+
     req.user = user;
     next();
   } catch (error) {
+    if (error instanceof ApiError) throw error;
     throw new ApiError(401, error?.message || 'Invalid or expired access token.');
   }
 });

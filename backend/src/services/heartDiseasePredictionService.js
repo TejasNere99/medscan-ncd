@@ -76,12 +76,17 @@ export async function callHeartDiseasePredictionService(featureVector) {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
 
+    const headers = {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    };
+    if (process.env.ML_INTERNAL_API_KEY) {
+      headers['X-ML-Internal-Token'] = process.env.ML_INTERNAL_API_KEY;
+    }
+
     const res = await fetch(endpoint, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-      },
+      headers,
       body: JSON.stringify({ features: featureVector }),
       signal: controller.signal,
     });

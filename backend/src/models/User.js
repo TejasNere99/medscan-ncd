@@ -23,7 +23,7 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ['Patient', 'Doctor', 'Family', 'Nurse', 'CHO', 'Admin'],
+      enum: ['Patient', 'Doctor', 'CHO', 'Admin'],
       default: 'Patient',
       required: true,
       index: true,
@@ -41,9 +41,26 @@ const userSchema = new mongoose.Schema(
       default: 'Green Valley',
       index: true,
     },
+    communityVillages: {
+      type: [{ type: String, trim: true }],
+      default: [],
+    },
+    isEmailVerified: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
     isVerified: {
       type: Boolean,
-      default: true,
+      default: false,
+    },
+    emailVerificationToken: {
+      type: String,
+      select: false,
+    },
+    emailVerificationExpire: {
+      type: Date,
+      select: false,
     },
     resetPasswordToken: {
       type: String,
@@ -60,6 +77,13 @@ const userSchema = new mongoose.Schema(
 );
 
 userSchema.pre('save', async function (next) {
+  // Sync isVerified and isEmailVerified if one was modified
+  if (this.isModified('isEmailVerified') && !this.isModified('isVerified')) {
+    this.isVerified = this.isEmailVerified;
+  } else if (this.isModified('isVerified') && !this.isModified('isEmailVerified')) {
+    this.isEmailVerified = this.isVerified;
+  }
+
   if (!this.isModified('passwordHash')) return next();
   const salt = await bcrypt.genSalt(10);
   this.passwordHash = await bcrypt.hash(this.passwordHash, salt);
@@ -75,6 +99,8 @@ userSchema.methods.toJSON = function () {
   delete obj.passwordHash;
   delete obj.resetPasswordToken;
   delete obj.resetPasswordExpire;
+  delete obj.emailVerificationToken;
+  delete obj.emailVerificationExpire;
   return obj;
 };
 

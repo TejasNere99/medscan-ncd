@@ -21,12 +21,6 @@ export const relationshipService = {
   getMyRelationships: () => api.get('/relationships'),
   getPendingRequests: () => api.get('/relationships/pending'),
 
-  // Family Invitations
-  createFamilyInvite: (data) => api.post('/invitations/family', data),
-  validateFamilyInvite: (token) => api.get(`/invitations/family/${token}`),
-  redeemFamilyInvite: (token, data) => api.post(`/invitations/family/${token}/redeem`, data),
-  getPatientFamilyInvitations: () => api.get('/invitations/family'),
-  revokeFamilyInvite: (id) => api.patch(`/invitations/family/${id}/revoke`),
 };
 
 export default relationshipService;

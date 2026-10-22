@@ -1,0 +1,61 @@
+{
+  "development_only": true,
+  "folds": 5,
+  "selected_model": "random_forest",
+  "selected_hyperparameters": {
+    "bootstrap": true,
+    "ccp_alpha": 0.0,
+    "class_weight": "balanced_subsample",
+    "criterion": "gini",
+    "max_depth": null,
+    "max_features": "sqrt",
+    "max_leaf_nodes": null,
+    "max_samples": null,
+    "min_impurity_decrease": 0.0,
+    "min_samples_leaf": 2,
+    "min_samples_split": 2,
+    "min_weight_fraction_leaf": 0.0,
+    "monotonic_cst": null,
+    "n_estimators": 250,
+    "n_jobs": 1,
+    "oob_score": false,
+    "random_state": 42,
+    "verbose": 0,
+    "warm_start": false
+  },
+  "selected_candidate_cv_row": {
+    "model": "random_forest",
+    "rank_roc_auc": 1,
+    "mean_cv_roc_auc": 0.9660791226008618,
+    "std_cv_roc_auc": 0.022280378881680662,
+    "mean_cv_pr_auc": 0.9822662566914419,
+    "mean_cv_brier": 0.06708692806553347,
+    "mean_train_roc_auc": 0.9948297621046068,
+    "parameters": "{\"classifier__max_depth\": null, \"classifier__min_samples_leaf\": 2}",
+    "search_elapsed_seconds": 15.173187299980782
+  },
+  "selected_calibration_method": "isotonic",
+  "cross_fitted_calibration_scores": {
+    "roc_auc": 0.9545841209829867,
+    "pr_auc": 0.9772896717682177,
+    "brier": 0.06971279938838647
+  },
+  "raw_oof_brier": 0.07178653702221535,
+  "calibrated_oof_brier": 0.06971279938838647,
+  "split_counts": {
+    "development": {
+      "n": 299,
+      "positive": 184,
+      "negative": 115
+    },
+    "heldout": {
+      "n": 75,
+      "positive": 46,
+      "negative": 29
+    }
+  },
+  "split_identifier_hashes": {
+    "development": "fc9451edbfdf125edd264147f528e6a394e5330645756550983cf7f9f1677395",
+    "heldout": "4337e4e7bfb43b54a5cc247c291f159fc8d69afbc5e581da3855af58ba9ad7d8"
+  }
+}

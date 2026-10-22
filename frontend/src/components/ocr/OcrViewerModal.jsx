@@ -4,6 +4,7 @@ import {
   FileText,
   CheckCircle2,
   AlertCircle,
+  AlertTriangle,
   FileSearch,
   ExternalLink,
   Activity,
@@ -79,7 +80,6 @@ export const OcrViewerModal = ({ isOpen, onClose, report, onReportConfirmed }) =
       }
       onClose();
     } catch (err) {
-      console.error(err);
       addToast(err.response?.data?.message || 'Failed to confirm report.', 'error');
     } finally {
       setConfirming(false);
@@ -99,24 +99,30 @@ export const OcrViewerModal = ({ isOpen, onClose, report, onReportConfirmed }) =
               <div className="flex items-center space-x-2">
                 <p className="text-xs font-bold text-white">{reportType || 'Clinical Medical Report'}</p>
                 {isAbpm && (
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-300 border border-cyan-500/20 font-bold">
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-cyan-100/70 text-cyan-800 border border-cyan-300 font-bold">
                     ABPM Intelligence
                   </span>
                 )}
                 {isCbc && (
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 font-bold">
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100/70 text-emerald-800 border border-emerald-300 font-bold">
                     CBC Hematology Panel
                   </span>
                 )}
               </div>
-              <p className="text-[11px] text-slate-400 mt-0.5">
-                {patientContext.age || patientContext.sex ? (
-                  <span className="text-cyan-300 font-semibold mr-1.5">
-                    Patient: {patientContext.age ? `Age ${patientContext.age} ${patientContext.ageUnit || 'years'}` : ''}
-                    {patientContext.age && patientContext.sex ? ' • ' : ''}
-                    {patientContext.sex ? `Sex: ${patientContext.sex.charAt(0).toUpperCase() + patientContext.sex.slice(1)}` : ''} •
-                  </span>
-                ) : null}
+              <p className="text-[11px] text-slate-500 mt-0.5">
+                {(() => {
+                  const rawAge = typeof patientContext.age === 'object' && patientContext.age !== null ? patientContext.age.value : patientContext.age;
+                  const rawSex = typeof patientContext.sex === 'object' && patientContext.sex !== null ? patientContext.sex.value : patientContext.sex;
+                  const ageUnit = (typeof patientContext.age === 'object' && patientContext.age?.unit) || patientContext.ageUnit || 'years';
+                  if (!rawAge && !rawSex) return null;
+                  return (
+                    <span className="text-cyan-800 font-bold mr-1.5">
+                      Patient: {rawAge ? `Age ${rawAge} ${ageUnit}` : ''}
+                      {rawAge && rawSex ? ' • ' : ''}
+                      {rawSex ? `Sex: ${String(rawSex).charAt(0).toUpperCase() + String(rawSex).slice(1)}` : ''} •
+                    </span>
+                  );
+                })()}
                 Uploaded: {new Date(uploadDate || Date.now()).toLocaleDateString()} • Storage: {storageProvider || 'cloud'}
               </p>
             </div>
@@ -125,29 +131,29 @@ export const OcrViewerModal = ({ isOpen, onClose, report, onReportConfirmed }) =
             <span
               className={`text-[11px] px-2.5 py-0.5 rounded-full border font-bold uppercase tracking-wider ${
                 status === 'CONFIRMED'
-                  ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+                  ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
                   : status === 'PENDING_REVIEW'
-                  ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
-                  : 'bg-slate-800 text-slate-400 border-slate-700'
+                  ? 'bg-amber-100 text-amber-900 border-amber-300'
+                  : 'bg-slate-200 text-slate-700 border-slate-300'
               }`}
             >
-              {status || 'CONFIRMED'}
+              {status || 'Status unavailable'}
             </span>
             <div className="text-right pl-2 border-l border-slate-800">
               <p className="text-[10px] text-slate-500 font-semibold uppercase">Extraction Confidence</p>
-              <span className="text-xs font-black text-cyan-400">{confidence || 92}%</span>
+              <span className="text-xs font-black text-cyan-800">{confidence !== null && confidence !== undefined ? `${confidence}%` : 'Not available'}</span>
             </div>
           </div>
         </div>
 
         {/* PENDING REVIEW ACTION BANNER */}
         {status === 'PENDING_REVIEW' && (
-          <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-500/15 to-orange-500/10 border border-amber-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg shadow-amber-500/5">
+          <div className="p-4 rounded-2xl bg-amber-50 border border-amber-300 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md shadow-amber-500/5">
             <div className="flex items-start space-x-3">
-              <AlertCircle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+              <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
               <div>
-                <p className="text-xs font-bold text-amber-300">Action Needed: Medical Report Awaiting Confirmation</p>
-                <p className="text-[11px] text-slate-300 mt-0.5 leading-relaxed">
+                <p className="text-xs font-extrabold text-amber-950">Action Needed: Medical Report Awaiting Confirmation</p>
+                <p className="text-[11px] text-stone-700 mt-0.5 leading-relaxed font-medium">
                   To ensure clinical safety, AI models only process verified lab data. Review the extracted parameters below and click confirm to update your health profile and generate AI disease predictions.
                 </p>
               </div>
@@ -243,7 +249,7 @@ export const OcrViewerModal = ({ isOpen, onClose, report, onReportConfirmed }) =
                         <td className="py-2 text-slate-400">{bp.overall?.systolic?.standardDeviation ?? '--'}</td>
                         <td className="py-2 text-slate-400">{bp.overall?.systolic?.minimum ?? '--'}</td>
                         <td className="py-2 text-slate-400">{bp.overall?.systolic?.maximum ?? '--'}</td>
-                        <td className="py-2 text-cyan-400">{ind.systolicDippingPercent ? `${ind.systolicDippingPercent}%` : '--'}</td>
+                        <td className="py-2 text-cyan-800 font-bold">{ind.systolicDippingPercent ? `${ind.systolicDippingPercent}%` : '--'}</td>
                       </tr>
                       <tr>
                         <td className="py-2 text-slate-300 font-sans font-bold">Diastolic (mmHg)</td>
@@ -251,7 +257,7 @@ export const OcrViewerModal = ({ isOpen, onClose, report, onReportConfirmed }) =
                         <td className="py-2 text-slate-400">{bp.overall?.diastolic?.standardDeviation ?? '--'}</td>
                         <td className="py-2 text-slate-400">{bp.overall?.diastolic?.minimum ?? '--'}</td>
                         <td className="py-2 text-slate-400">{bp.overall?.diastolic?.maximum ?? '--'}</td>
-                        <td className="py-2 text-cyan-400">{ind.diastolicDippingPercent ? `${ind.diastolicDippingPercent}%` : '--'}</td>
+                        <td className="py-2 text-cyan-800 font-bold">{ind.diastolicDippingPercent ? `${ind.diastolicDippingPercent}%` : '--'}</td>
                       </tr>
                     </tbody>
                   </table>
@@ -447,6 +453,7 @@ export const OcrViewerModal = ({ isOpen, onClose, report, onReportConfirmed }) =
                   { key: 'totalCholesterol', label: 'Total Cholesterol', unit: 'mg/dL' },
                   { key: 'hdl', label: 'HDL Cholesterol', unit: 'mg/dL' },
                   { key: 'serumCreatinine', label: 'Serum Creatinine', unit: 'mg/dL' },
+                  { key: 'bloodUrea', label: 'Blood Urea (not BUN)', unit: 'mg/dL' },
                   { key: 'hemoglobin', label: 'Hemoglobin', unit: 'g/dL' },
                   { key: 'bmi', label: 'Body Mass Index', unit: 'kg/m²' },
                 ].map(({ key, label, unit }) => {
@@ -462,17 +469,17 @@ export const OcrViewerModal = ({ isOpen, onClose, report, onReportConfirmed }) =
                       <div className="flex items-center justify-between mb-1">
                         <p className="text-[10px] uppercase font-bold text-slate-500 truncate">{label}</p>
                         {source === 'manual_correction' && (
-                          <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-300 border border-amber-500/30 font-semibold">
+                          <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-100 text-amber-900 border border-amber-300 font-bold">
                             Corrected
                           </span>
                         )}
                         {source === 'manual' && (
-                          <span className="text-[9px] px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-300 border border-blue-500/30 font-semibold">
+                          <span className="text-[9px] px-1.5 py-0.5 rounded bg-blue-100 text-blue-900 border border-blue-300 font-bold">
                             Added
                           </span>
                         )}
                         {source === 'report' && (
-                          <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-semibold">
+                          <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-900 border border-emerald-300 font-bold">
                             Report
                           </span>
                         )}
@@ -481,8 +488,8 @@ export const OcrViewerModal = ({ isOpen, onClose, report, onReportConfirmed }) =
                         {String(val)} <span className="text-xs font-normal text-slate-400">{unit}</span>
                       </p>
                       {source === 'manual_correction' && originalVal !== null && originalVal !== undefined && (
-                        <p className="text-[10px] text-slate-400 mt-1">
-                          Original OCR: <span className="text-amber-200 font-mono">{String(originalVal)}</span> {unit}
+                        <p className="text-[10px] text-slate-500 mt-1">
+                          Original OCR: <span className="text-amber-800 font-bold font-mono">{String(originalVal)}</span> {unit}
                         </p>
                       )}
                     </div>
@@ -511,9 +518,9 @@ export const OcrViewerModal = ({ isOpen, onClose, report, onReportConfirmed }) =
           <button
             type="button"
             onClick={() => setShowJson(!showJson)}
-            className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-900 hover:bg-slate-800 text-cyan-300 border border-slate-700 flex items-center space-x-1.5"
+            className="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-900 hover:bg-slate-800 text-cyan-800 border border-slate-700 flex items-center space-x-1.5"
           >
-            <Code2 className="w-3.5 h-3.5 text-cyan-400" />
+            <Code2 className="w-3.5 h-3.5 text-cyan-700" />
             <span>{showJson ? 'Hide JSON' : 'Technical JSON View'}</span>
           </button>
         </div>
@@ -538,10 +545,10 @@ export const OcrViewerModal = ({ isOpen, onClose, report, onReportConfirmed }) =
         {showJson && (
           <div className="p-3.5 rounded-2xl bg-slate-950 border border-cyan-500/20 space-y-2">
             <div className="flex items-center justify-between text-[11px]">
-              <span className="font-bold text-cyan-300">Structured Medical JSON Representation</span>
+              <span className="font-bold text-cyan-800">Structured Medical JSON Representation</span>
               <span className="text-slate-500">Document Understanding Data</span>
             </div>
-            <pre className="w-full max-h-56 overflow-auto bg-slate-900/90 border border-slate-800 rounded-xl p-3 text-[10px] font-mono text-cyan-200">
+            <pre className="w-full max-h-56 overflow-auto bg-stone-100 border border-stone-200 rounded-xl p-3 text-[11px] font-mono text-slate-900 font-medium">
               {JSON.stringify(doc, null, 2)}
             </pre>
           </div>

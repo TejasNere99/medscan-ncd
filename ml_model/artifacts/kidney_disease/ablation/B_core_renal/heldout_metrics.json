@@ -1,0 +1,128 @@
+{
+  "split": "untouched, stratified 20% holdout (random_state=42)",
+  "metrics": {
+    "n": 75,
+    "positive_count": 46,
+    "negative_count": 29,
+    "prediction_coverage": 1.0,
+    "roc_auc": 0.9407796101949026,
+    "pr_auc": 0.9659953321422095,
+    "sensitivity": 0.7391304347826086,
+    "specificity": 1.0,
+    "precision": 1.0,
+    "f1": 0.85,
+    "accuracy": 0.84,
+    "brier_score": 0.09275786686890727,
+    "ece_10_bins": 0.11948248772857617,
+    "threshold": 0.7637426085992313,
+    "confusion_matrix": {
+      "true_negative": 29,
+      "false_positive": 0,
+      "false_negative": 12,
+      "true_positive": 34
+    },
+    "bootstrap_95pct_ci": {
+      "roc_auc": [
+        0.8845577211394303,
+        0.9812593703148427
+      ],
+      "pr_auc": [
+        0.9338074793307984,
+        0.988655826876644
+      ],
+      "sensitivity": [
+        0.6086956521739131,
+        0.8478260869565217
+      ],
+      "specificity": [
+        1.0,
+        1.0
+      ],
+      "precision": [
+        1.0,
+        1.0
+      ],
+      "f1": [
+        0.7567567567567568,
+        0.9176470588235294
+      ],
+      "accuracy": [
+        0.76,
+        0.9066666666666666
+      ],
+      "brier_score": [
+        0.06122341920720117,
+        0.13162905353277804
+      ]
+    },
+    "bootstrap_method": "1,000 class-stratified percentile bootstrap resamples of held-out records"
+  },
+  "probability_calibration_bins": [
+    {
+      "bin_lower": 0.0,
+      "bin_upper": 0.1,
+      "n": 6,
+      "mean_predicted_probability": 0.03827591482310753,
+      "observed_positive_fraction": 0.0
+    },
+    {
+      "bin_lower": 0.1,
+      "bin_upper": 0.2,
+      "n": 7,
+      "mean_predicted_probability": 0.156183466937369,
+      "observed_positive_fraction": 0.0
+    },
+    {
+      "bin_lower": 0.2,
+      "bin_upper": 0.30000000000000004,
+      "n": 8,
+      "mean_predicted_probability": 0.24244403096635342,
+      "observed_positive_fraction": 0.375
+    },
+    {
+      "bin_lower": 0.30000000000000004,
+      "bin_upper": 0.4,
+      "n": 7,
+      "mean_predicted_probability": 0.3298743178118651,
+      "observed_positive_fraction": 0.14285714285714285
+    },
+    {
+      "bin_lower": 0.4,
+      "bin_upper": 0.5,
+      "n": 3,
+      "mean_predicted_probability": 0.46136456851018215,
+      "observed_positive_fraction": 0.6666666666666666
+    },
+    {
+      "bin_lower": 0.5,
+      "bin_upper": 0.6000000000000001,
+      "n": 4,
+      "mean_predicted_probability": 0.5390177984658302,
+      "observed_positive_fraction": 1.0
+    },
+    {
+      "bin_lower": 0.6000000000000001,
+      "bin_upper": 0.7000000000000001,
+      "n": 6,
+      "mean_predicted_probability": 0.6233801536460545,
+      "observed_positive_fraction": 0.3333333333333333
+    },
+    {
+      "bin_lower": 0.8,
+      "bin_upper": 0.9,
+      "n": 1,
+      "mean_predicted_probability": 0.8369394650834183,
+      "observed_positive_fraction": 1.0
+    },
+    {
+      "bin_lower": 0.9,
+      "bin_upper": 1.0,
+      "n": 33,
+      "mean_predicted_probability": 0.9725605367335844,
+      "observed_positive_fraction": 1.0
+    }
+  ],
+  "selected_model": "lightgbm",
+  "calibration_method": "sigmoid",
+  "threshold_selected_without_test_data": 0.7637426085992313
+}

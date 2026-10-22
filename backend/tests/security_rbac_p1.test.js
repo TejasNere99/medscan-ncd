@@ -1,7 +1,6 @@
 import request from 'supertest';
 import mongoose from 'mongoose';
 import jwt from 'jsonwebtoken';
-import app from '../src/server.js';
 import { User } from '../src/models/User.js';
 import { Patient } from '../src/models/Patient.js';
 import { Doctor } from '../src/models/Doctor.js';
@@ -10,6 +9,7 @@ import { Prediction } from '../src/models/Prediction.js';
 import { PatientRelationship } from '../src/models/PatientRelationship.js';
 import { Invitation } from '../src/models/Invitation.js';
 import { runRelationshipMigration } from '../src/utils/relationshipMigration.js';
+import { connectToIsolatedTestDatabase } from './helpers/isolatedDatabase.js';
 
 const JWT_SECRET = process.env.JWT_ACCESS_SECRET || 'your_super_secret_access_key_12345!';
 
@@ -23,17 +23,19 @@ const createAuthHeader = (user) => {
 };
 
 describe('Phase P1: Relationship & Invitation System Security Test Suite', () => {
+  let app;
   let patientUser, otherPatientUser;
   let doctorUser, doctor2User, unrelatedDoctorUser;
   let patientDoc, otherPatientDoc;
   let doctorDoc, doctor2Doc;
   let confirmedReportDoc;
+  let isolatedDatabaseReady = false;
 
   beforeAll(async () => {
-    const mongoUri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/ai-smart-healthcare-test';
-    if (mongoose.connection.readyState === 0) {
-      await mongoose.connect(mongoUri);
-    }
+    await connectToIsolatedTestDatabase();
+    isolatedDatabaseReady = true;
+    const { default: appModule } = await import('../src/server.js');
+    app = appModule;
 
     // Clean test artifacts
     await User.deleteMany({ email: { $regex: /@p1test\.com$/ } });
@@ -48,7 +50,7 @@ describe('Phase P1: Relationship & Invitation System Security Test Suite', () =>
       name: 'P1 Patient A',
       email: 'patient_a@p1test.com',
       passwordHash: 'hashed123',
-      role: 'Patient',
+      role: 'Patient', isEmailVerified: true, isVerified: true,
       village: 'P1_Test_Village',
     });
 
@@ -66,7 +68,7 @@ describe('Phase P1: Relationship & Invitation System Security Test Suite', () =>
       name: 'P1 Patient B',
       email: 'patient_b@p1test.com',
       passwordHash: 'hashed123',
-      role: 'Patient',
+      role: 'Patient', isEmailVerified: true, isVerified: true,
       village: 'P1_Test_Village',
     });
 
@@ -82,7 +84,7 @@ describe('Phase P1: Relationship & Invitation System Security Test Suite', () =>
       name: 'Dr. Primary Physician',
       email: 'doctor_primary@p1test.com',
       passwordHash: 'hashed123',
-      role: 'Doctor',
+      role: 'Doctor', isEmailVerified: true, isVerified: true,
     });
     doctorDoc = await Doctor.create({
       user: doctorUser._id,
@@ -94,7 +96,7 @@ describe('Phase P1: Relationship & Invitation System Security Test Suite', () =>
       name: 'Dr. Secondary Specialist',
       email: 'doctor_secondary@p1test.com',
       passwordHash: 'hashed123',
-      role: 'Doctor',
+      role: 'Doctor', isEmailVerified: true, isVerified: true,
     });
     doctor2Doc = await Doctor.create({
       user: doctor2User._id,
@@ -106,7 +108,7 @@ describe('Phase P1: Relationship & Invitation System Security Test Suite', () =>
       name: 'Dr. Unrelated Doctor',
       email: 'doctor_unrelated@p1test.com',
       passwordHash: 'hashed123',
-      role: 'Doctor',
+      role: 'Doctor', isEmailVerified: true, isVerified: true,
     });
     await Doctor.create({
       user: unrelatedDoctorUser._id,
@@ -131,6 +133,7 @@ describe('Phase P1: Relationship & Invitation System Security Test Suite', () =>
   }, 30000);
 
   afterAll(async () => {
+    if (!isolatedDatabaseReady) return;
     await User.deleteMany({ email: { $regex: /@p1test\.com$/ } });
     await Patient.deleteMany({ village: 'P1_Test_Village' });
     await Doctor.deleteMany({});
@@ -339,204 +342,36 @@ describe('Phase P1: Relationship & Invitation System Security Test Suite', () =>
   });
 
   // =========================================================================
-  // GROUP 2: FAMILY INVITATION & TRANSACTIONAL REDEMPTION
   // =========================================================================
-  describe('2. Family Invitation & Transactional Redemption', () => {
-    let rawInviteToken = null;
-    let inviteId = null;
-    let familyToken = null;
-    let familyUser = null;
-
-    test('2.1 Patient creates a Family Caregiver invitation', async () => {
+  // GROUP 2: DEPRECATED FAMILY INVITATION ROUTES
+  // =========================================================================
+  describe('2. Deprecated Family Invitation Routes', () => {
+    test('2.1 Creating a Family invitation is explicitly retired', async () => {
       const res = await request(app)
         .post('/api/invitations/family')
         .set('Authorization', createAuthHeader(patientUser))
-        .send({
-          recipientEmail: 'family_caregiver@p1test.com',
-          relationshipLabel: 'Spouse',
-        });
+        .send({ recipientEmail: 'family_caregiver@p1test.com' });
 
-      expect(res.status).toBe(201);
-      expect(res.body.success).toBe(true);
-      expect(res.body.data.token).toBeDefined();
-      expect(res.body.data.inviteUrl).toContain('/invite/family/');
-      rawInviteToken = res.body.data.token;
-      inviteId = res.body.data.invitation._id;
-    });
-
-    test('2.2 Public token validation returns minimal non-PHI metadata only', async () => {
-      const res = await request(app).get(`/api/invitations/family/${rawInviteToken}`);
-
-      expect(res.status).toBe(200);
-      expect(res.body.success).toBe(true);
-      expect(res.body.data.valid).toBe(true);
-      expect(res.body.data.invitation.recipientEmail).toBe('family_caregiver@p1test.com');
-      expect(res.body.data.invitation.relationshipLabel).toBe('Spouse');
-      expect(res.body.data.invitation.inviterName).toBe('P1 Patient A');
-
-      // Strict PHI absence check: zero clinical vitals, age, medical history, or patientId disclosed
-      expect(res.body.data.invitation.patient).toBeUndefined();
-      expect(res.body.data.invitation.systolicBP).toBeUndefined();
-      expect(res.body.data.invitation.medicalHistory).toBeUndefined();
-    });
-
-    test('2.3 Atomic Transactional Redemption creates User, PatientRelationship, and syncs Patient', async () => {
-      const res = await request(app)
-        .post(`/api/invitations/family/${rawInviteToken}/redeem`)
-        .send({
-          name: 'Sarah Patient Caregiver',
-          password: 'Password123!',
-          phone: '+1 555-0188',
-        });
-
-      expect(res.status).toBe(201);
-      expect(res.body.success).toBe(true);
-      expect(res.body.data.user).toBeDefined();
-      expect(res.body.data.user.role).toBe('Family');
-      expect(res.body.data.accessToken).toBeDefined();
-      expect(res.body.data.relationship).toBeDefined();
-      expect(res.body.data.relationship.status).toBe('ACTIVE');
-
-      familyUser = res.body.data.user;
-      familyToken = res.body.data.accessToken;
-
-      // Verify legacy linkedFamilyMembers synchronized
-      const patient = await Patient.findById(patientDoc._id);
-      expect(patient.linkedFamilyMembers.some((f) => String(f) === String(familyUser._id))).toBe(true);
-
-      // Verify invitation status changed to CONSUMED
-      const invitation = await Invitation.findById(inviteId);
-      expect(invitation.status).toBe('CONSUMED');
-      expect(String(invitation.claimedBy)).toBe(String(familyUser._id));
-    });
-
-    test('2.4 Replay attack: Redeeming already-consumed token is rejected (400)', async () => {
-      const res = await request(app)
-        .post(`/api/invitations/family/${rawInviteToken}/redeem`)
-        .send({
-          name: 'Attacker',
-          password: 'Password123!',
-        });
-
-      expect(res.status).toBe(400);
+      expect(res.status).toBe(410);
       expect(res.body.success).toBe(false);
     });
 
-    test('2.5 Family member has READ access to linked patient profile', async () => {
-      const res = await request(app)
-        .get(`/api/patients/${patientDoc._id}`)
-        .set('Authorization', `Bearer ${familyToken}`);
+    test('2.2 Validating a Family invitation is explicitly retired', async () => {
+      const res = await request(app).get('/api/invitations/family/legacy-token');
 
-      expect(res.status).toBe(200);
-      expect(res.body.data.age).toBe(48);
+      expect(res.status).toBe(410);
+      expect(res.body.success).toBe(false);
     });
 
-    test('2.6 Family member has READ access to patient reports', async () => {
+    test('2.3 Redeeming a Family invitation is explicitly retired', async () => {
       const res = await request(app)
-        .get(`/api/reports?patientId=${patientDoc._id}`)
-        .set('Authorization', `Bearer ${familyToken}`);
+        .post('/api/invitations/family/legacy-token/redeem')
+        .send({ name: 'Deprecated account', password: 'Password123!' });
 
-      expect(res.status).toBe(200);
-      expect(res.body.data.length).toBeGreaterThan(0);
-    });
-
-    test('2.7 Family member CANNOT view unrelated patient profile (403 Forbidden)', async () => {
-      const res = await request(app)
-        .get(`/api/patients/${otherPatientDoc._id}`)
-        .set('Authorization', `Bearer ${familyToken}`);
-
-      expect(res.status).toBe(403);
-    });
-
-    test('2.8 Strict Role Bounds: Family member CANNOT upload reports (403 Forbidden)', async () => {
-      const res = await request(app)
-        .post('/api/reports/upload')
-        .set('Authorization', `Bearer ${familyToken}`)
-        .field('patientId', String(patientDoc._id))
-        .attach('report', Buffer.from('dummy file content'), 'dummy.pdf');
-
-      expect(res.status).toBe(403);
-    });
-
-    test('2.9 Strict Role Bounds: Family member CANNOT edit extracted values (403 Forbidden)', async () => {
-      const res = await request(app)
-        .patch(`/api/reports/${confirmedReportDoc._id}/extracted-data`)
-        .set('Authorization', `Bearer ${familyToken}`)
-        .send({
-          field: 'fastingSugar',
-          value: 120,
-        });
-
-      expect(res.status).toBe(403);
-    });
-
-    test('2.10 Strict Role Bounds: Family member CANNOT confirm reports (403 Forbidden)', async () => {
-      const res = await request(app)
-        .put(`/api/reports/${confirmedReportDoc._id}/confirm`)
-        .set('Authorization', `Bearer ${familyToken}`)
-        .send({ confirmedData: {} });
-
-      expect(res.status).toBe(403);
-    });
-
-    test('2.11 Strict Role Bounds: Family member CANNOT delete reports (403 Forbidden)', async () => {
-      const res = await request(app)
-        .delete(`/api/reports/${confirmedReportDoc._id}`)
-        .set('Authorization', `Bearer ${familyToken}`);
-
-      expect(res.status).toBe(403);
-    });
-
-    test('2.12 Strict Role Bounds: Family member CANNOT trigger disease predictions (403 Forbidden)', async () => {
-      const res = await request(app)
-        .post('/api/predictions/diabetes')
-        .set('Authorization', `Bearer ${familyToken}`)
-        .send({
-          patientId: patientDoc._id,
-          reportId: confirmedReportDoc._id,
-        });
-
-      expect(res.status).toBe(403);
-    });
-
-    test('2.13 Strict Role Bounds: Family member CANNOT modify clinical vitals (403 Forbidden)', async () => {
-      const res = await request(app)
-        .put(`/api/patients/${patientDoc._id}`)
-        .set('Authorization', `Bearer ${familyToken}`)
-        .send({
-          systolicBP: 150,
-        });
-
-      expect(res.status).toBe(403);
-    });
-
-    test('2.14 Revoking family relationship pulls from legacy array and revokes access', async () => {
-      const famRel = await PatientRelationship.findOne({
-        patient: patientDoc._id,
-        relatedUser: familyUser._id,
-        status: 'ACTIVE',
-      });
-
-      const res = await request(app)
-        .patch(`/api/relationships/${famRel._id}/revoke`)
-        .set('Authorization', createAuthHeader(patientUser));
-
-      expect(res.status).toBe(200);
-
-      // Verify removed from linkedFamilyMembers
-      const patient = await Patient.findById(patientDoc._id);
-      expect(patient.linkedFamilyMembers.some((f) => String(f) === String(familyUser._id))).toBe(false);
-
-      // Verify access denied now
-      const accessRes = await request(app)
-        .get(`/api/patients/${patientDoc._id}`)
-        .set('Authorization', `Bearer ${familyToken}`);
-
-      expect(accessRes.status).toBe(403);
+      expect(res.status).toBe(410);
+      expect(res.body.success).toBe(false);
     });
   });
-
-  // =========================================================================
   // GROUP 3: DATABASE INVARIANTS & IDEMPOTENT MIGRATION
   // =========================================================================
   describe('3. Database Invariants & Idempotent Migration', () => {
@@ -578,7 +413,7 @@ describe('Phase P1: Relationship & Invitation System Security Test Suite', () =>
       // Run migration again — must be completely idempotent
       const result2 = await runRelationshipMigration();
       expect(result2.migratedDoctors).toBe(0);
-      expect(result2.migratedFamily).toBe(0);
+      expect(result2).not.toHaveProperty('migratedFamily');
     });
   });
 });

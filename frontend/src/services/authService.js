@@ -17,18 +17,34 @@ export const authService = {
   },
 
   register: async (userData) => {
-    const res = await api.post('/auth/register', userData);
-    const user = res?.data?.user || res?.user;
-    const token = res?.data?.accessToken || res?.accessToken;
+    // Public registration creates account in unverified state; no session is stored
+    return await api.post('/auth/register', userData);
+  },
 
-    if (token) {
-      localStorage.setItem('accessToken', token);
-    }
-    if (user) {
-      localStorage.setItem('user', JSON.stringify(user));
-    }
+  verifyEmail: async (token) => {
+    return await api.post('/auth/verify-email', { token });
+  },
 
-    return res;
+  resendVerification: async (email) => {
+    return await api.post('/auth/resend-verification', { email });
+  },
+
+  forgotPassword: async (email) => {
+    return await api.post('/auth/forgot-password', { email });
+  },
+
+  resetPassword: async (tokenOrPayload, maybePassword, maybeConfirm) => {
+    let payload;
+    if (typeof tokenOrPayload === 'object' && tokenOrPayload !== null) {
+      payload = tokenOrPayload;
+    } else {
+      payload = {
+        token: tokenOrPayload,
+        newPassword: maybePassword,
+        confirmPassword: maybeConfirm,
+      };
+    }
+    return await api.post('/auth/reset-password', payload);
   },
 
   logout: async () => {
@@ -44,13 +60,5 @@ export const authService = {
 
   getCurrentUser: async () => {
     return await api.get('/auth/me');
-  },
-
-  forgotPassword: async (email) => {
-    return await api.post('/auth/forgot-password', { email });
-  },
-
-  resetPassword: async (token, newPassword) => {
-    return await api.post(`/auth/reset-password/${token}`, { newPassword });
   },
 };

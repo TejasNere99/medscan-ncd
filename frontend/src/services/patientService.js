@@ -28,8 +28,4 @@ export const patientService = {
   deletePatient: async (id) => {
     return await api.delete(`/patients/${id}`);
   },
-
-  getLinkedFamilyPatients: async () => {
-    return await api.get('/patients/linked');
-  },
 };

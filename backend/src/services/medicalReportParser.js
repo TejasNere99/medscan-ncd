@@ -514,7 +514,7 @@ export const parseAbpmDocument = (rawText, ocrConfidence = 90) => {
 
 /**
  * General Laboratory Report entity extractor.
- * Supports Fasting Glucose, Blood Pressure, Total Cholesterol, Creatinine, Hemoglobin, BMI.
+ * Supports Fasting Glucose, Blood Pressure, Total Cholesterol, Creatinine, Blood Urea, Hemoglobin, BMI.
  * Preserves source traceability, unit conversion, and conflict detection.
  */
 export const parseGeneralLabDocument = (rawText, ocrConfidence = 90) => {
@@ -605,6 +605,39 @@ export const parseGeneralLabDocument = (rawText, ocrConfidence = 90) => {
     measurements.fastingGlucose = chosen;
     canonicalVitals.fastingSugar = chosen.value;
     canonicalVitals.fastingGlucose = chosen;
+  }
+
+  // 1b. Total blood/serum urea. BUN is deliberately parsed into its own
+  // measurement below and is never silently treated as total urea.
+  const bloodUreaPatterns = [
+    /(?:blood\s*urea|serum\s*urea|urea)(?!\s*(?:nitrogen|n\b))(?:\s*\([a-z0-9\s/]+\))?\s*(?::\s*|\s+)([-+]?[0-9OoIl]+(?:\.\d+)?)\s*(mg\/dl|mmol\/l)?/i,
+  ];
+  const bloodUreaCandidates = extractCandidates(bloodUreaPatterns, CANONICAL_FIELDS.BLOOD_UREA);
+  if (bloodUreaCandidates.length > 0) {
+    const chosen = bloodUreaCandidates[0];
+    if (chosen.validationStatus === VALIDATION_STATUS.INVALID) {
+      extractionWarnings.push({ field: 'bloodUrea', message: chosen.warning || 'Invalid blood urea value was excluded.' });
+    } else {
+      measurements.bloodUrea = chosen;
+      canonicalVitals.bloodUrea = chosen;
+      if (chosen.warning) extractionWarnings.push({ field: 'bloodUrea', message: chosen.warning });
+    }
+  }
+
+  // Preserve BUN as a separate, explicitly named measurement. The CKD model
+  // consumes total blood urea; no BUN-to-urea conversion is assumed here.
+  const bunPatterns = [
+    /(?:blood\s*urea\s*(?:nitrogen|n\b)|\bBUN\b)(?:\s*\([a-z0-9\s/]+\))?\s*(?::\s*|\s+)([-+]?[0-9OoIl]+(?:\.\d+)?)\s*(mg\/dl|mmol\/l)?/i,
+  ];
+  const bunCandidates = extractCandidates(bunPatterns, CANONICAL_FIELDS.BLOOD_UREA_NITROGEN);
+  if (bunCandidates.length > 0) {
+    const chosen = bunCandidates[0];
+    if (chosen.validationStatus === VALIDATION_STATUS.INVALID) {
+      extractionWarnings.push({ field: 'bloodUreaNitrogen', message: chosen.warning || 'Invalid BUN value was excluded.' });
+    } else {
+      measurements.bloodUreaNitrogen = chosen;
+      if (chosen.warning) extractionWarnings.push({ field: 'bloodUreaNitrogen', message: chosen.warning });
+    }
   }
 
   // 2. Blood Pressure (e.g. 120/80 mmHg or Systolic: 120, Diastolic: 80)
@@ -959,6 +992,18 @@ export const parseMedicalDocument = (rawOcrText, ocrMetadata = {}) => {
     structuredResult = parseAbpmDocument(rawOcrText, ocrConfidence);
   } else if (classification.value === 'complete_blood_count') {
     structuredResult = parseCbcDocument(rawOcrText, ocrConfidence);
+    const renalAugment = parseGeneralLabDocument(rawOcrText, ocrConfidence);
+    for (const key of ['bloodUrea', 'bloodUreaNitrogen']) {
+      if (renalAugment.measurements?.[key]) structuredResult.measurements[key] = renalAugment.measurements[key];
+    }
+    if (renalAugment.canonicalVitals?.bloodUrea) {
+      structuredResult.canonicalVitals.bloodUrea = renalAugment.canonicalVitals.bloodUrea;
+      structuredResult.structuredData.bloodUrea = renalAugment.canonicalVitals.bloodUrea.value;
+    }
+    structuredResult.extractionWarnings = [
+      ...(structuredResult.extractionWarnings || []),
+      ...(renalAugment.extractionWarnings || []).filter((warning) => ['bloodUrea', 'bloodUreaNitrogen'].includes(warning.field)),
+    ];
   } else {
     structuredResult = parseGeneralLabDocument(rawOcrText, ocrConfidence);
     // If general lab report also contains CBC biomarkers, augment measurements

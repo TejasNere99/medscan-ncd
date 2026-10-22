@@ -15,13 +15,21 @@ export const calculateDiseaseRisk = async ({
 }) => {
   // Check if an external Python/Flask ML microservice URL is configured
   const externalMlUrl = process.env.ML_SERVICE_URL;
-  if (externalMlUrl && externalMlUrl !== 'http://localhost:8000/predict') {
+  if (externalMlUrl && !externalMlUrl.includes('localhost:8000/predict')) {
     try {
-      const response = await fetch(externalMlUrl, {
+      const endpoint = externalMlUrl.endsWith('/predict') ? externalMlUrl : `${externalMlUrl.replace(/\/$/, '')}/predict`;
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3000);
+      const response = await fetch(endpoint, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(process.env.ML_INTERNAL_API_KEY ? { 'X-ML-Internal-Token': process.env.ML_INTERNAL_API_KEY } : {}),
+        },
         body: JSON.stringify({ age, systolicBP, diastolicBP, fastingSugar, bmi, symptoms }),
+        signal: controller.signal,
       });
+      clearTimeout(timeoutId);
       if (response.ok) {
         const mlResult = await response.json();
         return mlResult;

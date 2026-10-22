@@ -9,18 +9,14 @@ import { PatientRelationship } from '../models/PatientRelationship.js';
 export const runRelationshipMigration = async () => {
   try {
     const patients = await Patient.find({
-      $or: [
-        { assignedDoctor: { $exists: true, $ne: null } },
-        { linkedFamilyMembers: { $exists: true, $not: { $size: 0 } } },
-      ],
+      assignedDoctor: { $exists: true, $ne: null },
     }).lean();
 
     if (!patients || patients.length === 0) {
-      return { migratedDoctors: 0, migratedFamily: 0 };
+      return { migratedDoctors: 0 };
     }
 
     let migratedDoctors = 0;
-    let migratedFamily = 0;
 
     for (const patient of patients) {
       // 1. Migrate assignedDoctor -> DOCTOR ACTIVE (isPrimaryDoctor: true)
@@ -49,41 +45,23 @@ export const runRelationshipMigration = async () => {
           console.warn(`[Migration] Doctor relation skip for patient ${patient._id}:`, err.message);
         }
       }
-
-      // 2. Migrate linkedFamilyMembers -> FAMILY ACTIVE
-      if (Array.isArray(patient.linkedFamilyMembers) && patient.linkedFamilyMembers.length > 0) {
-        for (const familyUserId of patient.linkedFamilyMembers) {
-          try {
-            const existingFamRel = await PatientRelationship.findOne({
-              patient: patient._id,
-              relatedUser: familyUserId,
-              relationshipType: 'FAMILY',
-            });
-
-            if (!existingFamRel) {
-              await PatientRelationship.create({
-                patient: patient._id,
-                relatedUser: familyUserId,
-                relationshipType: 'FAMILY',
-                status: 'ACTIVE',
-                initiatedBy: 'MIGRATION',
-                isPrimaryDoctor: false,
-                activatedAt: new Date(),
-              });
-              migratedFamily++;
-            }
-          } catch (err) {
-            console.warn(`[Migration] Family relation skip for patient ${patient._id}, user ${familyUserId}:`, err.message);
-          }
-        }
-      }
     }
 
-    if (migratedDoctors > 0 || migratedFamily > 0) {
-      console.log(`[Migration] Successfully synchronized legacy relationships: ${migratedDoctors} doctors, ${migratedFamily} family members.`);
+    // 2. Safe cleanup: Clean up legacy FAMILY relationships if any remain in raw collection
+    try {
+      await PatientRelationship.updateMany(
+        { relationshipType: 'FAMILY', status: { $in: ['PENDING', 'ACTIVE'] } },
+        { $set: { status: 'REVOKED', revokedAt: new Date() } }
+      );
+    } catch (cleanErr) {
+      // ignore
     }
 
-    return { migratedDoctors, migratedFamily };
+    if (migratedDoctors > 0) {
+      console.log(`[Migration] Successfully synchronized legacy doctor relationships: ${migratedDoctors} doctors.`);
+    }
+
+    return { migratedDoctors };
   } catch (error) {
     console.error('[Migration] Failed to run relationship migration:', error.message);
     return { error: error.message };

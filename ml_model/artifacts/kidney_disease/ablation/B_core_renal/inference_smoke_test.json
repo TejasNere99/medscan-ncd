@@ -1,0 +1,9 @@
+{
+  "model_loaded": true,
+  "feature_count": 3,
+  "feature_order_matches": true,
+  "test_probability_finite_and_in_range": true,
+  "threshold": 0.7637426085992313,
+  "calibration_method": "sigmoid",
+  "explainability": "feature-level global report generated from selected estimator; local explanation added by inference service where supported"
+}

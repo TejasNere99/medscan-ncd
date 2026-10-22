@@ -1,0 +1,79 @@
+{
+  "selected_method": "sigmoid",
+  "selected_development_cv_brier": 0.16688053601106242,
+  "uncalibrated_development_cv_brier": 0.16774960605796604,
+  "heldout_brier": 0.16138189989864687,
+  "heldout_calibration_bins": [
+    {
+      "bin_lower": 0.0,
+      "bin_upper": 0.1,
+      "n": 282,
+      "mean_predicted_probability": 0.05541384843299903,
+      "observed_positive_fraction": 0.03900709219858156
+    },
+    {
+      "bin_lower": 0.1,
+      "bin_upper": 0.2,
+      "n": 180,
+      "mean_predicted_probability": 0.14639277614720878,
+      "observed_positive_fraction": 0.16666666666666666
+    },
+    {
+      "bin_lower": 0.2,
+      "bin_upper": 0.30000000000000004,
+      "n": 147,
+      "mean_predicted_probability": 0.24639480551135734,
+      "observed_positive_fraction": 0.23129251700680273
+    },
+    {
+      "bin_lower": 0.30000000000000004,
+      "bin_upper": 0.4,
+      "n": 123,
+      "mean_predicted_probability": 0.3469295973843166,
+      "observed_positive_fraction": 0.35772357723577236
+    },
+    {
+      "bin_lower": 0.4,
+      "bin_upper": 0.5,
+      "n": 112,
+      "mean_predicted_probability": 0.4548786160639119,
+      "observed_positive_fraction": 0.42857142857142855
+    },
+    {
+      "bin_lower": 0.5,
+      "bin_upper": 0.6000000000000001,
+      "n": 142,
+      "mean_predicted_probability": 0.5546048102101234,
+      "observed_positive_fraction": 0.5563380281690141
+    },
+    {
+      "bin_lower": 0.6000000000000001,
+      "bin_upper": 0.7000000000000001,
+      "n": 151,
+      "mean_predicted_probability": 0.6474107531450876,
+      "observed_positive_fraction": 0.7152317880794702
+    },
+    {
+      "bin_lower": 0.7000000000000001,
+      "bin_upper": 0.8,
+      "n": 74,
+      "mean_predicted_probability": 0.7333733696562755,
+      "observed_positive_fraction": 0.7567567567567568
+    },
+    {
+      "bin_lower": 0.8,
+      "bin_upper": 0.9,
+      "n": 16,
+      "mean_predicted_probability": 0.8536951484898435,
+      "observed_positive_fraction": 0.9375
+    },
+    {
+      "bin_lower": 0.9,
+      "bin_upper": 1.0,
+      "n": 4,
+      "mean_predicted_probability": 0.9142903047595996,
+      "observed_positive_fraction": 0.75
+    }
+  ],
+  "limitations": "Calibration estimates are uncertain for small samples; calibration is statistical and not clinical validation."
+}
