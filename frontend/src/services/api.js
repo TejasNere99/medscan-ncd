@@ -20,7 +20,30 @@ export function normalizeApiUrl(raw) {
   return cleaned.endsWith('/api') ? cleaned : `${cleaned}/api`;
 }
 
-const API_URL = normalizeApiUrl(import.meta.env.VITE_API_URL);
+export const API_URL = normalizeApiUrl(import.meta.env.VITE_API_URL);
+
+/**
+ * Resolves media and report URLs, dynamically translating localhost URLs
+ * or relative paths to the actual deployed backend origin in production.
+ */
+export function resolveMediaUrl(url) {
+  if (!url || typeof url !== 'string') return '';
+  const backendOrigin = API_URL.replace(/\/api\/?$/, '');
+
+  // Relative path (e.g., /uploads/report-123.pdf)
+  if (url.startsWith('/')) {
+    return `${backendOrigin}${url}`;
+  }
+
+  // Localhost / 127.0.0.1 hardcoded URL
+  if (/^https?:\/\/(?:localhost|127\.0\.0\.1)(?::\d+)?/i.test(url)) {
+    if (!backendOrigin.includes('localhost') && !backendOrigin.includes('127.0.0.1')) {
+      return url.replace(/^https?:\/\/(?:localhost|127\.0\.0\.1)(?::\d+)?/i, backendOrigin);
+    }
+  }
+
+  return url;
+}
 
 const api = axios.create({
   baseURL: API_URL,

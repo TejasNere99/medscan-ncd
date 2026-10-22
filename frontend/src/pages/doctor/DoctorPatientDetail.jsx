@@ -26,6 +26,7 @@ import { reportService } from '../../services/reportService';
 import { predictionService } from '../../services/predictionService';
 import { appointmentService } from '../../services/appointmentService';
 import { useToast } from '../../hooks/useToast';
+import { resolveMediaUrl } from '../../services/api';
 
 export const DoctorPatientDetail = () => {
   const { id } = useParams();
@@ -296,7 +297,7 @@ export const DoctorPatientDetail = () => {
                   <p className="font-bold text-white text-sm">{r.title}</p>
                   <p className="text-slate-400">{r.reportType} • {new Date(r.uploadDate).toLocaleDateString()}</p>
                 </div>
-                <a href={r.fileUrl} target="_blank" rel="noreferrer" className="text-brand-400 font-bold hover:underline">
+                <a href={resolveMediaUrl(r.fileUrl)} target="_blank" rel="noreferrer" className="text-brand-400 font-bold hover:underline">
                   View File
                 </a>
               </div>

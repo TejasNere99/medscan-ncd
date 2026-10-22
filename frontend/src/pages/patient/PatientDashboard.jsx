@@ -219,38 +219,51 @@ export const PatientDashboard = () => {
         setHeartDiseasePrediction(null);
       }
 
+      const hasConfirmedReports = repRes?.data?.some((r) => r.status === 'CONFIRMED');
+      const hasHypertensionClinicalData = Boolean(
+        hasConfirmedReports ||
+        (profileRes?.data?.systolicBP && profileRes?.data?.diastolicBP) ||
+        (profileRes?.data?.fastingSugar && profileRes?.data?.totalCholesterol)
+      );
+      const hasCkdClinicalData = Boolean(
+        hasConfirmedReports ||
+        profileRes?.data?.serumCreatinine
+      );
+
       try {
         let hypRes = await predictionService.getLatestHypertensionPrediction();
         if (hypRes?.data && hypRes.data.status === 'SUCCESS' && hypRes.data.canCalculate) {
           setHypertensionPrediction(hypRes.data);
-        } else if (profileRes?.data?.age && profileRes?.data?.gender) {
+        } else if (hasHypertensionClinicalData) {
           const autoRes = await predictionService.predictHypertension({});
-          if (autoRes?.data) setHypertensionPrediction(autoRes.data);
-          else setHypertensionPrediction(hypRes?.data || null);
+          if (autoRes?.data?.status === 'SUCCESS' && autoRes.data.canCalculate) {
+            setHypertensionPrediction(autoRes.data);
+          } else {
+            setHypertensionPrediction(null);
+          }
         } else {
-          setHypertensionPrediction(hypRes?.data || null);
+          setHypertensionPrediction(null);
         }
       } catch (hErr) {
-        const errorResult = hErr?.data || hErr || {};
-        const embeddedResult = errorResult?.data?.status ? errorResult.data : (errorResult?.status ? errorResult : null);
-        setHypertensionPrediction(embeddedResult || null);
+        setHypertensionPrediction(null);
       }
 
       try {
         let ckdRes = await predictionService.getLatestCkdPrediction();
         if (ckdRes?.data && ckdRes.data.status === 'SUCCESS' && ckdRes.data.canCalculate) {
           setCkdPrediction(ckdRes.data);
-        } else if (profileRes?.data?.age && (profileRes?.data?.serumCreatinine || repRes?.data?.length > 0)) {
+        } else if (hasCkdClinicalData) {
           const autoRes = await predictionService.predictCkd({});
-          if (autoRes?.data) setCkdPrediction(autoRes.data);
-          else setCkdPrediction(ckdRes?.data || null);
+          if (autoRes?.data?.status === 'SUCCESS' && autoRes.data.canCalculate) {
+            setCkdPrediction(autoRes.data);
+          } else {
+            setCkdPrediction(null);
+          }
         } else {
-          setCkdPrediction(ckdRes?.data || null);
+          setCkdPrediction(null);
         }
       } catch (cErr) {
-        const errorResult = cErr?.data || cErr || {};
-        const embeddedResult = errorResult?.data?.status ? errorResult.data : (errorResult?.status ? errorResult : null);
-        setCkdPrediction(embeddedResult || null);
+        setCkdPrediction(null);
       }
     } catch (err) {
       addToast('Failed to sync patient health profile data.', 'error');
@@ -1459,11 +1472,13 @@ export const PatientDashboard = () => {
                 </div>
               </div>
               <span className={`text-[10px] px-2.5 py-1 rounded-full font-bold border ${
-                ['MODEL_UNAVAILABLE', 'SERVICE_UNAVAILABLE', 'PREDICTION_SERVICE_UNAVAILABLE'].includes(hypertensionPrediction?.status)
+                ['MODEL_UNAVAILABLE', 'SERVICE_UNAVAILABLE', 'PREDICTION_SERVICE_UNAVAILABLE'].includes(hypertensionPrediction?.status) &&
+                (reports?.some((r) => r.status === 'CONFIRMED') || patient?.systolicBP)
                   ? 'border-rose-500/20 bg-rose-500/10 text-rose-400'
                   : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
               }`}>
-                {['MODEL_UNAVAILABLE', 'SERVICE_UNAVAILABLE', 'PREDICTION_SERVICE_UNAVAILABLE'].includes(hypertensionPrediction?.status) ? 'Unavailable' : 'Active AI'}
+                {['MODEL_UNAVAILABLE', 'SERVICE_UNAVAILABLE', 'PREDICTION_SERVICE_UNAVAILABLE'].includes(hypertensionPrediction?.status) &&
+                (reports?.some((r) => r.status === 'CONFIRMED') || patient?.systolicBP) ? 'Unavailable' : 'Active AI'}
               </span>
             </div>
 
@@ -1648,7 +1663,8 @@ export const PatientDashboard = () => {
             ) : hypertensionPrediction &&
               (hypertensionPrediction.status === 'SERVICE_UNAVAILABLE' ||
                 hypertensionPrediction.status === 'MODEL_UNAVAILABLE' ||
-                hypertensionPrediction.status === 'PREDICTION_SERVICE_UNAVAILABLE') ? (
+                hypertensionPrediction.status === 'PREDICTION_SERVICE_UNAVAILABLE') &&
+              (reports?.some((r) => r.status === 'CONFIRMED') || patient?.systolicBP) ? (
               <div className="p-6 text-center space-y-3">
                 <ShieldCheck className="w-8 h-8 text-amber-400 mx-auto" />
                 <h4 className="text-sm font-bold text-white">Assessment Temporarily Unavailable</h4>
@@ -1691,11 +1707,13 @@ export const PatientDashboard = () => {
                 </div>
               </div>
               <span className={`text-[10px] px-2.5 py-1 rounded-full font-bold border ${
-                ['MODEL_UNAVAILABLE', 'SERVICE_UNAVAILABLE', 'PREDICTION_SERVICE_UNAVAILABLE'].includes(ckdPrediction?.status)
+                ['MODEL_UNAVAILABLE', 'SERVICE_UNAVAILABLE', 'PREDICTION_SERVICE_UNAVAILABLE'].includes(ckdPrediction?.status) &&
+                (reports?.some((r) => r.status === 'CONFIRMED') || patient?.serumCreatinine)
                   ? 'border-rose-500/20 bg-rose-500/10 text-rose-400'
                   : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
               }`}>
-                {['MODEL_UNAVAILABLE', 'SERVICE_UNAVAILABLE', 'PREDICTION_SERVICE_UNAVAILABLE'].includes(ckdPrediction?.status) ? 'Unavailable' : 'Active AI'}
+                {['MODEL_UNAVAILABLE', 'SERVICE_UNAVAILABLE', 'PREDICTION_SERVICE_UNAVAILABLE'].includes(ckdPrediction?.status) &&
+                (reports?.some((r) => r.status === 'CONFIRMED') || patient?.serumCreatinine) ? 'Unavailable' : 'Active AI'}
               </span>
             </div>
 
@@ -1880,7 +1898,8 @@ export const PatientDashboard = () => {
             ) : ckdPrediction &&
               (ckdPrediction.status === 'SERVICE_UNAVAILABLE' ||
                 ckdPrediction.status === 'MODEL_UNAVAILABLE' ||
-                ckdPrediction.status === 'PREDICTION_SERVICE_UNAVAILABLE') ? (
+                ckdPrediction.status === 'PREDICTION_SERVICE_UNAVAILABLE') &&
+              (reports?.some((r) => r.status === 'CONFIRMED') || patient?.serumCreatinine) ? (
               <div className="p-6 text-center space-y-3">
                 <ShieldCheck className="w-8 h-8 text-amber-400 mx-auto" />
                 <h4 className="text-sm font-bold text-white">Assessment Temporarily Unavailable</h4>

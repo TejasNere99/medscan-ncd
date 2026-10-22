@@ -12,11 +12,18 @@
  *   - Sanitized application errors (never exposes internal filesystem paths or python tracebacks).
  */
 
-const DEFAULT_SERVICE_URL = 'http://localhost:8000';
-const REQUEST_TIMEOUT_MS = 5000;
+const DEFAULT_SERVICE_URL = 'https://medscan-ml-service.onrender.com';
+const REQUEST_TIMEOUT_MS = 90000;
 
 function getBaseMlUrl() {
-  const raw = process.env.DIABETES_ML_SERVICE_URL || process.env.ML_SERVICE_URL || DEFAULT_SERVICE_URL;
+  let raw = process.env.ML_SERVICE_URL || process.env.DIABETES_ML_SERVICE_URL;
+  if (
+    !raw ||
+    ((process.env.NODE_ENV === 'production' || process.env.RENDER_EXTERNAL_URL) &&
+      (raw.includes('localhost') || raw.includes('127.0.0.1')))
+  ) {
+    raw = DEFAULT_SERVICE_URL;
+  }
   return raw.replace(/\/predict\/?$/, '').replace(/\/$/, '');
 }
 

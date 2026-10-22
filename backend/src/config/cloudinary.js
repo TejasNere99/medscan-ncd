@@ -61,7 +61,14 @@ export const uploadOnCloudinary = async (localFilePath) => {
       if (allowLocalStorage) {
         console.info('[Storage Fallback] Utilizing local disk storage because LOCAL_STORAGE_FALLBACK=true');
         const fileName = path.basename(localFilePath);
-        const baseUrl = process.env.BACKEND_URL || `http://localhost:${process.env.PORT || 5000}`;
+        const baseUrl =
+          (process.env.BACKEND_URL && !process.env.BACKEND_URL.includes('localhost') && !process.env.BACKEND_URL.includes('127.0.0.1'))
+            ? process.env.BACKEND_URL.replace(/\/+$/, '')
+            : process.env.RENDER_EXTERNAL_URL
+            ? process.env.RENDER_EXTERNAL_URL.replace(/\/+$/, '')
+            : process.env.NODE_ENV === 'production'
+            ? 'https://medscan-backend-api.onrender.com'
+            : process.env.BACKEND_URL || `http://localhost:${process.env.PORT || 5000}`;
         return {
           url: `${baseUrl}/uploads/${fileName}`,
           publicId: fileName,
@@ -81,7 +88,14 @@ export const uploadOnCloudinary = async (localFilePath) => {
   if (allowLocalStorage) {
     console.info('[Storage Fallback] Cloudinary is unconfigured or placeholder. Using local storage (LOCAL_STORAGE_FALLBACK=true)');
     const fileName = path.basename(localFilePath);
-    const baseUrl = process.env.BACKEND_URL || `http://localhost:${process.env.PORT || 5000}`;
+    const baseUrl =
+      (process.env.BACKEND_URL && !process.env.BACKEND_URL.includes('localhost') && !process.env.BACKEND_URL.includes('127.0.0.1'))
+        ? process.env.BACKEND_URL.replace(/\/+$/, '')
+        : process.env.RENDER_EXTERNAL_URL
+        ? process.env.RENDER_EXTERNAL_URL.replace(/\/+$/, '')
+        : process.env.NODE_ENV === 'production'
+        ? 'https://medscan-backend-api.onrender.com'
+        : process.env.BACKEND_URL || `http://localhost:${process.env.PORT || 5000}`;
     return {
       url: `${baseUrl}/uploads/${fileName}`,
       publicId: fileName,

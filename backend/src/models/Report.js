@@ -96,8 +96,26 @@ const reportSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
+    toJSON: { getters: true },
+    toObject: { getters: true },
   }
 );
+
+reportSchema.path('fileUrl').get(function (url) {
+  if (!url || typeof url !== 'string') return url;
+  if (/^https?:\/\/(?:localhost|127\.0\.0\.1)(?::\d+)?/i.test(url)) {
+    const base =
+      (process.env.BACKEND_URL && !process.env.BACKEND_URL.includes('localhost') && !process.env.BACKEND_URL.includes('127.0.0.1'))
+        ? process.env.BACKEND_URL.replace(/\/+$/, '')
+        : process.env.RENDER_EXTERNAL_URL
+        ? process.env.RENDER_EXTERNAL_URL.replace(/\/+$/, '')
+        : (process.env.NODE_ENV === 'production' ? 'https://medscan-backend-api.onrender.com' : null);
+    if (base) {
+      return url.replace(/^https?:\/\/(?:localhost|127\.0\.0\.1)(?::\d+)?/i, base);
+    }
+  }
+  return url;
+});
 
 reportSchema.pre('validate', function (next) {
   if (!this.uploader && this.uploadedBy) {

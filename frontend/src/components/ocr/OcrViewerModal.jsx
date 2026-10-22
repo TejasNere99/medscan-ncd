@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { useToast } from '../../hooks/useToast';
 import { reportService } from '../../services/reportService';
+import { resolveMediaUrl } from '../../services/api';
 
 export const OcrViewerModal = ({ isOpen, onClose, report, onReportConfirmed }) => {
   const [showRawText, setShowRawText] = useState(false);
@@ -58,8 +59,9 @@ export const OcrViewerModal = ({ isOpen, onClose, report, onReportConfirmed }) =
   const patientContext = doc.patientContext || extractedData?.patientContext || {};
   const displayVitals = confirmedData?.canonicalVitals || extractedData?.canonicalVitals || structuredData || confirmedData || {};
 
-  const isPdf = fileUrl?.toLowerCase().endsWith('.pdf') || report?.fileType === 'pdf';
-  const isLocalStorage = storageProvider === 'local' || fileUrl?.includes('localhost');
+  const resolvedFileUrl = resolveMediaUrl(fileUrl);
+  const isPdf = (resolvedFileUrl || fileUrl)?.toLowerCase().endsWith('.pdf') || report?.fileType === 'pdf';
+  const isLocalStorage = storageProvider === 'local' || fileUrl?.includes('localhost') || resolvedFileUrl?.includes('onrender.com');
 
   const handleConfirm = async () => {
     if (!report?._id) return;
@@ -555,12 +557,12 @@ export const OcrViewerModal = ({ isOpen, onClose, report, onReportConfirmed }) =
         )}
 
         {/* Document Preview */}
-        {fileUrl && (
+        {resolvedFileUrl && (
           <div className="space-y-2 pt-2 border-t border-slate-800">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-slate-400 uppercase">Document File Preview</span>
               <a
-                href={fileUrl}
+                href={resolvedFileUrl}
                 target="_blank"
                 rel="noreferrer"
                 className="text-[11px] text-brand-400 hover:text-brand-300 font-semibold flex items-center space-x-1"
@@ -577,13 +579,13 @@ export const OcrViewerModal = ({ isOpen, onClose, report, onReportConfirmed }) =
                   <FileText className="w-8 h-8 text-brand-400" />
                 </div>
                 <div>
-                  <p className="text-sm font-bold text-white">PDF Report Stored Locally</p>
+                  <p className="text-sm font-bold text-white">PDF Report Stored on Server</p>
                   <p className="text-[11px] text-slate-400 mt-1">
-                    This report is saved on the local server. In-app preview is not available for local PDF files.
+                    This report is saved securely on the server. In-app iframe embedding is restricted for cross-origin security.
                   </p>
                 </div>
                 <a
-                  href={fileUrl}
+                  href={resolvedFileUrl}
                   target="_blank"
                   rel="noreferrer"
                   className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-brand-500 to-cyan-500 flex items-center space-x-2"
@@ -592,15 +594,15 @@ export const OcrViewerModal = ({ isOpen, onClose, report, onReportConfirmed }) =
                   <span>Open PDF in Browser Tab</span>
                 </a>
                 <p className="text-[10px] text-slate-500">
-                  💡 Configure real Cloudinary credentials in <code className="text-brand-400">.env</code> for cloud-hosted previews.
+                  💡 Document opens in a new secure browser tab.
                 </p>
               </div>
             ) : (
               <div className="rounded-xl overflow-hidden border border-slate-800 max-h-64 flex items-center justify-center bg-slate-950">
                 {isPdf ? (
-                  <iframe src={fileUrl} title="Document Preview" className="w-full h-64 border-none" />
+                  <iframe src={resolvedFileUrl} title="Document Preview" className="w-full h-64 border-none" />
                 ) : (
-                  <img src={fileUrl} alt="Report Document" className="max-h-64 w-auto object-contain" />
+                  <img src={resolvedFileUrl} alt="Report Document" className="max-h-64 w-auto object-contain" />
                 )}
               </div>
             )}

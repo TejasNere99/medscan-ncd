@@ -108,7 +108,7 @@ export const sendMail = async ({ to, subject, html, text }) => {
   // 1. If BREVO_API_KEY is configured, prioritize Brevo HTTPS API (Port 443 HTTPS - 300 free emails/day to ANY address)
   if (process.env.BREVO_API_KEY) {
     try {
-      const fromEmail = process.env.EMAIL_USER || process.env.EMAIL_FROM || 'tejasnere94@gmail.com';
+      const fromEmail = (process.env.BREVO_SENDER_EMAIL || process.env.EMAIL_USER || 'tejasnere94@gmail.com').trim();
       const fromName = process.env.EMAIL_FROM_NAME || 'MedScan-NCD Platform';
 
       const res = await fetch('https://api.brevo.com/v3/smtp/email', {
@@ -129,14 +129,23 @@ export const sendMail = async ({ to, subject, html, text }) => {
 
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.message || JSON.stringify(data));
+        console.error(`[EmailService:Brevo Error ${res.status}]`, data);
+        return {
+          success: false,
+          error: data.message || `Brevo API rejected request with status ${res.status}`,
+        };
       }
       console.log(`[EmailService:Brevo] Dispatched email to ${to} (MessageId: ${data.messageId})`);
       return { success: true, messageId: data.messageId };
     } catch (err) {
-      console.error(`[EmailService:Brevo] Failed: ${err.message}`);
+      console.error(`[EmailService:Brevo Exception]`, err.message);
+      return {
+        success: false,
+        error: `Brevo connection failed: ${err.message}`,
+      };
     }
   }
+
 
   // 2. If RESEND_API_KEY is configured, send via Resend HTTPS API (Port 443 HTTPS)
   if (process.env.RESEND_API_KEY) {
