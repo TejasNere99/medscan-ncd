@@ -58,19 +58,38 @@ if (process.env.NODE_ENV !== 'production') {
   }
 }
 
+const isAllowedOrigin = (origin) => {
+  if (!origin) return true;
+  const normalized = origin.trim().replace(/\/+$/, '');
+  if (allowedClientOrigins.has(normalized)) return true;
+
+  // Automatically allow all Vercel production and preview deployment domains
+  try {
+    const { hostname, protocol } = new URL(normalized);
+    if ((protocol === 'https:' || protocol === 'http:') && hostname.endsWith('.vercel.app')) {
+      return true;
+    }
+  } catch {
+    // Malformed origin
+  }
+
+  return false;
+};
+
 // Global Middlewares
 app.use(helmet({ crossOriginResourcePolicy: false }));
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin) return callback(null, true);
-      const normalized = origin.trim().replace(/\/+$/, '');
-      if (allowedClientOrigins.has(normalized)) return callback(null, true);
+      if (isAllowedOrigin(origin)) {
+        return callback(null, true);
+      }
       return callback(new Error(`Origin '${origin}' is not allowed by CORS`));
     },
     credentials: true,
   })
 );
+
 app.use(morgan('dev'));
 app.use(express.json({ limit: '16kb' }));
 app.use(express.urlencoded({ extended: true, limit: '16kb' }));
