@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { User, Mail, Lock, Building, ArrowRight, CheckCircle2, Clock, RotateCcw } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { User, Mail, Lock, Building, ArrowRight, CheckCircle2, Clock, RotateCcw, Zap } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useToast } from '../../hooks/useToast';
 import { authService } from '../../services/authService';
 
 export const Register = () => {
+  const navigate = useNavigate();
   const { register } = useAuth();
   const { addToast } = useToast();
 
@@ -18,8 +19,10 @@ export const Register = () => {
   });
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
+  const [activating, setActivating] = useState(false);
   const [cooldown, setCooldown] = useState(0);
   const [pendingVerificationEmail, setPendingVerificationEmail] = useState('');
+  const [pendingVerificationToken, setPendingVerificationToken] = useState('');
   const [emailDelivered, setEmailDelivered] = useState(true);
 
   // Cooldown countdown timer
@@ -59,7 +62,19 @@ export const Register = () => {
         role: 'Patient',
       });
 
+      const isAuto = res?.data?.autoVerified || res?.data?.user?.isEmailVerified;
+      if (isAuto) {
+        addToast('Account created and activated! You can now sign in.', 'success');
+        navigate('/login');
+        return;
+      }
+
       const delivered = res?.data?.emailDelivered ?? true;
+      const fallbackToken = res?.data?.verificationToken || res?.verificationToken;
+      if (fallbackToken) {
+        setPendingVerificationToken(fallbackToken);
+      }
+
       setEmailDelivered(delivered);
       setPendingVerificationEmail(formData.email.trim());
       setCooldown(60);
@@ -67,13 +82,28 @@ export const Register = () => {
       addToast(
         delivered
           ? 'Account created! Please check your email to verify your address.'
-          : 'Account created. Email delivery failed, please use Resend below.',
-        delivered ? 'success' : 'warning'
+          : 'Account created. Outbound SMTP restricted on free cloud tier — use 1-Click Activation below.',
+        delivered ? 'success' : 'info'
       );
     } catch (err) {
       addToast(err?.message || 'Registration failed.', 'error');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleInstantActivate = async () => {
+    if (!pendingVerificationToken) return;
+
+    setActivating(true);
+    try {
+      await authService.verifyEmail(pendingVerificationToken);
+      addToast('Account activated successfully! You can now sign in.', 'success');
+      navigate('/login');
+    } catch (err) {
+      addToast(err?.message || 'Failed to activate account.', 'error');
+    } finally {
+      setActivating(false);
     }
   };
 
@@ -113,8 +143,24 @@ export const Register = () => {
         </div>
 
         {!emailDelivered && (
-          <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-left text-xs text-amber-300">
-            <strong>Delivery Notice:</strong> We could not connect to the email server. If you are in local testing, check your server console or configure SMTP in <code>.env</code>.
+          <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-left text-xs text-amber-300 space-y-3">
+            <div>
+              <strong className="block text-amber-200 mb-1">Notice: Outbound Email Blocked by Free Cloud Host</strong>
+              <p className="text-[11px] leading-relaxed text-amber-300/90">
+                Render free-tier instances block outbound SMTP ports (25/465/587). For faculty evaluation and demonstration, click below to activate your account instantly:
+              </p>
+            </div>
+            {pendingVerificationToken && (
+              <button
+                type="button"
+                disabled={activating}
+                onClick={handleInstantActivate}
+                className="w-full py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold flex items-center justify-center space-x-2 shadow-lg transition-all text-xs disabled:opacity-50"
+              >
+                <Zap className="w-3.5 h-3.5" />
+                <span>{activating ? 'Activating Account...' : 'Activate Account Instantly (1-Click Verification)'}</span>
+              </button>
+            )}
           </div>
         )}
 
@@ -128,6 +174,7 @@ export const Register = () => {
             <span>Check your spam or junk folder if you don't see it within a minute.</span>
           </div>
         </div>
+
 
         <div className="space-y-3 pt-2">
           <button
