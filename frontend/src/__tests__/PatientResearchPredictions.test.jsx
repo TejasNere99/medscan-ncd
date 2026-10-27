@@ -29,6 +29,8 @@ vi.mock('../services/predictionService', () => ({
     getHeartDiseasePredictionHistory: vi.fn(),
     getLatestHypertensionPrediction: vi.fn(),
     getLatestCkdPrediction: vi.fn(),
+    predictDiabetes: vi.fn(),
+    predictHeartDisease: vi.fn(),
     predictHypertension: vi.fn(),
     predictCkd: vi.fn(),
   },

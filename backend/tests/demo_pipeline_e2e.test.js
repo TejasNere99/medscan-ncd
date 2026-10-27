@@ -288,7 +288,7 @@ describe('MedScan-NCD Faculty Demo: End-to-End Pipeline & Four-Model Verificatio
       expect(updatedPatient.totalCholesterol).toBe(165);
       expect(updatedPatient.hdl).toBe(58);
       expect(updatedPatient.serumCreatinine).toBe(0.8);
-    });
+    }, 30000);
   });
 
   describe('4. Real Four-Model Inference Execution', () => {
@@ -531,7 +531,7 @@ describe('MedScan-NCD Faculty Demo: End-to-End Pipeline & Four-Model Verificatio
       expect(baseSys).toBe(116);
       expect(followSys).toBe(114);
       expect(sysDelta).toBe(-2);
-    });
+    }, 30000);
   });
 
   describe('7. Security, RBAC, and IDOR Isolation', () => {

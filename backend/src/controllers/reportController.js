@@ -8,7 +8,7 @@ import { CANONICAL_FIELDS, convertUnitSafely } from '../services/medicalNormaliz
 import { buildDiabetesFeatures } from '../services/diabetesFeatureBuilder.js';
 import { callDiabetesPredictionService } from '../services/diabetesPredictionService.js';
 import { buildHeartDiseaseFeatures } from '../services/heartDiseaseFeatureBuilder.js';
-import { callHeartDiseasePredictionService } from '../services/heartDiseasePredictionService.js';
+import { callHeartDiseasePredictionService, checkHeartDiseaseServiceHealth } from '../services/heartDiseasePredictionService.js';
 import { buildCkdFeatures, buildHypertensionFeatures } from '../services/newDiseaseFeatureBuilder.js';
 import { callNewDiseasePredictionService } from '../services/newDiseasePredictionService.js';
 import { ApiError } from '../utils/apiError.js';
@@ -117,6 +117,9 @@ export const uploadReport = asyncHandler(async (req, res) => {
     confidence: ocrResult.confidence || 0,
     uploadDate: new Date(),
   });
+
+  // Non-blocking proactive warmup of Python ML microservice so cold-start delay is eliminated
+  checkHeartDiseaseServiceHealth().catch(() => {});
 
   return res.status(201).json(
     new ApiResponse(

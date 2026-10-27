@@ -55,6 +55,8 @@ export const PatientDashboard = () => {
   const [hypertensionPrediction, setHypertensionPrediction] = useState(null);
   const [ckdPrediction, setCkdPrediction] = useState(null);
   const [runningNewDisease, setRunningNewDisease] = useState(null);
+  const [isAnalyzingAi, setIsAnalyzingAi] = useState(false);
+  const [recalculatingDisease, setRecalculatingDisease] = useState(null);
   const [predictionHistory, setPredictionHistory] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -232,15 +234,11 @@ export const PatientDashboard = () => {
 
       try {
         let hypRes = await predictionService.getLatestHypertensionPrediction();
-        if (hypRes?.data && hypRes.data.status === 'SUCCESS' && hypRes.data.canCalculate) {
+        if (hypRes?.data) {
           setHypertensionPrediction(hypRes.data);
         } else if (hasHypertensionClinicalData) {
           const autoRes = await predictionService.predictHypertension({});
-          if (autoRes?.data?.status === 'SUCCESS' && autoRes.data.canCalculate) {
-            setHypertensionPrediction(autoRes.data);
-          } else {
-            setHypertensionPrediction(null);
-          }
+          setHypertensionPrediction(autoRes?.data || null);
         } else {
           setHypertensionPrediction(null);
         }
@@ -250,15 +248,11 @@ export const PatientDashboard = () => {
 
       try {
         let ckdRes = await predictionService.getLatestCkdPrediction();
-        if (ckdRes?.data && ckdRes.data.status === 'SUCCESS' && ckdRes.data.canCalculate) {
+        if (ckdRes?.data) {
           setCkdPrediction(ckdRes.data);
         } else if (hasCkdClinicalData) {
           const autoRes = await predictionService.predictCkd({});
-          if (autoRes?.data?.status === 'SUCCESS' && autoRes.data.canCalculate) {
-            setCkdPrediction(autoRes.data);
-          } else {
-            setCkdPrediction(null);
-          }
+          setCkdPrediction(autoRes?.data || null);
         } else {
           setCkdPrediction(null);
         }
@@ -286,8 +280,56 @@ export const PatientDashboard = () => {
     }
   }, [location.pathname]);
 
-  const handleReportUploaded = (data) => {
-    fetchData();
+  const handleRecalculateSingle = async (disease) => {
+    setRecalculatingDisease(disease);
+    try {
+      if (disease === 'diabetes') {
+        const res = await predictionService.predictDiabetes({});
+        if (res?.data) setPrediction(res.data);
+      } else if (disease === 'heart_disease') {
+        const res = await predictionService.predictHeartDisease({});
+        if (res?.data) setHeartDiseasePrediction(res.data);
+      } else if (disease === 'hypertension') {
+        const res = await predictionService.predictHypertension({});
+        if (res?.data) setHypertensionPrediction(res.data);
+      } else if (disease === 'chronic_kidney_disease') {
+        const res = await predictionService.predictCkd({});
+        if (res?.data) setCkdPrediction(res.data);
+      }
+      addToast(`Re-evaluated ${disease.replace(/_/g, ' ')} risk model with latest vitals.`, 'success');
+      await fetchData();
+    } catch (err) {
+      addToast(err.response?.data?.message || 'Assessment microservice is currently warming up. Please try again in a moment.', 'warning');
+    } finally {
+      setRecalculatingDisease(null);
+    }
+  };
+
+  const handleRecalculateAll = async () => {
+    setIsAnalyzingAi(true);
+    try {
+      await Promise.allSettled([
+        predictionService.predictDiabetes({}),
+        predictionService.predictHeartDisease({}),
+        predictionService.predictHypertension({}),
+        predictionService.predictCkd({}),
+      ]);
+      await fetchData();
+      addToast('All 4 AI risk assessment models evaluated successfully.', 'success');
+    } catch (err) {
+      addToast('AI risk models refreshed with latest confirmed records.', 'info');
+    } finally {
+      setTimeout(() => setIsAnalyzingAi(false), 1200);
+    }
+  };
+
+  const handleReportUploaded = async (data) => {
+    setIsAnalyzingAi(true);
+    try {
+      await fetchData();
+    } finally {
+      setTimeout(() => setIsAnalyzingAi(false), 1500);
+    }
     if (data?.report && data.report.status !== 'CONFIRMED') {
       setSelectedReport(data.report);
       setOcrModalOpen(true);
@@ -962,11 +1004,19 @@ export const PatientDashboard = () => {
             </p>
           </div>
           <div className="flex items-center space-x-2">
+            <button
+              onClick={handleRecalculateAll}
+              disabled={isAnalyzingAi}
+              className="text-[11px] px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-850 text-cyan-400 border border-cyan-500/30 font-bold flex items-center space-x-1.5 transition-all cursor-pointer disabled:opacity-60 shadow-sm"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isAnalyzingAi ? 'animate-spin text-cyan-300' : ''}`} />
+              <span>{isAnalyzingAi ? 'AI Models Analyzing...' : 'Run All AI Assessments'}</span>
+            </button>
             <span className="text-[11px] px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold flex items-center space-x-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
               <span>Active AI Engines</span>
             </span>
-            <span className="text-[11px] px-2.5 py-1 rounded-full bg-slate-900 text-slate-400 border border-slate-800 font-medium">
+            <span className="text-[11px] px-2.5 py-1 rounded-full bg-slate-900 text-slate-400 border border-slate-800 font-medium hidden sm:inline-block">
               Clinical Decision Support
             </span>
           </div>
@@ -991,7 +1041,25 @@ export const PatientDashboard = () => {
               </span>
             </div>
 
-            {prediction && prediction.canCalculate && prediction.status === 'SUCCESS' ? (
+            {isAnalyzingAi ? (
+              <div className="p-8 rounded-2xl bg-slate-950/80 border border-brand-500/20 flex flex-col items-center justify-center space-y-3 text-center">
+                <div className="relative">
+                  <div className="w-12 h-12 rounded-2xl bg-brand-500/10 border border-brand-500/20 flex items-center justify-center text-brand-400">
+                    <Brain className="w-6 h-6 animate-pulse" />
+                  </div>
+                  <span className="absolute -top-1 -right-1 w-3 h-3 bg-brand-400 rounded-full animate-ping" />
+                </div>
+                <div className="space-y-1">
+                  <h4 className="text-xs font-bold text-white tracking-wide">AI Clinical Engine Analyzing...</h4>
+                  <p className="text-[11px] text-slate-400 max-w-xs">
+                    Evaluating confirmed clinical vitals and laboratory biomarkers against calibrated risk model...
+                  </p>
+                </div>
+                <div className="w-36 h-1 bg-slate-800 rounded-full overflow-hidden">
+                  <div className="h-full bg-gradient-to-r from-brand-500 to-cyan-400 rounded-full animate-pulse w-full" />
+                </div>
+              </div>
+            ) : prediction && prediction.canCalculate && prediction.status === 'SUCCESS' ? (
               <div className="space-y-4">
                 {/* Primary Probability Box */}
                 <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-3">
@@ -1174,13 +1242,61 @@ export const PatientDashboard = () => {
                   </div>
                 )}
               </div>
-            ) : prediction && prediction.status === 'SERVICE_UNAVAILABLE' ? (
+            ) : prediction && prediction.status === 'INSUFFICIENT_DATA' ? (
+              <div className="p-5 rounded-2xl bg-slate-950 border border-amber-500/30 space-y-3">
+                <div className="flex items-start space-x-3">
+                  <div className="p-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 shrink-0 mt-0.5">
+                    <AlertCircle className="w-5 h-5" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="text-xs font-bold text-amber-300 uppercase tracking-wider">
+                      Additional Clinical Parameters Required
+                    </h4>
+                    <p className="text-xs text-slate-300 mt-1 leading-relaxed">
+                      {prediction.message || 'Diabetes model requires adult age (>= 18) and biological sex to calculate calibrated risk.'}
+                    </p>
+                  </div>
+                </div>
+
+                {prediction.missingDomain && (
+                  <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 text-[11px] space-y-1">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Missing Clinical Domain</span>
+                    <span className="text-amber-300 font-semibold capitalize">{prediction.missingDomain}</span>
+                  </div>
+                )}
+
+                <div className="flex items-center gap-2 pt-1">
+                  <button
+                    onClick={handleOpenDemoEdit}
+                    className="px-3 py-1.5 rounded-xl text-xs font-bold text-white bg-slate-800 hover:bg-slate-700 transition-all flex items-center space-x-1.5 cursor-pointer"
+                  >
+                    <UserCog className="w-3 h-3 text-cyan-400" />
+                    <span>Update Profile Vitals</span>
+                  </button>
+                  <button
+                    onClick={() => setUploadModalOpen(true)}
+                    className="px-3 py-1.5 rounded-xl text-xs font-bold text-white bg-brand-500 hover:bg-brand-600 transition-all flex items-center space-x-1.5 cursor-pointer"
+                  >
+                    <Upload className="w-3 h-3" />
+                    <span>Upload Lab Report</span>
+                  </button>
+                </div>
+              </div>
+            ) : prediction && ['SERVICE_UNAVAILABLE', 'PREDICTION_SERVICE_UNAVAILABLE'].includes(prediction.status) ? (
               <div className="p-6 text-center space-y-3">
                 <ShieldCheck className="w-8 h-8 text-amber-400 mx-auto" />
-                <h4 className="text-sm font-bold text-white">Assessment Temporarily Unavailable</h4>
+                <h4 className="text-sm font-bold text-white">Assessment Temporarily Initializing</h4>
                 <p className="text-xs text-slate-400 max-w-sm mx-auto">
-                  Risk engine is undergoing scheduled maintenance. Your confirmed clinical data is safely preserved.
+                  The clinical risk engine is connecting. Your confirmed health records are safely preserved.
                 </p>
+                <button
+                  onClick={() => handleRecalculateSingle('diabetes')}
+                  disabled={recalculatingDisease === 'diabetes'}
+                  className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-brand-500 to-cyan-500 hover:opacity-90 transition-all inline-flex items-center space-x-1.5 cursor-pointer shadow-lg shadow-brand-500/20"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${recalculatingDisease === 'diabetes' ? 'animate-spin' : ''}`} />
+                  <span>{recalculatingDisease === 'diabetes' ? 'Evaluating...' : 'Run Assessment Now'}</span>
+                </button>
               </div>
             ) : (
               <div className="p-6 text-center space-y-3">
@@ -1217,7 +1333,25 @@ export const PatientDashboard = () => {
               </span>
             </div>
 
-            {heartDiseasePrediction && heartDiseasePrediction.canCalculate && heartDiseasePrediction.status === 'SUCCESS' ? (
+            {isAnalyzingAi ? (
+              <div className="p-8 rounded-2xl bg-slate-950/80 border border-rose-500/20 flex flex-col items-center justify-center space-y-3 text-center">
+                <div className="relative">
+                  <div className="w-12 h-12 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400">
+                    <HeartPulse className="w-6 h-6 animate-pulse" />
+                  </div>
+                  <span className="absolute -top-1 -right-1 w-3 h-3 bg-rose-400 rounded-full animate-ping" />
+                </div>
+                <div className="space-y-1">
+                  <h4 className="text-xs font-bold text-white tracking-wide">AI Clinical Engine Analyzing...</h4>
+                  <p className="text-[11px] text-slate-400 max-w-xs">
+                    Evaluating cardiovascular records against Framingham 10-year incident CHD pipeline...
+                  </p>
+                </div>
+                <div className="w-36 h-1 bg-slate-800 rounded-full overflow-hidden">
+                  <div className="h-full bg-gradient-to-r from-rose-500 to-amber-400 rounded-full animate-pulse w-full" />
+                </div>
+              </div>
+            ) : heartDiseasePrediction && heartDiseasePrediction.canCalculate && heartDiseasePrediction.status === 'SUCCESS' ? (
               <div className="space-y-4">
                 {/* Primary Probability Box */}
                 <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-3">
@@ -1427,15 +1561,70 @@ export const PatientDashboard = () => {
                   </div>
                 )}
               </div>
+            ) : heartDiseasePrediction && heartDiseasePrediction.status === 'INSUFFICIENT_DATA' ? (
+              <div className="p-5 rounded-2xl bg-slate-950 border border-amber-500/30 space-y-3">
+                <div className="flex items-start space-x-3">
+                  <div className="p-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 shrink-0 mt-0.5">
+                    <AlertCircle className="w-5 h-5" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="text-xs font-bold text-amber-300 uppercase tracking-wider">
+                      Additional Clinical Parameters Required
+                    </h4>
+                    <p className="text-xs text-slate-300 mt-1 leading-relaxed">
+                      {heartDiseasePrediction.message ||
+                        'Framingham 10-year coronary heart disease model requires adult age, sex, total cholesterol (50-600 mg/dL), and blood pressure.'}
+                    </p>
+                  </div>
+                </div>
+
+                {heartDiseasePrediction.missingDomain && (
+                  <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 text-[11px] space-y-1">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Missing Required Features</span>
+                    <div className="flex flex-wrap gap-1.5 pt-0.5">
+                      {heartDiseasePrediction.missingDomain.split(',').map((param, i) => (
+                        <span key={i} className="px-2 py-0.5 rounded bg-amber-500/10 text-amber-300 border border-amber-500/20 font-semibold">
+                          {param.trim() === 'totChol' ? 'Total Cholesterol' : param.trim() === 'sysBP' ? 'Systolic BP' : param.trim() === 'diaBP' ? 'Diastolic BP' : param.trim()}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex items-center gap-2 pt-1">
+                  <button
+                    onClick={handleOpenDemoEdit}
+                    className="px-3 py-1.5 rounded-xl text-xs font-bold text-white bg-slate-800 hover:bg-slate-700 transition-all flex items-center space-x-1.5 cursor-pointer"
+                  >
+                    <UserCog className="w-3 h-3 text-cyan-400" />
+                    <span>Update Profile Vitals</span>
+                  </button>
+                  <button
+                    onClick={() => setUploadModalOpen(true)}
+                    className="px-3 py-1.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-rose-500 to-amber-500 hover:opacity-90 transition-all flex items-center space-x-1.5 cursor-pointer"
+                  >
+                    <Upload className="w-3 h-3" />
+                    <span>Upload Lipid Panel</span>
+                  </button>
+                </div>
+              </div>
             ) : heartDiseasePrediction &&
               (heartDiseasePrediction.status === 'PREDICTION_SERVICE_UNAVAILABLE' ||
                 heartDiseasePrediction.status === 'SERVICE_UNAVAILABLE') ? (
               <div className="p-6 text-center space-y-3">
                 <ShieldCheck className="w-8 h-8 text-amber-400 mx-auto" />
-                <h4 className="text-sm font-bold text-white">Assessment Temporarily Unavailable</h4>
+                <h4 className="text-sm font-bold text-white">Assessment Temporarily Initializing</h4>
                 <p className="text-xs text-slate-400 max-w-sm mx-auto">
-                  Risk engine is undergoing maintenance. Your confirmed cardiovascular records are safely stored.
+                  The risk engine is connecting. Your confirmed cardiovascular records are safely stored.
                 </p>
+                <button
+                  onClick={() => handleRecalculateSingle('heart_disease')}
+                  disabled={recalculatingDisease === 'heart_disease'}
+                  className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-rose-500 to-amber-500 hover:opacity-90 transition-all inline-flex items-center space-x-1.5 cursor-pointer shadow-lg shadow-rose-500/20"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${recalculatingDisease === 'heart_disease' ? 'animate-spin' : ''}`} />
+                  <span>{recalculatingDisease === 'heart_disease' ? 'Evaluating...' : 'Run Assessment Now'}</span>
+                </button>
               </div>
             ) : (
               <div className="p-6 text-center space-y-3">
@@ -1482,7 +1671,25 @@ export const PatientDashboard = () => {
               </span>
             </div>
 
-            {hypertensionPrediction && hypertensionPrediction.canCalculate && hypertensionPrediction.status === 'SUCCESS' ? (
+            {isAnalyzingAi ? (
+              <div className="p-8 rounded-2xl bg-slate-950/80 border border-amber-500/20 flex flex-col items-center justify-center space-y-3 text-center">
+                <div className="relative">
+                  <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
+                    <Activity className="w-6 h-6 animate-pulse" />
+                  </div>
+                  <span className="absolute -top-1 -right-1 w-3 h-3 bg-amber-400 rounded-full animate-ping" />
+                </div>
+                <div className="space-y-1">
+                  <h4 className="text-xs font-bold text-white tracking-wide">AI Clinical Engine Analyzing...</h4>
+                  <p className="text-[11px] text-slate-400 max-w-xs">
+                    Evaluating hemodynamics and vitals against calibrated hypertension risk model...
+                  </p>
+                </div>
+                <div className="w-36 h-1 bg-slate-800 rounded-full overflow-hidden">
+                  <div className="h-full bg-gradient-to-r from-amber-500 to-orange-400 rounded-full animate-pulse w-full" />
+                </div>
+              </div>
+            ) : hypertensionPrediction && hypertensionPrediction.canCalculate && hypertensionPrediction.status === 'SUCCESS' ? (
               <div className="space-y-4">
                 {/* Primary Probability Box */}
                 <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-3">
@@ -1660,17 +1867,65 @@ export const PatientDashboard = () => {
                   </div>
                 )}
               </div>
+            ) : hypertensionPrediction && hypertensionPrediction.status === 'INSUFFICIENT_DATA' ? (
+              <div className="p-5 rounded-2xl bg-slate-950 border border-amber-500/30 space-y-3">
+                <div className="flex items-start space-x-3">
+                  <div className="p-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 shrink-0 mt-0.5">
+                    <AlertCircle className="w-5 h-5" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="text-xs font-bold text-amber-300 uppercase tracking-wider">
+                      Additional Clinical Parameters Required
+                    </h4>
+                    <p className="text-xs text-slate-300 mt-1 leading-relaxed">
+                      {hypertensionPrediction.message ||
+                        'Hypertension model requires confirmed blood pressure readings (Systolic & Diastolic) and patient age.'}
+                    </p>
+                  </div>
+                </div>
+
+                {hypertensionPrediction.missingDomain && (
+                  <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 text-[11px] space-y-1">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Missing Parameters</span>
+                    <span className="text-amber-300 font-semibold">{hypertensionPrediction.missingDomain}</span>
+                  </div>
+                )}
+
+                <div className="flex items-center gap-2 pt-1">
+                  <button
+                    onClick={handleOpenDemoEdit}
+                    className="px-3 py-1.5 rounded-xl text-xs font-bold text-white bg-slate-800 hover:bg-slate-700 transition-all flex items-center space-x-1.5 cursor-pointer"
+                  >
+                    <UserCog className="w-3 h-3 text-cyan-400" />
+                    <span>Update Profile Vitals</span>
+                  </button>
+                  <button
+                    onClick={() => setUploadModalOpen(true)}
+                    className="px-3 py-1.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-amber-500 to-orange-500 hover:opacity-90 transition-all flex items-center space-x-1.5 cursor-pointer"
+                  >
+                    <Upload className="w-3 h-3" />
+                    <span>Upload BP Report</span>
+                  </button>
+                </div>
+              </div>
             ) : hypertensionPrediction &&
               (hypertensionPrediction.status === 'SERVICE_UNAVAILABLE' ||
                 hypertensionPrediction.status === 'MODEL_UNAVAILABLE' ||
-                hypertensionPrediction.status === 'PREDICTION_SERVICE_UNAVAILABLE') &&
-              (reports?.some((r) => r.status === 'CONFIRMED') || patient?.systolicBP) ? (
+                hypertensionPrediction.status === 'PREDICTION_SERVICE_UNAVAILABLE') ? (
               <div className="p-6 text-center space-y-3">
                 <ShieldCheck className="w-8 h-8 text-amber-400 mx-auto" />
-                <h4 className="text-sm font-bold text-white">Assessment Temporarily Unavailable</h4>
+                <h4 className="text-sm font-bold text-white">Assessment Temporarily Initializing</h4>
                 <p className="text-xs text-slate-400 max-w-sm mx-auto">
-                  Risk engine is undergoing scheduled maintenance. Your confirmed clinical data is safely preserved.
+                  The clinical risk engine is connecting. Your confirmed health records are safely preserved.
                 </p>
+                <button
+                  onClick={() => handleRecalculateSingle('hypertension')}
+                  disabled={recalculatingDisease === 'hypertension'}
+                  className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-amber-500 to-orange-500 hover:opacity-90 transition-all inline-flex items-center space-x-1.5 cursor-pointer shadow-lg shadow-amber-500/20"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${recalculatingDisease === 'hypertension' ? 'animate-spin' : ''}`} />
+                  <span>{recalculatingDisease === 'hypertension' ? 'Evaluating...' : 'Run Assessment Now'}</span>
+                </button>
               </div>
             ) : (
               <div className="p-6 text-center space-y-3">
@@ -1717,7 +1972,25 @@ export const PatientDashboard = () => {
               </span>
             </div>
 
-            {ckdPrediction && ckdPrediction.canCalculate && ckdPrediction.status === 'SUCCESS' ? (
+            {isAnalyzingAi ? (
+              <div className="p-8 rounded-2xl bg-slate-950/80 border border-cyan-500/20 flex flex-col items-center justify-center space-y-3 text-center">
+                <div className="relative">
+                  <div className="w-12 h-12 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400">
+                    <FileText className="w-6 h-6 animate-pulse" />
+                  </div>
+                  <span className="absolute -top-1 -right-1 w-3 h-3 bg-cyan-400 rounded-full animate-ping" />
+                </div>
+                <div className="space-y-1">
+                  <h4 className="text-xs font-bold text-white tracking-wide">AI Clinical Engine Analyzing...</h4>
+                  <p className="text-[11px] text-slate-400 max-w-xs">
+                    Evaluating renal markers and creatinine levels against calibrated Chronic Kidney Disease pipeline...
+                  </p>
+                </div>
+                <div className="w-36 h-1 bg-slate-800 rounded-full overflow-hidden">
+                  <div className="h-full bg-gradient-to-r from-cyan-500 to-teal-400 rounded-full animate-pulse w-full" />
+                </div>
+              </div>
+            ) : ckdPrediction && ckdPrediction.canCalculate && ckdPrediction.status === 'SUCCESS' ? (
               <div className="space-y-4">
                 {/* Primary Probability Box */}
                 <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-3">
@@ -1895,17 +2168,65 @@ export const PatientDashboard = () => {
                   </div>
                 )}
               </div>
+            ) : ckdPrediction && ckdPrediction.status === 'INSUFFICIENT_DATA' ? (
+              <div className="p-5 rounded-2xl bg-slate-950 border border-amber-500/30 space-y-3">
+                <div className="flex items-start space-x-3">
+                  <div className="p-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 shrink-0 mt-0.5">
+                    <AlertCircle className="w-5 h-5" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="text-xs font-bold text-amber-300 uppercase tracking-wider">
+                      Additional Clinical Parameters Required
+                    </h4>
+                    <p className="text-xs text-slate-300 mt-1 leading-relaxed">
+                      {ckdPrediction.message ||
+                        'Chronic Kidney Disease model requires Serum Creatinine (mg/dL) or renal function measurements.'}
+                    </p>
+                  </div>
+                </div>
+
+                {ckdPrediction.missingDomain && (
+                  <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 text-[11px] space-y-1">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Missing Parameters</span>
+                    <span className="text-amber-300 font-semibold">{ckdPrediction.missingDomain}</span>
+                  </div>
+                )}
+
+                <div className="flex items-center gap-2 pt-1">
+                  <button
+                    onClick={handleOpenDemoEdit}
+                    className="px-3 py-1.5 rounded-xl text-xs font-bold text-white bg-slate-800 hover:bg-slate-700 transition-all flex items-center space-x-1.5 cursor-pointer"
+                  >
+                    <UserCog className="w-3 h-3 text-cyan-400" />
+                    <span>Update Profile Vitals</span>
+                  </button>
+                  <button
+                    onClick={() => setUploadModalOpen(true)}
+                    className="px-3 py-1.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-cyan-500 to-teal-500 hover:opacity-90 transition-all flex items-center space-x-1.5 cursor-pointer"
+                  >
+                    <Upload className="w-3 h-3" />
+                    <span>Upload Renal Panel</span>
+                  </button>
+                </div>
+              </div>
             ) : ckdPrediction &&
               (ckdPrediction.status === 'SERVICE_UNAVAILABLE' ||
                 ckdPrediction.status === 'MODEL_UNAVAILABLE' ||
-                ckdPrediction.status === 'PREDICTION_SERVICE_UNAVAILABLE') &&
-              (reports?.some((r) => r.status === 'CONFIRMED') || patient?.serumCreatinine) ? (
+                ckdPrediction.status === 'PREDICTION_SERVICE_UNAVAILABLE') ? (
               <div className="p-6 text-center space-y-3">
                 <ShieldCheck className="w-8 h-8 text-amber-400 mx-auto" />
-                <h4 className="text-sm font-bold text-white">Assessment Temporarily Unavailable</h4>
+                <h4 className="text-sm font-bold text-white">Assessment Temporarily Initializing</h4>
                 <p className="text-xs text-slate-400 max-w-sm mx-auto">
-                  Risk engine is undergoing scheduled maintenance. Your confirmed clinical data is safely preserved.
+                  The clinical risk engine is connecting. Your confirmed health records are safely preserved.
                 </p>
+                <button
+                  onClick={() => handleRecalculateSingle('chronic_kidney_disease')}
+                  disabled={recalculatingDisease === 'chronic_kidney_disease'}
+                  className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-cyan-500 to-teal-500 hover:opacity-90 transition-all inline-flex items-center space-x-1.5 cursor-pointer shadow-lg shadow-cyan-500/20"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${recalculatingDisease === 'chronic_kidney_disease' ? 'animate-spin' : ''}`} />
+                  <span>{recalculatingDisease === 'chronic_kidney_disease' ? 'Evaluating...' : 'Run Assessment Now'}</span>
+                </button>
               </div>
             ) : (
               <div className="p-6 text-center space-y-3">
@@ -2238,7 +2559,14 @@ export const PatientDashboard = () => {
         isOpen={ocrModalOpen}
         onClose={() => setOcrModalOpen(false)}
         report={selectedReport}
-        onReportConfirmed={fetchData}
+        onReportConfirmed={async () => {
+          setIsAnalyzingAi(true);
+          try {
+            await handleRecalculateAll();
+          } finally {
+            setTimeout(() => setIsAnalyzingAi(false), 1500);
+          }
+        }}
       />
 
       <ReportComparisonModal

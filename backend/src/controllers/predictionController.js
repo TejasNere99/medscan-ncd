@@ -255,27 +255,25 @@ export const getLatestDiabetesPrediction = asyncHandler(async (req, res) => {
     .populate('report', 'title reportType fileUrl status confirmedAt uploadDate')
     .sort({ createdAt: -1 });
 
-  // Self-healing synchronization: if latest prediction is missing or INSUFFICIENT_DATA,
-  // ensure it reflects newly added patient profile vitals (BMI, BP, age, sex).
-  if (!latest || latest.status === 'INSUFFICIENT_DATA') {
+  // Self-healing synchronization: if latest prediction is missing, INSUFFICIENT_DATA, or service was unavailable,
+  // attempt recalculation to upgrade stale service-unavailable states or reflect newly confirmed vitals.
+  const isStaleOrIncomplete =
+    !latest ||
+    latest.status === 'INSUFFICIENT_DATA' ||
+    latest.status === 'PREDICTION_SERVICE_UNAVAILABLE' ||
+    latest.status === 'SERVICE_UNAVAILABLE' ||
+    latest.status === 'FAILED';
+
+  if (isStaleOrIncomplete) {
     const patient = await Patient.findById(patientId);
     if (patient) {
-      const hasPhysicalInProfile = Boolean(patient.bmi || (patient.systolicBP && patient.diastolicBP));
-      const hasDemographicInProfile = Boolean(patient.age && patient.gender);
-
-      if (
-        !latest ||
-        (hasPhysicalInProfile && !latest.featureAvailability?.hasPhysical) ||
-        (hasDemographicInProfile && !latest.featureAvailability?.hasDemographic)
-      ) {
-        await triggerDiabetesRecalculation(patientId, req.user._id);
-        latest = await Prediction.findOne({
-          patient: patientId,
-          disease: 'diabetes',
-        })
-          .populate('report', 'title reportType fileUrl status confirmedAt uploadDate')
-          .sort({ createdAt: -1 });
-      }
+      await triggerDiabetesRecalculation(patientId, req.user._id);
+      latest = await Prediction.findOne({
+        patient: patientId,
+        disease: 'diabetes',
+      })
+        .populate('report', 'title reportType fileUrl status confirmedAt uploadDate')
+        .sort({ createdAt: -1 });
     }
   }
 
@@ -510,27 +508,25 @@ export const getLatestHeartDiseasePrediction = asyncHandler(async (req, res) => 
     .populate('report', 'title reportType fileUrl status confirmedAt uploadDate')
     .sort({ createdAt: -1 });
 
-  // Self-healing synchronization: if latest prediction is missing or INSUFFICIENT_DATA,
-  // check if newly added patient profile vitals (age, sex, BP, totChol) enable prediction.
-  if (!latest || latest.status === 'INSUFFICIENT_DATA') {
+  // Self-healing synchronization: if latest prediction is missing, INSUFFICIENT_DATA, or service was unavailable,
+  // attempt recalculation to upgrade stale service-unavailable states or reflect newly confirmed vitals.
+  const isStaleOrIncomplete =
+    !latest ||
+    latest.status === 'INSUFFICIENT_DATA' ||
+    latest.status === 'PREDICTION_SERVICE_UNAVAILABLE' ||
+    latest.status === 'SERVICE_UNAVAILABLE' ||
+    latest.status === 'FAILED';
+
+  if (isStaleOrIncomplete) {
     const patient = await Patient.findById(patientId);
     if (patient) {
-      const hasCardioInProfile = Boolean(patient.totalCholesterol || (patient.systolicBP && patient.diastolicBP));
-      const hasDemographicInProfile = Boolean(patient.age && patient.gender);
-
-      if (
-        !latest ||
-        (hasCardioInProfile && (!latest.inputFeatures?.totChol || !latest.inputFeatures?.sysBP)) ||
-        (hasDemographicInProfile && (!latest.inputFeatures?.age || latest.inputFeatures?.sex === null))
-      ) {
-        await triggerHeartDiseaseRecalculation(patientId, req.user._id);
-        latest = await Prediction.findOne({
-          patient: patientId,
-          disease: 'heart_disease',
-        })
-          .populate('report', 'title reportType fileUrl status confirmedAt uploadDate')
-          .sort({ createdAt: -1 });
-      }
+      await triggerHeartDiseaseRecalculation(patientId, req.user._id);
+      latest = await Prediction.findOne({
+        patient: patientId,
+        disease: 'heart_disease',
+      })
+        .populate('report', 'title reportType fileUrl status confirmedAt uploadDate')
+        .sort({ createdAt: -1 });
     }
   }
 
@@ -710,9 +706,18 @@ const getLatestNewDiseasePrediction = (disease) => asyncHandler(async (req, res)
   await verifyPatientAccessForPrediction(req, patientId, false);
   let latest = await Prediction.findOne({ patient: patientId, disease }).sort({ createdAt: -1 });
 
-  // Self-healing synchronization: if latest prediction is missing or INSUFFICIENT_DATA / canCalculate === false,
+  // Self-healing synchronization: if latest prediction is missing or INSUFFICIENT_DATA / canCalculate === false or service was unavailable,
   // check if patient profile vitals or confirmed reports satisfy model requirements.
-  if (!latest || latest.status === 'INSUFFICIENT_DATA' || !latest.canCalculate) {
+  const isStaleOrIncomplete =
+    !latest ||
+    !latest.canCalculate ||
+    latest.status === 'INSUFFICIENT_DATA' ||
+    latest.status === 'SERVICE_UNAVAILABLE' ||
+    latest.status === 'PREDICTION_SERVICE_UNAVAILABLE' ||
+    latest.status === 'MODEL_UNAVAILABLE' ||
+    latest.status === 'FAILED';
+
+  if (isStaleOrIncomplete) {
     if (disease === 'hypertension') {
       await triggerHypertensionRecalculation(patientId, req.user._id);
     } else if (disease === 'chronic_kidney_disease') {
