@@ -75,4 +75,30 @@ describe('OcrViewerModal Component Tests', () => {
     expect(screen.queryByText(/Action Needed: Medical Report Awaiting Confirmation/i)).not.toBeInTheDocument();
     expect(screen.getByText(/Close Viewer/i)).toBeInTheDocument();
   });
+
+  it('renders Cloudinary PDF preview using transformed PNG and provides direct links', () => {
+    const cloudinaryReport = {
+      ...pendingReport,
+      storageProvider: 'cloudinary',
+      fileUrl: 'https://res.cloudinary.com/djm24a59u/image/upload/v1792676864/medscan_reports/t8uknqsoswyauaxgkwu5.pdf',
+    };
+
+    render(
+      <OcrViewerModal
+        isOpen={true}
+        onClose={vi.fn()}
+        report={cloudinaryReport}
+        onReportConfirmed={vi.fn()}
+      />
+    );
+
+    expect(screen.getByText(/Medical Report Preview \(Cloudinary Page 1\)/i)).toBeInTheDocument();
+    const previewImg = screen.getByAltText(/Report Document Preview/i);
+    expect(previewImg).toBeInTheDocument();
+    expect(previewImg.getAttribute('src')).toBe(
+      'https://res.cloudinary.com/djm24a59u/image/upload/v1792676864/medscan_reports/t8uknqsoswyauaxgkwu5.png'
+    );
+    expect(screen.getByText(/View Image/i)).toBeInTheDocument();
+    expect(screen.getByText(/Open PDF in New Tab/i)).toBeInTheDocument();
+  });
 });

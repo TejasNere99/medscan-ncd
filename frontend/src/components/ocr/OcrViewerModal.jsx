@@ -62,6 +62,8 @@ export const OcrViewerModal = ({ isOpen, onClose, report, onReportConfirmed }) =
   const resolvedFileUrl = resolveMediaUrl(fileUrl);
   const isPdf = (resolvedFileUrl || fileUrl)?.toLowerCase().endsWith('.pdf') || report?.fileType === 'pdf';
   const isLocalStorage = storageProvider === 'local' || fileUrl?.includes('localhost') || resolvedFileUrl?.includes('onrender.com');
+  const isCloudinary = storageProvider === 'cloudinary' || resolvedFileUrl?.includes('res.cloudinary.com');
+  const cloudinaryPngUrl = isCloudinary && isPdf ? resolvedFileUrl.replace(/\.pdf(\?.*)?$/i, '.png$1') : null;
 
   const handleConfirm = async () => {
     if (!report?._id) return;
@@ -561,15 +563,28 @@ export const OcrViewerModal = ({ isOpen, onClose, report, onReportConfirmed }) =
           <div className="space-y-2 pt-2 border-t border-slate-800">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-slate-400 uppercase">Document File Preview</span>
-              <a
-                href={resolvedFileUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="text-[11px] text-brand-400 hover:text-brand-300 font-semibold flex items-center space-x-1"
-              >
-                <span>Open in New Tab</span>
-                <ExternalLink className="w-3 h-3" />
-              </a>
+              <div className="flex items-center space-x-3">
+                {cloudinaryPngUrl && (
+                  <a
+                    href={cloudinaryPngUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-[11px] text-cyan-400 hover:text-cyan-300 font-semibold flex items-center space-x-1"
+                  >
+                    <span>View Image</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                )}
+                <a
+                  href={resolvedFileUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-[11px] text-brand-400 hover:text-brand-300 font-semibold flex items-center space-x-1"
+                >
+                  <span>Open PDF in New Tab</span>
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+              </div>
             </div>
 
             {/* Local storage: PDFs cannot be embedded in iframes cross-origin */}
@@ -596,6 +611,31 @@ export const OcrViewerModal = ({ isOpen, onClose, report, onReportConfirmed }) =
                 <p className="text-[10px] text-slate-500">
                   💡 Document opens in a new secure browser tab.
                 </p>
+              </div>
+            ) : isPdf && isCloudinary && cloudinaryPngUrl ? (
+              <div className="rounded-xl overflow-hidden border border-slate-800 bg-slate-950 flex flex-col items-center">
+                <div className="w-full bg-slate-900/80 px-3 py-1.5 border-b border-slate-800 flex items-center justify-between text-[11px] text-slate-400">
+                  <span className="flex items-center gap-1.5 font-medium">
+                    <FileText className="w-3.5 h-3.5 text-cyan-400" />
+                    Medical Report Preview (Cloudinary Page 1)
+                  </span>
+                  <a
+                    href={resolvedFileUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-brand-400 hover:text-brand-300 font-semibold flex items-center space-x-1"
+                  >
+                    <span>Download / Open PDF</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                </div>
+                <div className="p-2 max-h-96 w-full flex items-center justify-center overflow-auto bg-slate-950">
+                  <img
+                    src={cloudinaryPngUrl}
+                    alt="Report Document Preview"
+                    className="max-h-80 w-auto rounded border border-slate-800/60 object-contain shadow-md"
+                  />
+                </div>
               </div>
             ) : (
               <div className="rounded-xl overflow-hidden border border-slate-800 max-h-64 flex items-center justify-center bg-slate-950">
