@@ -115,6 +115,14 @@ export const predictDiabetes = asyncHandler(async (req, res) => {
 
   const patientDoc = await verifyPatientAccessForPrediction(req, targetPatientId, true);
 
+  // If no explicit reportId or features passed, fall back to patient's latest confirmed report
+  if (!reportDoc && (!features || typeof features !== 'object')) {
+    reportDoc = await Report.findOne({
+      patient: targetPatientId,
+      status: 'CONFIRMED',
+    }).sort({ confirmedAt: -1, createdAt: -1 });
+  }
+
   let featureVector = null;
   let canCalculate = false;
   let missingDomain = null;
@@ -137,7 +145,13 @@ export const predictDiabetes = asyncHandler(async (req, res) => {
     dataCompleteness = extraction.dataCompleteness;
     featureAvailability = extraction.featureAvailability;
   } else {
-    throw new ApiError(400, 'Either a valid confirmed reportId or features object is required.');
+    // Extract directly from patient confirmed profile vitals
+    const extraction = buildDiabetesFeatures({ confirmedData: {} }, patientDoc);
+    featureVector = extraction.featureVector;
+    canCalculate = extraction.canCalculate;
+    missingDomain = extraction.missingDomain;
+    dataCompleteness = extraction.dataCompleteness;
+    featureAvailability = extraction.featureAvailability;
   }
 
   let predictionDoc = null;
@@ -360,6 +374,14 @@ export const predictHeartDisease = asyncHandler(async (req, res) => {
 
   const patientDoc = await verifyPatientAccessForPrediction(req, targetPatientId, true);
 
+  // If no explicit reportId or features passed, fall back to patient's latest confirmed report
+  if (!reportDoc && (!features || typeof features !== 'object')) {
+    reportDoc = await Report.findOne({
+      patient: targetPatientId,
+      status: 'CONFIRMED',
+    }).sort({ confirmedAt: -1, createdAt: -1 });
+  }
+
   let featureVector = null;
   let canCalculate = false;
   let missingRequired = [];
@@ -387,7 +409,15 @@ export const predictHeartDisease = asyncHandler(async (req, res) => {
     featureDetails = extraction.featureDetails;
     provenance = extraction.provenance;
   } else {
-    throw new ApiError(400, 'Either a valid confirmed reportId or features object is required.');
+    // Extract directly from patient confirmed profile vitals
+    const extraction = buildHeartDiseaseFeatures({ confirmedData: {}, status: 'CONFIRMED' }, patientDoc);
+    featureVector = extraction.featureVector;
+    canCalculate = extraction.canCalculate;
+    missingRequired = extraction.missingRequired;
+    missingFeatures = extraction.missingFeatures;
+    dataCompleteness = extraction.dataCompleteness;
+    featureDetails = extraction.featureDetails;
+    provenance = extraction.provenance;
   }
 
   let predictionDoc = null;

@@ -189,39 +189,19 @@ export const PatientDashboard = () => {
       const repRes = await reportService.getReports();
       if (repRes.data) setReports(repRes.data);
 
-      try {
-        const predRes = await predictionService.getLatestDiabetesPrediction();
-        if (predRes.data) {
-          setPrediction(predRes.data);
-        } else {
-          const histRes = await predictionService.getPredictionHistory();
-          if (histRes.data && histRes.data.length > 0) {
-            setPrediction(histRes.data[0]);
-          } else {
-            setPrediction(null);
-          }
-        }
-      } catch (pErr) {
-        setPrediction(null);
-      }
-
-      try {
-        const hdRes = await predictionService.getLatestHeartDiseasePrediction();
-        if (hdRes.data) {
-          setHeartDiseasePrediction(hdRes.data);
-        } else {
-          const hdHistRes = await predictionService.getHeartDiseasePredictionHistory();
-          if (hdHistRes.data && hdHistRes.data.length > 0) {
-            setHeartDiseasePrediction(hdHistRes.data[0]);
-          } else {
-            setHeartDiseasePrediction(null);
-          }
-        }
-      } catch (hdErr) {
-        setHeartDiseasePrediction(null);
-      }
-
       const hasConfirmedReports = repRes?.data?.some((r) => r.status === 'CONFIRMED');
+      const latestConfirmedReport = repRes?.data
+        ?.filter((r) => r.status === 'CONFIRMED')
+        .sort((a, b) => new Date(b.confirmedAt || b.uploadDate) - new Date(a.confirmedAt || a.uploadDate))[0];
+
+      const hasDiabetesClinicalData = Boolean(
+        hasConfirmedReports ||
+        (profileRes?.data?.age && profileRes?.data?.gender)
+      );
+      const hasHeartClinicalData = Boolean(
+        hasConfirmedReports ||
+        (profileRes?.data?.age && profileRes?.data?.gender && profileRes?.data?.totalCholesterol && profileRes?.data?.systolicBP)
+      );
       const hasHypertensionClinicalData = Boolean(
         hasConfirmedReports ||
         (profileRes?.data?.systolicBP && profileRes?.data?.diastolicBP) ||
@@ -232,30 +212,82 @@ export const PatientDashboard = () => {
         profileRes?.data?.serumCreatinine
       );
 
+      // 1. Diabetes Prediction
+      try {
+        let predRes = await predictionService.getLatestDiabetesPrediction();
+        let currentPred = predRes?.data;
+        if (!currentPred) {
+          const histRes = await predictionService.getPredictionHistory();
+          currentPred = histRes?.data?.[0] || null;
+        }
+        if (
+          (!currentPred || ['SERVICE_UNAVAILABLE', 'PREDICTION_SERVICE_UNAVAILABLE', 'FAILED'].includes(currentPred.status)) &&
+          hasDiabetesClinicalData
+        ) {
+          try {
+            const reRes = await predictionService.predictDiabetes(latestConfirmedReport?._id ? { reportId: latestConfirmedReport._id } : {});
+            if (reRes?.data) currentPred = reRes.data;
+          } catch (_) {}
+        }
+        setPrediction(currentPred);
+      } catch (pErr) {
+        setPrediction(null);
+      }
+
+      // 2. Heart Disease Prediction
+      try {
+        let hdRes = await predictionService.getLatestHeartDiseasePrediction();
+        let currentHd = hdRes?.data;
+        if (!currentHd) {
+          const hdHistRes = await predictionService.getHeartDiseasePredictionHistory();
+          currentHd = hdHistRes?.data?.[0] || null;
+        }
+        if (
+          (!currentHd || ['SERVICE_UNAVAILABLE', 'PREDICTION_SERVICE_UNAVAILABLE', 'FAILED'].includes(currentHd.status)) &&
+          hasHeartClinicalData
+        ) {
+          try {
+            const reRes = await predictionService.predictHeartDisease(latestConfirmedReport?._id ? { reportId: latestConfirmedReport._id } : {});
+            if (reRes?.data) currentHd = reRes.data;
+          } catch (_) {}
+        }
+        setHeartDiseasePrediction(currentHd);
+      } catch (hdErr) {
+        setHeartDiseasePrediction(null);
+      }
+
+      // 3. Hypertension Prediction
       try {
         let hypRes = await predictionService.getLatestHypertensionPrediction();
-        if (hypRes?.data) {
-          setHypertensionPrediction(hypRes.data);
-        } else if (hasHypertensionClinicalData) {
-          const autoRes = await predictionService.predictHypertension({});
-          setHypertensionPrediction(autoRes?.data || null);
-        } else {
-          setHypertensionPrediction(null);
+        let currentHyp = hypRes?.data;
+        if (
+          (!currentHyp || ['SERVICE_UNAVAILABLE', 'PREDICTION_SERVICE_UNAVAILABLE', 'MODEL_UNAVAILABLE', 'FAILED'].includes(currentHyp.status)) &&
+          hasHypertensionClinicalData
+        ) {
+          try {
+            const autoRes = await predictionService.predictHypertension(latestConfirmedReport?._id ? { reportId: latestConfirmedReport._id } : {});
+            if (autoRes?.data) currentHyp = autoRes.data;
+          } catch (_) {}
         }
+        setHypertensionPrediction(currentHyp || null);
       } catch (hErr) {
         setHypertensionPrediction(null);
       }
 
+      // 4. Chronic Kidney Disease Prediction
       try {
         let ckdRes = await predictionService.getLatestCkdPrediction();
-        if (ckdRes?.data) {
-          setCkdPrediction(ckdRes.data);
-        } else if (hasCkdClinicalData) {
-          const autoRes = await predictionService.predictCkd({});
-          setCkdPrediction(autoRes?.data || null);
-        } else {
-          setCkdPrediction(null);
+        let currentCkd = ckdRes?.data;
+        if (
+          (!currentCkd || ['SERVICE_UNAVAILABLE', 'PREDICTION_SERVICE_UNAVAILABLE', 'MODEL_UNAVAILABLE', 'FAILED'].includes(currentCkd.status)) &&
+          hasCkdClinicalData
+        ) {
+          try {
+            const autoRes = await predictionService.predictCkd(latestConfirmedReport?._id ? { reportId: latestConfirmedReport._id } : {});
+            if (autoRes?.data) currentCkd = autoRes.data;
+          } catch (_) {}
         }
+        setCkdPrediction(currentCkd || null);
       } catch (cErr) {
         setCkdPrediction(null);
       }
@@ -305,14 +337,15 @@ export const PatientDashboard = () => {
     }
   };
 
-  const handleRecalculateAll = async () => {
+  const handleRecalculateAll = async (targetReportId) => {
     setIsAnalyzingAi(true);
     try {
+      const payload = targetReportId ? { reportId: targetReportId } : {};
       await Promise.allSettled([
-        predictionService.predictDiabetes({}),
-        predictionService.predictHeartDisease({}),
-        predictionService.predictHypertension({}),
-        predictionService.predictCkd({}),
+        predictionService.predictDiabetes(payload),
+        predictionService.predictHeartDisease(payload),
+        predictionService.predictHypertension(payload),
+        predictionService.predictCkd(payload),
       ]);
       await fetchData();
       addToast('All 4 AI risk assessment models evaluated successfully.', 'success');
@@ -326,7 +359,12 @@ export const PatientDashboard = () => {
   const handleReportUploaded = async (data) => {
     setIsAnalyzingAi(true);
     try {
-      await fetchData();
+      const rep = data?.report || data;
+      if (rep?.status === 'CONFIRMED') {
+        await handleRecalculateAll(rep._id);
+      } else {
+        await fetchData();
+      }
     } finally {
       setTimeout(() => setIsAnalyzingAi(false), 1500);
     }
@@ -1258,12 +1296,28 @@ export const PatientDashboard = () => {
                   </div>
                 </div>
 
-                {prediction.missingDomain && (
-                  <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 text-[11px] space-y-1">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Missing Clinical Domain</span>
-                    <span className="text-amber-300 font-semibold capitalize">{prediction.missingDomain}</span>
+                <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 text-[11px] space-y-1.5">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Required Clinical Parameters</span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {prediction.missingDomain ? (
+                      <span className="px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-300 border border-amber-500/20 font-semibold capitalize">
+                        {prediction.missingDomain}
+                      </span>
+                    ) : (
+                      <>
+                        <span className="px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-300 border border-amber-500/20 font-semibold">
+                          Age (≥ 18)
+                        </span>
+                        <span className="px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-300 border border-amber-500/20 font-semibold">
+                          Biological Sex
+                        </span>
+                        <span className="px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-300 border border-amber-500/20 font-semibold">
+                          Fasting Glucose / Vitals
+                        </span>
+                      </>
+                    )}
                   </div>
-                )}
+                </div>
 
                 <div className="flex items-center gap-2 pt-1">
                   <button
@@ -1884,12 +1938,25 @@ export const PatientDashboard = () => {
                   </div>
                 </div>
 
-                {hypertensionPrediction.missingDomain && (
-                  <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 text-[11px] space-y-1">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Missing Parameters</span>
-                    <span className="text-amber-300 font-semibold">{hypertensionPrediction.missingDomain}</span>
+                <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 text-[11px] space-y-1.5">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Missing Required Parameters</span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {String(hypertensionPrediction.missingDomain || 'systolicBP, diastolicBP')
+                      .replace('Required confirmed information is missing: ', '')
+                      .replace('Required confirmed features are missing: ', '')
+                      .replace('.', '')
+                      .split(',')
+                      .map((p, i) => {
+                        const clean = p.trim();
+                        const label = clean === 'systolicBP' ? 'Systolic Blood Pressure' : clean === 'diastolicBP' ? 'Diastolic Blood Pressure' : clean === 'age' ? 'Patient Age' : clean.replace(/_/g, ' ');
+                        return (
+                          <span key={i} className="px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-300 border border-amber-500/20 font-semibold capitalize">
+                            {label}
+                          </span>
+                        );
+                      })}
                   </div>
-                )}
+                </div>
 
                 <div className="flex items-center gap-2 pt-1">
                   <button
@@ -2185,12 +2252,25 @@ export const PatientDashboard = () => {
                   </div>
                 </div>
 
-                {ckdPrediction.missingDomain && (
-                  <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 text-[11px] space-y-1">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Missing Parameters</span>
-                    <span className="text-amber-300 font-semibold">{ckdPrediction.missingDomain}</span>
+                <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 text-[11px] space-y-1.5">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Missing Required Parameters</span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {String(ckdPrediction.missingDomain || 'serum_creatinine')
+                      .replace('Required confirmed information is missing: ', '')
+                      .replace('Required confirmed features are missing: ', '')
+                      .replace('.', '')
+                      .split(',')
+                      .map((p, i) => {
+                        const clean = p.trim();
+                        const label = clean === 'serum_creatinine' ? 'Serum Creatinine (mg/dL)' : clean === 'age' ? 'Patient Age' : clean.replace(/_/g, ' ');
+                        return (
+                          <span key={i} className="px-2 py-0.5 rounded-md bg-cyan-500/10 text-cyan-300 border border-cyan-500/20 font-semibold capitalize">
+                            {label}
+                          </span>
+                        );
+                      })}
                   </div>
-                )}
+                </div>
 
                 <div className="flex items-center gap-2 pt-1">
                   <button
@@ -2559,10 +2639,11 @@ export const PatientDashboard = () => {
         isOpen={ocrModalOpen}
         onClose={() => setOcrModalOpen(false)}
         report={selectedReport}
-        onReportConfirmed={async () => {
+        onReportConfirmed={async (confirmedReport) => {
           setIsAnalyzingAi(true);
           try {
-            await handleRecalculateAll();
+            const rId = confirmedReport?._id || selectedReport?._id;
+            await handleRecalculateAll(rId);
           } finally {
             setTimeout(() => setIsAnalyzingAi(false), 1500);
           }
