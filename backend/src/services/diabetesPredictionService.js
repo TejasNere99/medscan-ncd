@@ -11,6 +11,7 @@
  */
 
 const DEFAULT_SERVICE_URL = 'https://medscan-ml-service.onrender.com';
+const DEFAULT_INTERNAL_TOKEN = 'UDaRRUpiB6uiZ86lVjL61XnNCzH5X/RTK3w5dPqUQ+k=';
 const REQUEST_TIMEOUT_MS = 90000;
 
 function getBaseMlUrl() {
@@ -21,6 +22,12 @@ function getBaseMlUrl() {
       (raw.includes('localhost') || raw.includes('127.0.0.1')))
   ) {
     raw = DEFAULT_SERVICE_URL;
+  }
+  raw = String(raw).trim().replace(/^['"]+|['"]+$/g, '');
+  if (!/^https?:\/\//i.test(raw)) {
+    raw = (raw.includes(':8000') || raw.includes('localhost') || raw.includes('127.0.0.1'))
+      ? `http://${raw}`
+      : `https://${raw}`;
   }
   return raw.replace(/\/predict(?:\/.*)?\/?$/, '').replace(/\/$/, '');
 }
@@ -83,9 +90,7 @@ export async function callDiabetesPredictionService(featureVector) {
       'Content-Type': 'application/json',
       Accept: 'application/json',
     };
-    if (process.env.ML_INTERNAL_API_KEY) {
-      headers['X-ML-Internal-Token'] = process.env.ML_INTERNAL_API_KEY;
-    }
+    headers['X-ML-Internal-Token'] = process.env.ML_INTERNAL_API_KEY || DEFAULT_INTERNAL_TOKEN;
 
     const res = await fetch(endpoint, {
       method: 'POST',

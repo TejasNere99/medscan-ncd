@@ -1,4 +1,5 @@
 const DEFAULT_SERVICE_URL = 'https://medscan-ml-service.onrender.com';
+const DEFAULT_INTERNAL_TOKEN = 'UDaRRUpiB6uiZ86lVjL61XnNCzH5X/RTK3w5dPqUQ+k=';
 const REQUEST_TIMEOUT_MS = 90000;
 
 function getBaseMlUrl() {
@@ -10,6 +11,12 @@ function getBaseMlUrl() {
   ) {
     raw = DEFAULT_SERVICE_URL;
   }
+  raw = String(raw).trim().replace(/^['"]+|['"]+$/g, '');
+  if (!/^https?:\/\//i.test(raw)) {
+    raw = (raw.includes(':8000') || raw.includes('localhost') || raw.includes('127.0.0.1'))
+      ? `http://${raw}`
+      : `https://${raw}`;
+  }
   return raw.replace(/\/predict(?:\/.*)?\/?$/, '').replace(/\/$/, '');
 }
 
@@ -20,7 +27,7 @@ const routes = {
 
 export async function callNewDiseasePredictionService(disease, featureVector) {
   const endpointPath = routes[disease];
-  const internalToken = process.env.ML_INTERNAL_API_KEY;
+  const internalToken = process.env.ML_INTERNAL_API_KEY || DEFAULT_INTERNAL_TOKEN;
   if (!endpointPath || !internalToken) {
     return {
       success: false,

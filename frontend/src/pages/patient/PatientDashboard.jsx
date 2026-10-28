@@ -340,7 +340,10 @@ export const PatientDashboard = () => {
   const handleRecalculateAll = async (targetReportId) => {
     setIsAnalyzingAi(true);
     try {
-      const payload = targetReportId ? { reportId: targetReportId } : {};
+      const validReportId = typeof targetReportId === 'string' && /^[0-9a-fA-F]{24}$/.test(targetReportId.trim())
+        ? targetReportId.trim()
+        : null;
+      const payload = validReportId ? { reportId: validReportId } : {};
       await Promise.allSettled([
         predictionService.predictDiabetes(payload),
         predictionService.predictHeartDisease(payload),
@@ -352,7 +355,7 @@ export const PatientDashboard = () => {
     } catch (err) {
       addToast('AI risk models refreshed with latest confirmed records.', 'info');
     } finally {
-      setTimeout(() => setIsAnalyzingAi(false), 1200);
+      setTimeout(() => setIsAnalyzingAi(false), 1000);
     }
   };
 
@@ -360,7 +363,7 @@ export const PatientDashboard = () => {
     setIsAnalyzingAi(true);
     try {
       const rep = data?.report || data;
-      if (rep?.status === 'CONFIRMED') {
+      if (rep?.status === 'CONFIRMED' && rep?._id) {
         await handleRecalculateAll(rep._id);
       } else {
         await fetchData();
@@ -1043,7 +1046,7 @@ export const PatientDashboard = () => {
           </div>
           <div className="flex items-center space-x-2">
             <button
-              onClick={handleRecalculateAll}
+              onClick={() => handleRecalculateAll()}
               disabled={isAnalyzingAi}
               className="text-[11px] px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-850 text-cyan-400 border border-cyan-500/30 font-bold flex items-center space-x-1.5 transition-all cursor-pointer disabled:opacity-60 shadow-sm"
             >

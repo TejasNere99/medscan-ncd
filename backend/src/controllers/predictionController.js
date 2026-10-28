@@ -87,15 +87,39 @@ export const predictDiabetes = asyncHandler(async (req, res) => {
   let targetPatientId = patientId;
   let reportDoc = null;
 
-  if (reportId) {
-    reportDoc = await Report.findById(reportId);
+  const cleanReportId = typeof reportId === 'string' && /^[0-9a-fA-F]{24}$/.test(reportId.trim()) ? reportId.trim() : null;
+  if (cleanReportId) {
+    reportDoc = await Report.findById(cleanReportId);
     if (!reportDoc) {
       throw new ApiError(404, 'Referenced medical report not found.');
     }
-    if (reportDoc.status !== 'CONFIRMED') {
-      throw new ApiError(400, 'Medical report must be CONFIRMED by user before running diabetes risk assessment.');
-    }
     targetPatientId = reportDoc.patient;
+    if (reportDoc.status !== 'CONFIRMED') {
+      const ownPatient = req.user.role === 'Patient'
+        ? await Patient.findOne({ user: req.user._id })
+        : await Patient.findById(targetPatientId);
+      if (ownPatient) {
+        const pendingDoc = await Prediction.create({
+          patient: ownPatient._id,
+          report: reportDoc._id,
+          calculatedBy: req.user._id,
+          disease: 'diabetes',
+          scenario: 'A',
+          modelVersion: '1.0.0',
+          status: 'INSUFFICIENT_DATA',
+          canCalculate: false,
+          dataCompleteness: 'INSUFFICIENT',
+          missingDomain: 'Medical report is awaiting user verification. Please review and confirm your report.',
+          inputFeatures: null,
+          featureAvailability: { missingFeatures: ['Pending Report Confirmation'] },
+          clinicalDisclaimer: 'Model-estimated risk for clinical decision support. Not a diagnosis.',
+          predictionDate: new Date(),
+        });
+        return res.status(200).json(
+          new ApiResponse(200, pendingDoc, 'Medical report is awaiting user verification. Please review and confirm your report.')
+        );
+      }
+    }
   }
 
   if (req.user.role === 'Patient') {
@@ -346,15 +370,39 @@ export const predictHeartDisease = asyncHandler(async (req, res) => {
   let targetPatientId = patientId;
   let reportDoc = null;
 
-  if (reportId) {
-    reportDoc = await Report.findById(reportId);
+  const cleanReportId = typeof reportId === 'string' && /^[0-9a-fA-F]{24}$/.test(reportId.trim()) ? reportId.trim() : null;
+  if (cleanReportId) {
+    reportDoc = await Report.findById(cleanReportId);
     if (!reportDoc) {
       throw new ApiError(404, 'Referenced medical report not found.');
     }
-    if (reportDoc.status !== 'CONFIRMED') {
-      throw new ApiError(400, 'Medical report must be CONFIRMED by user before running heart disease risk assessment.');
-    }
     targetPatientId = reportDoc.patient;
+    if (reportDoc.status !== 'CONFIRMED') {
+      const ownPatient = req.user.role === 'Patient'
+        ? await Patient.findOne({ user: req.user._id })
+        : await Patient.findById(targetPatientId);
+      if (ownPatient) {
+        const pendingDoc = await Prediction.create({
+          patient: ownPatient._id,
+          report: reportDoc._id,
+          calculatedBy: req.user._id,
+          disease: 'heart_disease',
+          scenario: 'framingham_chd_10yr',
+          modelVersion: '1.0.0',
+          status: 'INSUFFICIENT_DATA',
+          canCalculate: false,
+          dataCompleteness: 'INSUFFICIENT',
+          missingDomain: 'Medical report is awaiting user verification. Please review and confirm your report.',
+          inputFeatures: null,
+          featureAvailability: { missingFeatures: ['Pending Report Confirmation'] },
+          clinicalDisclaimer: 'Model-estimated risk for clinical decision support. Not a diagnosis.',
+          predictionDate: new Date(),
+        });
+        return res.status(200).json(
+          new ApiResponse(200, pendingDoc, 'Medical report is awaiting user verification. Please review and confirm your report.')
+        );
+      }
+    }
   }
 
   if (req.user.role === 'Patient') {
@@ -610,16 +658,39 @@ const runNewDiseasePrediction = async (req, res, disease) => {
 
   let targetPatientId = patientId;
   let referencedReport = null;
-  if (reportId) {
-    referencedReport = await Report.findById(reportId);
+  const cleanReportId = typeof reportId === 'string' && /^[0-9a-fA-F]{24}$/.test(reportId.trim()) ? reportId.trim() : null;
+  if (cleanReportId) {
+    referencedReport = await Report.findById(cleanReportId);
     if (!referencedReport) throw new ApiError(404, 'Referenced medical report not found.');
+    targetPatientId = referencedReport.patient;
     if (referencedReport.status !== 'CONFIRMED') {
-      throw new ApiError(400, 'Prediction inputs must come from confirmed medical records.');
+      const ownPatient = req.user.role === 'Patient'
+        ? await Patient.findOne({ user: req.user._id })
+        : await Patient.findById(targetPatientId);
+      if (ownPatient) {
+        const pendingPred = await Prediction.create({
+          patient: ownPatient._id,
+          report: referencedReport._id,
+          calculatedBy: req.user._id,
+          disease,
+          modelVersion: '1.0.0-research',
+          status: 'INSUFFICIENT_DATA',
+          canCalculate: false,
+          dataCompleteness: 'INSUFFICIENT',
+          missingDomain: 'Medical report is awaiting user verification. Please review and confirm your report.',
+          inputFeatures: null,
+          featureAvailability: { missingFeatures: ['Pending Report Confirmation'] },
+          clinicalDisclaimer: 'Statistical model estimate only. Not a diagnosis and not clinically validated.',
+          predictionDate: new Date(),
+        });
+        return res.status(200).json(
+          new ApiResponse(200, pendingPred, 'Medical report is awaiting user verification. Please review and confirm your report.')
+        );
+      }
     }
     if (patientId && String(patientId) !== String(referencedReport.patient)) {
       throw new ApiError(403, 'The report does not belong to the requested patient.');
     }
-    targetPatientId = referencedReport.patient;
   }
 
   if (req.user.role === 'Patient') {
@@ -715,9 +786,6 @@ const runNewDiseasePrediction = async (req, res, disease) => {
     predictionDate: new Date(),
   });
 
-  if (statusValue === 'SERVICE_UNAVAILABLE') {
-    return res.status(503).json(new ApiResponse(503, prediction, modelResult.message || 'Disease model is unavailable. No probability was generated.'));
-  }
   return res.status(200).json(new ApiResponse(200, prediction, modelResult.message || `${disease} model estimate generated.`));
 };
 
