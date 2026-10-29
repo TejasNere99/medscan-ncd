@@ -57,7 +57,16 @@ const predictionSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ['SUCCESS', 'INSUFFICIENT_DATA', 'FAILED', 'SERVICE_UNAVAILABLE', 'PREDICTION_SERVICE_UNAVAILABLE'],
+      enum: [
+        'SUCCESS',
+        'INSUFFICIENT_DATA',
+        'FAILED',
+        'SERVICE_UNAVAILABLE',
+        'PREDICTION_SERVICE_UNAVAILABLE',
+        'MODEL_UNAVAILABLE',
+        'TIMEOUT',
+        'SERVICE_ERROR',
+      ],
       default: 'SUCCESS',
       index: true,
     },
@@ -71,6 +80,10 @@ const predictionSchema = new mongoose.Schema(
       default: 'FULL',
     },
     missingDomain: {
+      type: String,
+      default: null,
+    },
+    message: {
       type: String,
       default: null,
     },

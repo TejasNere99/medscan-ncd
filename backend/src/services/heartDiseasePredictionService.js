@@ -14,7 +14,7 @@
 
 const DEFAULT_SERVICE_URL = 'https://medscan-ml-service.onrender.com';
 const DEFAULT_INTERNAL_TOKEN = 'UDaRRUpiB6uiZ86lVjL61XnNCzH5X/RTK3w5dPqUQ+k=';
-const REQUEST_TIMEOUT_MS = 90000;
+const REQUEST_TIMEOUT_MS = 25000;
 
 function getBaseMlUrl() {
   let raw = process.env.ML_SERVICE_URL || process.env.DIABETES_ML_SERVICE_URL;

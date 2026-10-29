@@ -23,15 +23,14 @@ export async function triggerDiabetesRecalculation(patientId, userId) {
       status: 'CONFIRMED',
     }).sort({ confirmedAt: -1, createdAt: -1 });
 
-    if (!latestConfirmedReport) return;
-
-    const extraction = buildDiabetesFeatures(latestConfirmedReport, patient);
+    const reportToUse = latestConfirmedReport || { confirmedData: {}, status: 'CONFIRMED' };
+    const extraction = buildDiabetesFeatures(reportToUse, patient);
     if (extraction.canCalculate) {
       const mlResult = await callDiabetesPredictionService(extraction.featureVector);
       if (mlResult.success && mlResult.canCalculate) {
         await Prediction.create({
           patient: patientId,
-          report: latestConfirmedReport._id,
+          report: latestConfirmedReport?._id || null,
           calculatedBy: userId,
           disease: 'diabetes',
           scenario: 'A',
@@ -67,12 +66,14 @@ export async function triggerDiabetesRecalculation(patientId, userId) {
       }
     } else {
       // Minimum input domain requirement not yet satisfied
-      const existingPred = await Prediction.findOne({
+      const query = {
         patient: patientId,
         disease: 'diabetes',
-        report: latestConfirmedReport._id,
         status: 'INSUFFICIENT_DATA',
-      }).sort({ createdAt: -1 });
+      };
+      if (latestConfirmedReport) query.report = latestConfirmedReport._id;
+
+      const existingPred = await Prediction.findOne(query).sort({ createdAt: -1 });
 
       if (existingPred) {
         existingPred.missingDomain = extraction.missingDomain;
@@ -83,7 +84,7 @@ export async function triggerDiabetesRecalculation(patientId, userId) {
       } else {
         await Prediction.create({
           patient: patientId,
-          report: latestConfirmedReport._id,
+          report: latestConfirmedReport?._id || null,
           calculatedBy: userId,
           disease: 'diabetes',
           scenario: 'A',
@@ -114,15 +115,14 @@ export async function triggerHeartDiseaseRecalculation(patientId, userId) {
       status: 'CONFIRMED',
     }).sort({ confirmedAt: -1, createdAt: -1 });
 
-    if (!latestConfirmedReport) return;
-
-    const extraction = buildHeartDiseaseFeatures(latestConfirmedReport, patient);
+    const reportToUse = latestConfirmedReport || { confirmedData: {}, status: 'CONFIRMED' };
+    const extraction = buildHeartDiseaseFeatures(reportToUse, patient);
     if (extraction.canCalculate) {
       const mlResult = await callHeartDiseasePredictionService(extraction.featureVector);
       if (mlResult.success && mlResult.canCalculate) {
         await Prediction.create({
           patient: patientId,
-          report: latestConfirmedReport._id,
+          report: latestConfirmedReport?._id || null,
           calculatedBy: userId,
           disease: 'heart_disease',
           scenario: 'framingham_chd_10yr',
@@ -158,12 +158,14 @@ export async function triggerHeartDiseaseRecalculation(patientId, userId) {
       }
     } else {
       // Minimum input domain requirement not yet satisfied
-      const existingPred = await Prediction.findOne({
+      const query = {
         patient: patientId,
         disease: 'heart_disease',
-        report: latestConfirmedReport._id,
         status: 'INSUFFICIENT_DATA',
-      }).sort({ createdAt: -1 });
+      };
+      if (latestConfirmedReport) query.report = latestConfirmedReport._id;
+
+      const existingPred = await Prediction.findOne(query).sort({ createdAt: -1 });
 
       const missingText = extraction.missingRequired.join(', ');
       if (existingPred) {
@@ -175,7 +177,7 @@ export async function triggerHeartDiseaseRecalculation(patientId, userId) {
       } else {
         await Prediction.create({
           patient: patientId,
-          report: latestConfirmedReport._id,
+          report: latestConfirmedReport?._id || null,
           calculatedBy: userId,
           disease: 'heart_disease',
           scenario: 'framingham_chd_10yr',
@@ -466,7 +468,22 @@ export const createPatient = asyncHandler(async (req, res) => {
 });
 
 export const updateMyDemographics = asyncHandler(async (req, res) => {
-  const { age, gender, bloodGroup, village, systolicBP, diastolicBP, bmi, totalCholesterol, isCurrentSmoker } = req.body;
+  const {
+    age,
+    gender,
+    bloodGroup,
+    village,
+    systolicBP,
+    diastolicBP,
+    bmi,
+    totalCholesterol,
+    fastingSugar,
+    hdl,
+    serumCreatinine,
+    bloodUrea,
+    hemoglobin,
+    isCurrentSmoker,
+  } = req.body;
 
   const updateData = {};
   if (age !== undefined && age !== '') {
@@ -500,6 +517,26 @@ export const updateMyDemographics = asyncHandler(async (req, res) => {
     const tc = Number(totalCholesterol);
     if (!isNaN(tc) && tc > 0) updateData.totalCholesterol = tc;
   }
+  if (fastingSugar !== undefined && fastingSugar !== '') {
+    const fs = Number(fastingSugar);
+    if (!isNaN(fs) && fs > 0) updateData.fastingSugar = fs;
+  }
+  if (hdl !== undefined && hdl !== '') {
+    const h = Number(hdl);
+    if (!isNaN(h) && h > 0) updateData.hdl = h;
+  }
+  if (serumCreatinine !== undefined && serumCreatinine !== '') {
+    const sc = Number(serumCreatinine);
+    if (!isNaN(sc) && sc > 0) updateData.serumCreatinine = sc;
+  }
+  if (bloodUrea !== undefined && bloodUrea !== '') {
+    const bu = Number(bloodUrea);
+    if (!isNaN(bu) && bu > 0) updateData.bloodUrea = bu;
+  }
+  if (hemoglobin !== undefined && hemoglobin !== '') {
+    const hb = Number(hemoglobin);
+    if (!isNaN(hb) && hb > 0) updateData.hemoglobin = hb;
+  }
   if (isCurrentSmoker !== undefined && isCurrentSmoker !== null && isCurrentSmoker !== '') {
     if (typeof isCurrentSmoker === 'boolean') {
       updateData.isCurrentSmoker = isCurrentSmoker;
@@ -529,6 +566,11 @@ export const updateMyDemographics = asyncHandler(async (req, res) => {
     updateData.diastolicBP !== undefined ||
     updateData.bmi !== undefined ||
     updateData.totalCholesterol !== undefined ||
+    updateData.fastingSugar !== undefined ||
+    updateData.hdl !== undefined ||
+    updateData.serumCreatinine !== undefined ||
+    updateData.bloodUrea !== undefined ||
+    updateData.hemoglobin !== undefined ||
     updateData.isCurrentSmoker !== undefined
   ) {
     await triggerDiabetesRecalculation(patient._id, req.user._id);

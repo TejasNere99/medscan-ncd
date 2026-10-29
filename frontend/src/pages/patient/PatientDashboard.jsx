@@ -84,6 +84,11 @@ export const PatientDashboard = () => {
     diastolicBP: '',
     bmi: '',
     totalCholesterol: '',
+    fastingSugar: '',
+    hdl: '',
+    serumCreatinine: '',
+    bloodUrea: '',
+    hemoglobin: '',
     isCurrentSmoker: '',
   });
   const [savingDemo, setSavingDemo] = useState(false);
@@ -96,6 +101,11 @@ export const PatientDashboard = () => {
       diastolicBP: patient?.diastolicBP || '',
       bmi: patient?.bmi || '',
       totalCholesterol: patient?.totalCholesterol || '',
+      fastingSugar: patient?.fastingSugar || '',
+      hdl: patient?.hdl || '',
+      serumCreatinine: patient?.serumCreatinine || '',
+      bloodUrea: patient?.bloodUrea || '',
+      hemoglobin: patient?.hemoglobin || '',
       isCurrentSmoker:
         patient?.isCurrentSmoker === null || patient?.isCurrentSmoker === undefined
           ? ''
@@ -124,6 +134,11 @@ export const PatientDashboard = () => {
       if (demoForm.diastolicBP) payload.diastolicBP = Number(demoForm.diastolicBP);
       if (demoForm.bmi) payload.bmi = Number(demoForm.bmi);
       if (demoForm.totalCholesterol) payload.totalCholesterol = Number(demoForm.totalCholesterol);
+      if (demoForm.fastingSugar) payload.fastingSugar = Number(demoForm.fastingSugar);
+      if (demoForm.hdl) payload.hdl = Number(demoForm.hdl);
+      if (demoForm.serumCreatinine) payload.serumCreatinine = Number(demoForm.serumCreatinine);
+      if (demoForm.bloodUrea) payload.bloodUrea = Number(demoForm.bloodUrea);
+      if (demoForm.hemoglobin) payload.hemoglobin = Number(demoForm.hemoglobin);
       if (demoForm.isCurrentSmoker !== '') {
         payload.isCurrentSmoker = demoForm.isCurrentSmoker === 'true';
       }
@@ -144,10 +159,15 @@ export const PatientDashboard = () => {
         diastolicBP: payload.diastolicBP ?? prev.diastolicBP,
         bmi: payload.bmi ?? prev.bmi,
         totalCholesterol: payload.totalCholesterol ?? prev.totalCholesterol,
+        fastingSugar: payload.fastingSugar ?? prev.fastingSugar,
+        hdl: payload.hdl ?? prev.hdl,
+        serumCreatinine: payload.serumCreatinine ?? prev.serumCreatinine,
+        bloodUrea: payload.bloodUrea ?? prev.bloodUrea,
+        hemoglobin: payload.hemoglobin ?? prev.hemoglobin,
         isCurrentSmoker: payload.isCurrentSmoker ?? prev.isCurrentSmoker,
       }));
       setEditDemoOpen(false);
-      addToast('Confirmed health profile updated.', 'success');
+      addToast('Confirmed health profile updated and AI risk models re-evaluated.', 'success');
       fetchData();
     } catch (err) {
       addToast(err.response?.data?.message || 'Failed to update profile.', 'error');
@@ -299,6 +319,8 @@ export const PatientDashboard = () => {
   };
 
   useEffect(() => {
+    // Proactive background non-blocking wakeup for ML service cold-starts
+    fetch('https://medscan-ml-service.onrender.com/health').catch(() => {});
     fetchData();
   }, []);
 
@@ -918,9 +940,71 @@ export const PatientDashboard = () => {
                 type="number"
                 min="50"
                 max="600"
-                placeholder="Enter value in mg/dL"
+                placeholder="e.g. 200"
                 value={demoForm.totalCholesterol}
                 onChange={(e) => setDemoForm((p) => ({ ...p, totalCholesterol: e.target.value }))}
+                className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:border-brand-500 focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="block text-[11px] font-bold text-slate-300 mb-1.5">Fasting Blood Sugar (mg/dL)</label>
+              <input
+                type="number"
+                min="40"
+                max="500"
+                placeholder="e.g. 95"
+                value={demoForm.fastingSugar}
+                onChange={(e) => setDemoForm((p) => ({ ...p, fastingSugar: e.target.value }))}
+                className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:border-brand-500 focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="block text-[11px] font-bold text-slate-300 mb-1.5">HDL Cholesterol (mg/dL)</label>
+              <input
+                type="number"
+                min="10"
+                max="200"
+                placeholder="e.g. 50"
+                value={demoForm.hdl}
+                onChange={(e) => setDemoForm((p) => ({ ...p, hdl: e.target.value }))}
+                className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:border-brand-500 focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="block text-[11px] font-bold text-slate-300 mb-1.5">Serum Creatinine (mg/dL)</label>
+              <input
+                type="number"
+                step="0.01"
+                min="0.1"
+                max="20"
+                placeholder="e.g. 1.0"
+                value={demoForm.serumCreatinine}
+                onChange={(e) => setDemoForm((p) => ({ ...p, serumCreatinine: e.target.value }))}
+                className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:border-brand-500 focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="block text-[11px] font-bold text-slate-300 mb-1.5">Blood Urea (mg/dL)</label>
+              <input
+                type="number"
+                min="5"
+                max="300"
+                placeholder="e.g. 25"
+                value={demoForm.bloodUrea}
+                onChange={(e) => setDemoForm((p) => ({ ...p, bloodUrea: e.target.value }))}
+                className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:border-brand-500 focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="block text-[11px] font-bold text-slate-300 mb-1.5">Hemoglobin (g/dL)</label>
+              <input
+                type="number"
+                step="0.1"
+                min="4"
+                max="22"
+                placeholder="e.g. 14.5"
+                value={demoForm.hemoglobin}
+                onChange={(e) => setDemoForm((p) => ({ ...p, hemoglobin: e.target.value }))}
                 className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:border-brand-500 focus:outline-none"
               />
             </div>
@@ -1294,7 +1378,13 @@ export const PatientDashboard = () => {
                       Additional Clinical Parameters Required
                     </h4>
                     <p className="text-xs text-slate-300 mt-1 leading-relaxed">
-                      {prediction.message || 'Diabetes model requires adult age (>= 18) and biological sex to calculate calibrated risk.'}
+                      {prediction.message
+                        ? prediction.message
+                        : prediction.missingDomain === 'laboratory'
+                        ? 'Routine laboratory biomarkers (Total Cholesterol & HDL, Fasting Glucose, or Serum Creatinine) are required to calculate calibrated risk.'
+                        : prediction.missingDomain === 'physical'
+                        ? 'Physical vitals (Resting Blood Pressure or Body Mass Index) are required to calculate calibrated risk.'
+                        : 'Diabetes model requires adult age (>= 18) and biological sex to calculate calibrated risk.'}
                     </p>
                   </div>
                 </div>
@@ -1302,10 +1392,24 @@ export const PatientDashboard = () => {
                 <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 text-[11px] space-y-1.5">
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Required Clinical Parameters</span>
                   <div className="flex flex-wrap gap-1.5">
-                    {prediction.missingDomain ? (
-                      <span className="px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-300 border border-amber-500/20 font-semibold capitalize">
-                        {prediction.missingDomain}
-                      </span>
+                    {prediction.missingDomain === 'laboratory' ? (
+                      <>
+                        <span className="px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-300 border border-amber-500/20 font-semibold">
+                          Total Cholesterol &amp; HDL
+                        </span>
+                        <span className="px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-300 border border-amber-500/20 font-semibold">
+                          OR Serum Creatinine
+                        </span>
+                      </>
+                    ) : prediction.missingDomain === 'physical' ? (
+                      <>
+                        <span className="px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-300 border border-amber-500/20 font-semibold">
+                          Resting Blood Pressure
+                        </span>
+                        <span className="px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-300 border border-amber-500/20 font-semibold">
+                          OR Body Mass Index (BMI)
+                        </span>
+                      </>
                     ) : (
                       <>
                         <span className="px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-300 border border-amber-500/20 font-semibold">

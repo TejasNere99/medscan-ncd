@@ -150,6 +150,7 @@ export const predictDiabetes = asyncHandler(async (req, res) => {
   let featureVector = null;
   let canCalculate = false;
   let missingDomain = null;
+  let domainMessage = null;
   let dataCompleteness = 'INSUFFICIENT';
   let featureAvailability = {};
 
@@ -158,6 +159,7 @@ export const predictDiabetes = asyncHandler(async (req, res) => {
     featureVector = extraction.featureVector;
     canCalculate = extraction.canCalculate;
     missingDomain = extraction.missingDomain;
+    domainMessage = extraction.domainMessage;
     dataCompleteness = extraction.dataCompleteness;
     featureAvailability = extraction.featureAvailability;
   } else if (features && typeof features === 'object') {
@@ -166,6 +168,7 @@ export const predictDiabetes = asyncHandler(async (req, res) => {
     featureVector = extraction.featureVector;
     canCalculate = extraction.canCalculate;
     missingDomain = extraction.missingDomain;
+    domainMessage = extraction.domainMessage;
     dataCompleteness = extraction.dataCompleteness;
     featureAvailability = extraction.featureAvailability;
   } else {
@@ -174,6 +177,7 @@ export const predictDiabetes = asyncHandler(async (req, res) => {
     featureVector = extraction.featureVector;
     canCalculate = extraction.canCalculate;
     missingDomain = extraction.missingDomain;
+    domainMessage = extraction.domainMessage;
     dataCompleteness = extraction.dataCompleteness;
     featureAvailability = extraction.featureAvailability;
   }
@@ -230,6 +234,7 @@ export const predictDiabetes = asyncHandler(async (req, res) => {
         canCalculate: false,
         dataCompleteness: 'INSUFFICIENT',
         missingDomain: mlResult.missingDomain || missingDomain,
+        message: mlResult.message || domainMessage || 'Minimum input domain criteria not satisfied.',
         inputFeatures: featureVector,
         featureAvailability: { ...(featureAvailability || {}), ...(mlResult.featureAvailability || {}) },
         clinicalDisclaimer: 'Model-estimated risk for clinical decision support. Not a diagnosis.',
@@ -249,6 +254,7 @@ export const predictDiabetes = asyncHandler(async (req, res) => {
       canCalculate: false,
       dataCompleteness: 'INSUFFICIENT',
       missingDomain,
+      message: domainMessage || 'Minimum input domain criteria not satisfied.',
       inputFeatures: featureVector,
       featureAvailability,
       clinicalDisclaimer: 'Model-estimated risk for clinical decision support. Not a diagnosis.',
