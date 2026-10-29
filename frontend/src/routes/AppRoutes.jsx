@@ -20,6 +20,7 @@ const DoctorPatientDetail = lazy(() => import('../pages/doctor/DoctorPatientDeta
 const CHODashboard = lazy(() => import('../pages/cho/CHODashboard').then((module) => ({ default: module.CHODashboard })));
 const CHOPatientProfile = lazy(() => import('../pages/cho/CHOPatientProfile').then((module) => ({ default: module.CHOPatientProfile })));
 const AdminDashboard = lazy(() => import('../pages/admin/AdminDashboard').then((module) => ({ default: module.AdminDashboard })));
+const SecurityLabPage = lazy(() => import('../pages/admin/SecurityLabPage').then((module) => ({ default: module.SecurityLabPage })));
 
 import { ProtectedRoute } from './ProtectedRoute';
 import { RoleRoute } from './RoleRoute';
@@ -82,6 +83,7 @@ export const AppRoutes = () => {
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
             <Route path="/admin/users" element={<AdminDashboard />} />
             <Route path="/admin/settings" element={<AdminDashboard />} />
+            <Route path="/admin/security-lab" element={<SecurityLabPage />} />
           </Route>
         </Route>
       </Route>

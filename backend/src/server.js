@@ -27,6 +27,7 @@ import settingRoutes from './routes/settingRoutes.js';
 import relationshipRoutes from './routes/relationshipRoutes.js';
 import invitationRoutes from './routes/invitationRoutes.js';
 import communityCareRoutes from './routes/communityCareRoutes.js';
+import securityLabRoutes from './routes/securityLabRoutes.js';
 
 dotenv.config();
 
@@ -140,6 +141,7 @@ app.use('/api/settings', settingRoutes);
 app.use('/api/relationships', relationshipRoutes);
 app.use('/api/invitations', invitationRoutes);
 app.use('/api/community-care', communityCareRoutes);
+app.use('/api/admin/security-lab', securityLabRoutes);
 
 // Global Centralized Error Handler
 app.use(errorHandler);

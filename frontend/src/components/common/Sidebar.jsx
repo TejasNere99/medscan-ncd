@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Pill, FileText, Brain, Calendar, Users, Building2, Activity, Settings, X, ClipboardList, ClipboardCheck } from 'lucide-react';
+import { LayoutDashboard, Pill, FileText, Brain, Calendar, Users, Building2, Activity, Settings, X, ClipboardList, ClipboardCheck, ShieldCheck } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 
 const menuConfig = {
@@ -27,6 +27,7 @@ const menuConfig = {
   ],
   Admin: [
     { label: 'Overview', path: '/admin/dashboard', icon: LayoutDashboard },
+    { label: 'Security & Resilience Lab', path: '/admin/security-lab', icon: ShieldCheck },
     { label: 'User Management', path: '/admin/users', icon: Users },
     { label: 'System Settings', path: '/admin/settings', icon: Settings },
   ],
