@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 280" width="100%" height="100%" style="background:#0b132b; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <defs>
+    <marker id="i-arr" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#f97316" />
+    </marker>
+    <filter id="i-drop" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#000000" flood-opacity="0.4"/>
+    </filter>
+  </defs>
+
+  <rect x="20" y="15" width="960" height="40" rx="6" fill="#1e293b" stroke="#334155" stroke-width="1.5" filter="url(#i-drop)"/>
+  <text x="500" y="41" fill="#f97316" font-size="16" font-weight="700" text-anchor="middle">ESP32 SMART MEDICINE DISPENSER: SENSOR &amp; TELEMETRY ARCHITECTURE</text>
+
+  <!-- Central ESP32 Box -->
+  <rect x="360" y="80" width="280" height="175" rx="10" fill="#1e293b" stroke="#f97316" stroke-width="2.5" filter="url(#i-drop)"/>
+  <rect x="360" y="80" width="280" height="35" rx="10" fill="#c2410c"/>
+  <text x="500" y="103" fill="#ffffff" font-size="14" font-weight="700" text-anchor="middle">ESP32 MICROCONTROLLER</text>
+  <text x="500" y="132" fill="#fb923c" font-size="12" font-weight="600" text-anchor="middle">Xtensa Dual-Core 240MHz</text>
+  <text x="500" y="152" fill="#cbd5e1" font-size="11" text-anchor="middle">• Built-in 802.11 b/g/n Wi-Fi</text>
+  <text x="500" y="172" fill="#cbd5e1" font-size="11" text-anchor="middle">• HTTPS TLS Client Communication</text>
+  <text x="500" y="192" fill="#cbd5e1" font-size="11" text-anchor="middle">• Non-Volatile Flash Dose Storage</text>
+  <text x="500" y="212" fill="#94a3b8" font-size="11" text-anchor="middle">• Multi-Compartment IR Pin Mapping</text>
+  <text x="500" y="240" fill="#38bdf8" font-size="11" font-weight="600" text-anchor="middle">Firmware: FreeRTOS / Arduino C++</text>
+
+  <!-- Peripherals Left -->
+  <!-- RTC DS3231 -->
+  <rect x="40" y="80" width="260" height="65" rx="6" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" filter="url(#i-drop)"/>
+  <text x="55" y="105" fill="#38bdf8" font-size="13" font-weight="700">⏰ DS3231 Precision RTC</text>
+  <text x="55" y="123" fill="#cbd5e1" font-size="11">Real-Time Clock via I2C Bus</text>
+  <text x="55" y="137" fill="#94a3b8" font-size="10">Battery-backed hardware alarms</text>
+  <line x1="300" y1="112" x2="360" y2="112" stroke="#38bdf8" stroke-width="2" marker-end="url(#i-arr)"/>
+
+  <!-- IR Sensors -->
+  <rect x="40" y="165" width="260" height="75" rx="6" fill="#1e293b" stroke="#f43f5e" stroke-width="1.5" filter="url(#i-drop)"/>
+  <text x="55" y="190" fill="#fb7185" font-size="13" font-weight="700">🚨 IR Beam Sensors</text>
+  <text x="55" y="208" fill="#cbd5e1" font-size="11">Infrared Compartment Drop Detect</text>
+  <text x="55" y="224" fill="#94a3b8" font-size="10">Signals pill removal without user claim</text>
+  <line x1="300" y1="202" x2="360" y2="202" stroke="#f43f5e" stroke-width="2" marker-end="url(#i-arr)"/>
+
+  <!-- Peripherals Right -->
+  <!-- OLED Display -->
+  <rect x="700" y="80" width="260" height="65" rx="6" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" filter="url(#i-drop)"/>
+  <text x="715" y="105" fill="#38bdf8" font-size="13" font-weight="700">📺 SSD1306 OLED Display</text>
+  <text x="715" y="123" fill="#cbd5e1" font-size="11">0.96" I2C Monochrome Screen</text>
+  <text x="715" y="137" fill="#94a3b8" font-size="10">Shows dose time, pill name &amp; status</text>
+  <line x1="640" y1="112" x2="700" y2="112" stroke="#38bdf8" stroke-width="2" marker-end="url(#i-arr)"/>
+
+  <!-- Buzzer & LEDs -->
+  <rect x="700" y="165" width="260" height="75" rx="6" fill="#1e293b" stroke="#eab308" stroke-width="1.5" filter="url(#i-drop)"/>
+  <text x="715" y="190" fill="#facc15" font-size="13" font-weight="700">🔔 Buzzer &amp; Multi-Color LEDs</text>
+  <text x="715" y="208" fill="#cbd5e1" font-size="11">Auditory alarm &amp; visual indicators</text>
+  <text x="715" y="224" fill="#94a3b8" font-size="10">Alerts patient when scheduled dose is due</text>
+  <line x1="640" y1="202" x2="700" y2="202" stroke="#eab308" stroke-width="2" marker-end="url(#i-arr)"/>
+</svg>

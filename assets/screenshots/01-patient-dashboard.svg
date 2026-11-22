@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" width="1200" height="675">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0b1120"/>
+      <stop offset="50%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#1e1b4b"/>
+    </linearGradient>
+  </defs>
+  
+  <rect width="1200" height="675" fill="url(#bg)" rx="16" stroke="#334155" stroke-width="2"/>
+  
+  <g opacity="0.08" stroke="#94a3b8" stroke-width="1">
+    <line x1="200" y1="0" x2="200" y2="675"/>
+    <line x1="400" y1="0" x2="400" y2="675"/>
+    <line x1="600" y1="0" x2="600" y2="675"/>
+    <line x1="800" y1="0" x2="800" y2="675"/>
+    <line x1="1000" y1="0" x2="1000" y2="675"/>
+    <line x1="0" y1="150" x2="1200" y2="150"/>
+    <line x1="0" y1="350" x2="1200" y2="350"/>
+    <line x1="0" y1="520" x2="1200" y2="520"/>
+  </g>
+
+  <!-- Top Badge -->
+  <rect x="70" y="50" width="310" height="34" rx="17" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5"/>
+  <circle cx="90" cy="67" r="6" fill="#38bdf8"/>
+  <text x="108" y="73" font-family="Segoe UI, -apple-system, Roboto, sans-serif" font-size="13" font-weight="700" fill="#38bdf8" letter-spacing="1">MEDSCAN-NCD PLATFORM VIEW</text>
+
+  <!-- Title & Subtitle -->
+  <text x="70" y="145" font-family="Segoe UI, -apple-system, Roboto, sans-serif" font-size="38" font-weight="800" fill="#ffffff">Patient Health & Vitals Dashboard</text>
+  <text x="70" y="185" font-family="Segoe UI, -apple-system, Roboto, sans-serif" font-size="18" font-weight="600" fill="#a5b4fc">Route: /patient/dashboard</text>
+
+  <!-- Content Box -->
+  <rect x="70" y="225" width="1060" height="290" rx="14" fill="#030712" stroke="#1e293b" stroke-width="2"/>
+  <text x="105" y="280" font-family="Segoe UI, -apple-system, Roboto, sans-serif" font-size="20" font-weight="400" fill="#94a3b8">Confirmed biomarkers snapshot, risk gauges, recent lab reports, and assigned care team.</text>
+  
+  <rect x="105" y="325" width="990" height="135" rx="10" fill="#111827" stroke="#38bdf8" stroke-width="1.5" stroke-dasharray="6 6"/>
+  <text x="600" y="385" font-family="Segoe UI, -apple-system, Roboto, sans-serif" font-size="20" font-weight="700" fill="#38bdf8" text-anchor="middle">📷 REPLACE WITH: Fullscreen screenshot of Patient Dashboard (1920x1080 PNG)</text>
+  <text x="600" y="422" font-family="Segoe UI, -apple-system, Roboto, sans-serif" font-size="15" font-weight="500" fill="#cbd5e1" text-anchor="middle">Save your image file to: assets/screenshots/01-patient-dashboard.png</text>
+
+  <!-- Footer Tag -->
+  <text x="70" y="585" font-family="Segoe UI, -apple-system, Roboto, sans-serif" font-size="14" font-weight="500" fill="#64748b">Format: PNG or JPG · Optimal Resolution: 1920 × 1080 (16:9 ratio) · High DPI</text>
+</svg>

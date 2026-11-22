@@ -1,0 +1,111 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 680" width="100%" height="100%" style="background:#0b132b; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <defs>
+    <marker id="s-arr" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#38bdf8" />
+    </marker>
+    <marker id="s-arr-back" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#94a3b8" />
+    </marker>
+    <filter id="s-drop" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#000000" flood-opacity="0.4"/>
+    </filter>
+  </defs>
+
+  <!-- Title -->
+  <rect x="30" y="15" width="940" height="40" rx="6" fill="#1e293b" stroke="#334155" stroke-width="1.5" filter="url(#s-drop)"/>
+  <text x="500" y="41" fill="#38bdf8" font-size="16" font-weight="700" text-anchor="middle">MEDSCAN-NCD: END-TO-END CLINICAL &amp; TELEMETRY INTERACTION SEQUENCE</text>
+
+  <!-- Actors / Participants Headers -->
+  <!-- 1. Patient -->
+  <rect x="40" y="75" width="120" height="45" rx="6" fill="#1e3a8a" stroke="#38bdf8" stroke-width="1.5"/>
+  <text x="100" y="103" fill="#ffffff" font-size="12" font-weight="700" text-anchor="middle">👤 Patient</text>
+
+  <!-- 2. React UI -->
+  <rect x="200" y="75" width="120" height="45" rx="6" fill="#0369a1" stroke="#38bdf8" stroke-width="1.5"/>
+  <text x="260" y="103" fill="#ffffff" font-size="12" font-weight="700" text-anchor="middle">💻 React Client</text>
+
+  <!-- 3. Express Gateway -->
+  <rect x="360" y="75" width="120" height="45" rx="6" fill="#334155" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="420" y="103" fill="#ffffff" font-size="12" font-weight="700" text-anchor="middle">⚙️ Express API</text>
+
+  <!-- 4. OCR Engine -->
+  <rect x="520" y="75" width="120" height="45" rx="6" fill="#14532d" stroke="#22c55e" stroke-width="1.5"/>
+  <text x="580" y="103" fill="#ffffff" font-size="12" font-weight="700" text-anchor="middle">📄 OCR Engine</text>
+
+  <!-- 5. FastAPI ML -->
+  <rect x="680" y="75" width="120" height="45" rx="6" fill="#581c87" stroke="#a855f7" stroke-width="1.5"/>
+  <text x="740" y="103" fill="#ffffff" font-size="12" font-weight="700" text-anchor="middle">🧠 FastAPI ML</text>
+
+  <!-- 6. ESP32 -->
+  <rect x="840" y="75" width="120" height="45" rx="6" fill="#7c2d12" stroke="#f97316" stroke-width="1.5"/>
+  <text x="900" y="103" fill="#ffffff" font-size="12" font-weight="700" text-anchor="middle">📡 ESP32 Box</text>
+
+  <!-- Vertical Lifelines -->
+  <line x1="100" y1="120" x2="100" y2="650" stroke="#334155" stroke-width="1.5" stroke-dasharray="4,4"/>
+  <line x1="260" y1="120" x2="260" y2="650" stroke="#334155" stroke-width="1.5" stroke-dasharray="4,4"/>
+  <line x1="420" y1="120" x2="420" y2="650" stroke="#334155" stroke-width="1.5" stroke-dasharray="4,4"/>
+  <line x1="580" y1="120" x2="580" y2="650" stroke="#334155" stroke-width="1.5" stroke-dasharray="4,4"/>
+  <line x1="740" y1="120" x2="740" y2="650" stroke="#334155" stroke-width="1.5" stroke-dasharray="4,4"/>
+  <line x1="900" y1="120" x2="900" y2="650" stroke="#334155" stroke-width="1.5" stroke-dasharray="4,4"/>
+
+  <!-- Messages -->
+  <!-- 1. Patient -> React -->
+  <line x1="100" y1="150" x2="260" y2="150" stroke="#38bdf8" stroke-width="2" marker-end="url(#s-arr)"/>
+  <text x="180" y="142" fill="#e2e8f0" font-size="11" text-anchor="middle">1. Uploads Lab Report (PDF/PNG)</text>
+
+  <!-- 2. React -> Gateway -->
+  <line x1="260" y1="185" x2="420" y2="185" stroke="#38bdf8" stroke-width="2" marker-end="url(#s-arr)"/>
+  <text x="340" y="177" fill="#e2e8f0" font-size="11" text-anchor="middle">2. POST /api/reports (Multer)</text>
+
+  <!-- 3. Gateway -> OCR -->
+  <line x1="420" y1="220" x2="580" y2="220" stroke="#38bdf8" stroke-width="2" marker-end="url(#s-arr)"/>
+  <text x="500" y="212" fill="#e2e8f0" font-size="11" text-anchor="middle">3. Run Tesseract.js / pdf-parse</text>
+
+  <!-- 4. OCR -> Gateway -->
+  <line x1="580" y1="255" x2="420" y2="255" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="3,3" marker-end="url(#s-arr-back)"/>
+  <text x="500" y="247" fill="#94a3b8" font-size="11" text-anchor="middle">4. Extracted Biomarker JSON</text>
+
+  <!-- 5. Gateway -> React -->
+  <line x1="420" y1="290" x2="260" y2="290" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="3,3" marker-end="url(#s-arr-back)"/>
+  <text x="340" y="282" fill="#94a3b8" font-size="11" text-anchor="middle">5. Display Review &amp; Edit Modal</text>
+
+  <!-- 6. Patient -> React (Confirm) -->
+  <line x1="100" y1="325" x2="260" y2="325" stroke="#38bdf8" stroke-width="2" marker-end="url(#s-arr)"/>
+  <text x="180" y="317" fill="#e2e8f0" font-size="11" text-anchor="middle">6. Reviews &amp; Clicks "Confirm"</text>
+
+  <!-- 7. React -> Gateway -->
+  <line x1="260" y1="360" x2="420" y2="360" stroke="#38bdf8" stroke-width="2" marker-end="url(#s-arr)"/>
+  <text x="340" y="352" fill="#e2e8f0" font-size="11" text-anchor="middle">7. PUT /api/reports/:id/confirm</text>
+
+  <!-- 8. Gateway -> ML -->
+  <line x1="420" y1="395" x2="740" y2="395" stroke="#c084fc" stroke-width="2" marker-end="url(#s-arr)"/>
+  <text x="580" y="387" fill="#c084fc" font-size="11" font-weight="600" text-anchor="middle">8. POST /predict (Biomarkers ➔ LightGBM &amp; TreeSHAP)</text>
+
+  <!-- 9. ML -> Gateway -->
+  <line x1="740" y1="430" x2="420" y2="430" stroke="#c084fc" stroke-width="1.5" stroke-dasharray="3,3" marker-end="url(#s-arr-back)"/>
+  <text x="580" y="422" fill="#c084fc" font-size="11" text-anchor="middle">9. Calibrated Probabilities (0.210 cutoff) + SHAP factors</text>
+
+  <!-- 10. Gateway -> React -->
+  <line x1="420" y1="465" x2="260" y2="465" stroke="#38bdf8" stroke-width="2" marker-end="url(#s-arr)"/>
+  <text x="340" y="457" fill="#e2e8f0" font-size="11" text-anchor="middle">10. Live Disease Risk Cards Rendered</text>
+
+  <!-- Note: Adherence Telemetry -->
+  <rect x="220" y="495" width="720" height="35" rx="5" fill="#1e293b" stroke="#f97316" stroke-width="1"/>
+  <text x="580" y="518" fill="#fb923c" font-size="11" font-weight="700" text-anchor="middle">MEDICATION ADHERENCE &amp; ESP32 HARDWARE SYNC</text>
+
+  <!-- 11. Prescribe -->
+  <line x1="260" y1="550" x2="420" y2="550" stroke="#38bdf8" stroke-width="2" marker-end="url(#s-arr)"/>
+  <text x="340" y="542" fill="#e2e8f0" font-size="11" text-anchor="middle">11. Clinician Prescribes Regimen</text>
+
+  <!-- 12. ESP32 Polls / Syncs -->
+  <line x1="900" y1="580" x2="420" y2="580" stroke="#f97316" stroke-width="2" marker-end="url(#s-arr)"/>
+  <text x="660" y="572" fill="#f97316" font-size="11" text-anchor="middle">12. GET /api/medicines/sync (Poll schedule)</text>
+
+  <!-- 13. IR Sensor Trigger -->
+  <line x1="900" y1="615" x2="420" y2="615" stroke="#f97316" stroke-width="2" marker-end="url(#s-arr)"/>
+  <text x="660" y="607" fill="#f97316" font-size="11" font-weight="600" text-anchor="middle">13. POST /api/iot/medicine-status (IR Detects Pill Taken)</text>
+
+  <!-- 14. Gateway to React UI update -->
+  <line x1="420" y1="645" x2="260" y2="645" stroke="#34d399" stroke-width="2" marker-end="url(#s-arr)"/>
+  <text x="340" y="637" fill="#34d399" font-size="11" font-weight="600" text-anchor="middle">14. Adherence Log &amp; Badge Updates: "Taken"</text>
+</svg>
